@@ -3,10 +3,10 @@ extends Node2D
 var bullet_scene: PackedScene
 var enemy_scene: PackedScene
 var boss_scene: PackedScene
+var damage_number_scene: PackedScene
 
 var spawn_timer: float = 0.0
-var spawn_interval: float = 1.8
-
+var spawn_interval: float = 1.5
 var currency: int = 0
 
 var attack_speed_level: int = 0
@@ -14,6 +14,8 @@ var attack_speed_cost: int = 25
 var attack_speed_max: int = 10
 
 var wave: int = 1
+var wave_timer: float = 0.0
+var wave_duration: float = 20.0  # seconds per wave
 var enemies_killed: int = 0
 var enemies_needed: int = 10
 var phase: int = 1
@@ -21,29 +23,37 @@ var game_over: bool = false
 var boss_wave: bool = false
 var boss_alive: bool = false
 
+var difficulty: int = 0
+
 func _ready():
 	bullet_scene = preload("res://Scenes/Projectile.tscn")
 	enemy_scene = preload("res://Scenes/Enemy.tscn")
 	boss_scene = preload("res://Scenes/Boss.tscn")
+	damage_number_scene = preload("res://Scenes/damage_number.tscn")
 	$Base.set_bullet_scene(bullet_scene)
 	$Base.set_main(self)
 	_update_ui()
 
 func _process(delta):
-	if game_over:
+	if game_over or boss_wave:
 		return
-	if boss_wave:
-		return
+	wave_timer += delta
 	spawn_timer += delta
-	if spawn_timer >= spawn_interval:
+	
+	var current_spawn_interval = max(0.3, spawn_interval - (difficulty * 0.05))
+	if spawn_timer >= current_spawn_interval:
 		spawn_timer = 0.0
 		_spawn_enemy()
+	
+	if wave_timer >= wave_duration:
+		wave_timer = 0.0
+		_advance_wave()
 
 func _spawn_enemy():
 	var e = enemy_scene.instantiate()
 	add_child(e)
 	e.setup($Base, self)
-	e.scale_to_wave(wave, phase)
+	e.scale_to_wave(difficulty)
 	e.global_position = _random_edge_position()
 
 func _spawn_boss():
@@ -52,37 +62,39 @@ func _spawn_boss():
 	var b = boss_scene.instantiate()
 	add_child(b)
 	b.setup($Base, self)
-	b.scale_to_phase(phase)
+	b.scale_to_phase(difficulty)
 	b.global_position = Vector2(240, -40)
 	$UI/WaveLabel.text = "⚠ BOSS WAVE ⚠ | Phase: " + str(phase)
+	
+func spawn_damage_number(amount: float, pos: Vector2):
+	var dn = damage_number_scene.instantiate()
+	$DamageLayer.add_child(dn)
+	dn.setup(amount, pos)
 
 func on_boss_killed():
 	boss_alive = false
 	boss_wave = false
 	wave = 1
 	phase += 1
+	difficulty += 3  # boss kill = big difficulty jump
 	enemies_killed = 0
-	enemies_needed = int(enemies_needed * 1.1)
-	spawn_interval = max(0.5, spawn_interval * 0.9)
+	enemies_needed = int(10 + (difficulty * 0.8))
 	_update_ui()
 
 func add_currency(amount: int):
 	currency += amount
 	if not boss_wave:
 		enemies_killed += 1
-		_check_wave_complete()
 	_update_ui()
-
-func _check_wave_complete():
-	if enemies_killed >= enemies_needed:
-		enemies_killed = 0
-		wave += 1
-		enemies_needed = int(enemies_needed * 1.1)
-		if wave >= 10:
-			_spawn_boss()
-		else:
-			spawn_interval = max(0.5, spawn_interval * 0.9)
-			_update_ui()
+func _advance_wave():
+	wave += 1
+	difficulty += 1
+	enemies_needed = int(10 + (difficulty * 1.2))
+	spawn_interval = max(0.3, 1.5 - (difficulty * 0.05))
+	if wave >= 10:
+		_spawn_boss()
+	else:
+		_update_ui()
 
 func update_health_ui(hp: float):
 	$UI/BaseHealthLabel.text = "HP: " + str(int(hp))

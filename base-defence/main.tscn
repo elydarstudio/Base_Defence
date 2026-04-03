@@ -78,5 +78,7 @@ offset_right = 315.0
 offset_bottom = 480.0
 text = "Run Again"
 
+[node name="DamageLayer" type="CanvasLayer" parent="." unique_id=1848438676]
+
 [connection signal="pressed" from="UI/UpgradeButton" to="." method="_on_upgrade_button_pressed"]
 [connection signal="pressed" from="UI/GameOverScreen/RestartButton" to="." method="_on_restart_button_pressed"]

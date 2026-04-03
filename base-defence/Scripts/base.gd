@@ -7,10 +7,12 @@ extends Area2D
 
 var fire_timer: float = 0.0
 var bullet_scene: PackedScene
-
 var max_health: float = 100.0
 var health: float = 100.0
 var main_node: Node = null
+
+# Track bullets in flight per enemy
+var bullets_targeting: Dictionary = {}
 
 func _ready():
 	position = Vector2(240, 427)
@@ -32,26 +34,59 @@ func _process(delta):
 		_try_shoot()
 
 func _try_shoot():
-	var target = _get_nearest_enemy()
+	var target = _get_best_target()
 	if target == null:
 		return
 	if bullet_scene == null:
 		return
+
+	# Count bullets already heading to this target
+	var bullets_en_route = bullets_targeting.get(target, 0)
+	var hits_needed = ceil(target.health / bullet_damage)
+
+	if bullets_en_route >= hits_needed:
+		return
+
+
 	var b = bullet_scene.instantiate()
 	get_parent().add_child(b)
 	b.global_position = global_position
-	b.setup(global_position.direction_to(target.global_position), bullet_speed, bullet_damage)
+	b.setup(
+		global_position.direction_to(target.global_position),
+		bullet_speed,
+		bullet_damage,
+		target,
+		self
+	)
+	bullets_targeting[target] = bullets_en_route + 1
 
-func _get_nearest_enemy() -> Node2D:
+func notify_bullet_resolved(target: Node2D):
+	if target in bullets_targeting:
+		bullets_targeting[target] -= 1
+		if bullets_targeting[target] <= 0:
+			bullets_targeting.erase(target)
+
+func _get_best_target() -> Node2D:
+	# First check if any current targets still need more bullets
+	for existing_target in bullets_targeting.keys():
+		if not is_instance_valid(existing_target):
+			bullets_targeting.erase(existing_target)
+			continue
+		var hits_needed = ceil(existing_target.health / bullet_damage)
+		var en_route = bullets_targeting.get(existing_target, 0)
+		if en_route < hits_needed:
+			return existing_target
+
+	# No existing targets need bullets — find closest to base
 	var enemies = get_tree().get_nodes_in_group("enemies")
-	var nearest = null
-	var nearest_dist = detection_radius
+	var closest = null
+	var closest_dist = detection_radius
 	for e in enemies:
 		var d = global_position.distance_to(e.global_position)
-		if d < nearest_dist:
-			nearest_dist = d
-			nearest = e
-	return nearest
+		if d < closest_dist:
+			closest_dist = d
+			closest = e
+	return closest
 
 func take_damage(amount: float):
 	health -= amount
@@ -60,7 +95,6 @@ func take_damage(amount: float):
 	if health <= 0:
 		if main_node != null:
 			main_node.trigger_game_over()
-
 
 func set_bullet_scene(scene: PackedScene):
 	bullet_scene = scene

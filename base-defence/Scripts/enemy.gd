@@ -1,14 +1,15 @@
 extends Area2D
 
 var speed: float = 80.0
-var health: float = 15.0
+var health: float = 8.0
+var max_health: float = 8.0
 var base_node: Node2D = null
 var main_node: Node = null
 var currency_value: int = 5
 
 var attack_timer: float = 1.4
 var attack_interval: float = 1.5
-var attack_damage: float = 8.0
+var attack_damage: float = 4.0
 var attack_range: float = 35.0
 
 func _ready():
@@ -38,16 +39,38 @@ func _process(delta):
 			base_node.take_damage(attack_damage)
 			if main_node != null:
 				main_node.update_health_ui(base_node.health)
+	queue_redraw()
 
-func scale_to_wave(w: int, p: int):
-	var multiplier = 1.0 + (w * 0.08) + (p * 0.2)
-	health = int(10.0 * multiplier)
-	attack_damage = 5.0 * (1.0 + (w * 0.05) + (p * 0.1))
-	speed = min(60.0 + (w * 1.0) + (p * 3.0), 130.0)
+func _draw():
+	var bar_width: float = 30.0
+	var bar_height: float = 4.0
+	var offset: Vector2 = Vector2(-15, -25)
+	var pct: float = health / max_health
+
+	draw_rect(Rect2(offset, Vector2(bar_width, bar_height)), Color(0.2, 0.2, 0.2))
+
+	var fill_color: Color
+	if pct > 0.5:
+		fill_color = Color(0.2, 0.9, 0.2)
+	elif pct > 0.25:
+		fill_color = Color(0.9, 0.9, 0.2)
+	else:
+		fill_color = Color(0.9, 0.2, 0.2)
+
+	draw_rect(Rect2(offset, Vector2(bar_width * pct, bar_height)), fill_color)
+
+func scale_to_wave(difficulty: int):
+	var multiplier = 1.0 + (difficulty * 0.10)
+	health = 8.0 * multiplier
+	max_health = health
+	attack_damage = 4.0 * (1.0 + (difficulty * 0.06))
+	speed = min(65.0 + (difficulty * 0.8), 140.0)
 	currency_value = int(5.0 * multiplier)
 
 func take_damage(amount: float):
 	health -= amount
+	if main_node != null:
+		main_node.spawn_damage_number(amount, global_position + Vector2(0, -20))
 	if health <= 0:
 		_die()
 

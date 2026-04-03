@@ -40,11 +40,11 @@ func _process(delta):
 			if main_node != null:
 				main_node.update_health_ui(base_node.health)
 
-func scale_to_phase(p: int):
-	var multiplier = 1.0 + (p * 0.3)
+func scale_to_phase(d: int):
+	var multiplier = 1.0 + (d * 0.15)
 	health = 150.0 * multiplier
 	attack_damage = 12.0 * multiplier
-	speed = min(40.0 + (p * 3.0), 100.0)
+	speed = min(40.0 + (d * 1.5), 100.0)
 	currency_value = int(50.0 * multiplier)
 
 func take_damage(amount: float):
