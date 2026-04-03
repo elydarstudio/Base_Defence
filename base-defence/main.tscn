@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://bvft4b8tbtx0d"]
+
+[ext_resource type="Script" uid="uid://blpnr16efpibp" path="res://Scripts/main.gd" id="1_0xm2m"]
+[ext_resource type="Script" uid="uid://f5lx5xlcx85p" path="res://Scripts/base.gd" id="1_ig7tw"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_0xm2m"]
+radius = 30.0
+
+[node name="Main" type="Node2D" unique_id=1387244615]
+script = ExtResource("1_0xm2m")
+
+[node name="Base" type="Area2D" parent="." unique_id=182623192]
+script = ExtResource("1_ig7tw")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Base" unique_id=46726241]
+shape = SubResource("CircleShape2D_0xm2m")
+
+[node name="Visual" type="Polygon2D" parent="Base" unique_id=722642048]
