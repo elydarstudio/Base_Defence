@@ -2,9 +2,10 @@ extends Node2D
 
 var bullet_scene: PackedScene
 var enemy_scene: PackedScene
+var boss_scene: PackedScene
 
 var spawn_timer: float = 0.0
-var spawn_interval: float = 2.0
+var spawn_interval: float = 1.8
 
 var currency: int = 0
 
@@ -13,21 +14,25 @@ var attack_speed_cost: int = 25
 var attack_speed_max: int = 10
 
 var wave: int = 1
-var enemies_this_wave: int = 0
-var enemies_per_wave: int = 10
 var enemies_killed: int = 0
+var enemies_needed: int = 10
 var phase: int = 1
 var game_over: bool = false
+var boss_wave: bool = false
+var boss_alive: bool = false
 
 func _ready():
 	bullet_scene = preload("res://Scenes/Projectile.tscn")
 	enemy_scene = preload("res://Scenes/Enemy.tscn")
+	boss_scene = preload("res://Scenes/Boss.tscn")
 	$Base.set_bullet_scene(bullet_scene)
 	$Base.set_main(self)
 	_update_ui()
 
 func _process(delta):
 	if game_over:
+		return
+	if boss_wave:
 		return
 	spawn_timer += delta
 	if spawn_timer >= spawn_interval:
@@ -38,25 +43,46 @@ func _spawn_enemy():
 	var e = enemy_scene.instantiate()
 	add_child(e)
 	e.setup($Base, self)
+	e.scale_to_wave(wave, phase)
 	e.global_position = _random_edge_position()
-	enemies_this_wave += 1
+
+func _spawn_boss():
+	boss_wave = true
+	boss_alive = true
+	var b = boss_scene.instantiate()
+	add_child(b)
+	b.setup($Base, self)
+	b.scale_to_phase(phase)
+	b.global_position = Vector2(240, -40)
+	$UI/WaveLabel.text = "⚠ BOSS WAVE ⚠ | Phase: " + str(phase)
+
+func on_boss_killed():
+	boss_alive = false
+	boss_wave = false
+	wave = 1
+	phase += 1
+	enemies_killed = 0
+	enemies_needed = int(enemies_needed * 1.1)
+	spawn_interval = max(0.5, spawn_interval * 0.9)
+	_update_ui()
 
 func add_currency(amount: int):
 	currency += amount
-	enemies_killed += 1
-	_check_wave_complete()
+	if not boss_wave:
+		enemies_killed += 1
+		_check_wave_complete()
 	_update_ui()
 
 func _check_wave_complete():
-	if enemies_killed >= enemies_per_wave * wave:
+	if enemies_killed >= enemies_needed:
+		enemies_killed = 0
 		wave += 1
-		if wave > 20:
-			wave = 1
-			phase += 1
-			spawn_interval = max(0.5, spawn_interval * 0.85)
-		enemies_per_wave = int(enemies_per_wave * 1.1)
-		spawn_interval = max(0.5, 2.0 - (wave * 0.05))
-		_update_ui()
+		enemies_needed = int(enemies_needed * 1.1)
+		if wave >= 10:
+			_spawn_boss()
+		else:
+			spawn_interval = max(0.5, spawn_interval * 0.9)
+			_update_ui()
 
 func update_health_ui(hp: float):
 	$UI/BaseHealthLabel.text = "HP: " + str(int(hp))

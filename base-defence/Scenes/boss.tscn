@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://cgskffqw5mlb4"]
+
+[ext_resource type="Script" uid="uid://b6w3okesk0sgj" path="res://Scripts/boss.gd" id="1_0154r"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wwfse"]
+radius = 30.0
+
+[node name="Boss" type="Area2D" unique_id=339992531]
+script = ExtResource("1_0154r")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=565253907]
+shape = SubResource("CircleShape2D_wwfse")
+
+[node name="Visual" type="Polygon2D" parent="." unique_id=1455793605]

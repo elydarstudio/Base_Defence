@@ -1,28 +1,29 @@
 extends Area2D
 
-var speed: float = 80.0
-var health: float = 15.0
+var speed: float = 50.0
+var health: float = 300.0
 var base_node: Node2D = null
 var main_node: Node = null
-var currency_value: int = 5
+var currency_value: int = 50
 
 var attack_timer: float = 1.4
-var attack_interval: float = 1.5
-var attack_damage: float = 8.0
-var attack_range: float = 35.0
+var attack_interval: float = 2.0
+var attack_damage: float = 20.0
+var attack_range: float = 45.0
 
 func _ready():
 	add_to_group("enemies")
-	_draw_enemy()
+	add_to_group("boss")
+	_draw_boss()
 
-func _draw_enemy():
+func _draw_boss():
 	var poly = $Visual
 	var points = PackedVector2Array()
-	for i in 6:
-		var angle = deg_to_rad(60 * i)
-		points.append(Vector2(cos(angle), sin(angle)) * 15)
+	for i in 8:
+		var angle = deg_to_rad(45 * i)
+		points.append(Vector2(cos(angle), sin(angle)) * 30)
 	poly.polygon = points
-	poly.color = Color(1.0, 0.2, 0.2)
+	poly.color = Color(0.8, 0.0, 0.8)  # purple
 
 func _process(delta):
 	if base_node == null:
@@ -39,12 +40,12 @@ func _process(delta):
 			if main_node != null:
 				main_node.update_health_ui(base_node.health)
 
-func scale_to_wave(w: int, p: int):
-	var multiplier = 1.0 + (w * 0.08) + (p * 0.2)
-	health = int(10.0 * multiplier)
-	attack_damage = 5.0 * (1.0 + (w * 0.05) + (p * 0.1))
-	speed = min(60.0 + (w * 1.0) + (p * 3.0), 130.0)
-	currency_value = int(5.0 * multiplier)
+func scale_to_phase(p: int):
+	var multiplier = 1.0 + (p * 0.3)
+	health = 150.0 * multiplier
+	attack_damage = 12.0 * multiplier
+	speed = min(40.0 + (p * 3.0), 100.0)
+	currency_value = int(50.0 * multiplier)
 
 func take_damage(amount: float):
 	health -= amount
@@ -54,6 +55,7 @@ func take_damage(amount: float):
 func _die():
 	if main_node != null:
 		main_node.add_currency(currency_value)
+		main_node.on_boss_killed()
 	queue_free()
 
 func setup(base: Node2D, main: Node):
