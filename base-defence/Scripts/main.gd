@@ -4,7 +4,9 @@ var bullet_scene: PackedScene
 var enemy_scene: PackedScene
 
 var spawn_timer: float = 0.0
-var spawn_interval: float = 2.0  # seconds between spawns
+var spawn_interval: float = 2.0
+
+var currency: int = 0
 
 func _ready():
 	bullet_scene = preload("res://Scenes/Projectile.tscn")
@@ -20,11 +22,15 @@ func _process(delta):
 func _spawn_enemy():
 	var e = enemy_scene.instantiate()
 	add_child(e)
-	e.setup($Base)
+	e.setup($Base, self)
 	e.global_position = _random_edge_position()
 
+func add_currency(amount: int):
+	currency += amount
+	$UI/CurrencyLabel.text = "Gold: " + str(currency)
+
 func _random_edge_position() -> Vector2:
-	var edge = randi() % 4  # 0=top, 1=bottom, 2=left, 3=right
+	var edge = randi() % 4
 	match edge:
 		0: return Vector2(randf_range(0, 480), -20)
 		1: return Vector2(randf_range(0, 480), 874)
