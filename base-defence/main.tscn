@@ -33,4 +33,50 @@ offset_right = 210.0
 offset_bottom = 80.0
 text = "Attack Speed - 25g"
 
+[node name="WaveLabel" type="Label" parent="UI" unique_id=1398830171]
+offset_left = 10.0
+offset_top = 85.0
+offset_right = 70.0
+offset_bottom = 108.0
+text = "Wave: 1"
+
+[node name="BaseHealthLabel" type="Label" parent="UI" unique_id=1943597403]
+offset_left = 10.0
+offset_top = 110.0
+offset_right = 68.0
+offset_bottom = 133.0
+text = "HP: 100"
+
+[node name="GameOverScreen" type="ColorRect" parent="UI" unique_id=1276885533]
+process_mode = 3
+visible = false
+offset_right = 480.0
+offset_bottom = 854.0
+color = Color(0, 0, 0, 0.003921569)
+
+[node name="GameOverLabel" type="Label" parent="UI/GameOverScreen" unique_id=902884280]
+layout_mode = 0
+offset_left = 140.0
+offset_top = 300.0
+offset_right = 232.0
+offset_bottom = 323.0
+text = "GAME OVER"
+
+[node name="PhaseLabel" type="Label" parent="UI/GameOverScreen" unique_id=1105267217]
+layout_mode = 0
+offset_left = 160.0
+offset_top = 360.0
+offset_right = 225.0
+offset_bottom = 383.0
+text = "Phase: 1"
+
+[node name="RestartButton" type="Button" parent="UI/GameOverScreen" unique_id=1824560948]
+layout_mode = 0
+offset_left = 165.0
+offset_top = 430.0
+offset_right = 315.0
+offset_bottom = 480.0
+text = "Run Again"
+
 [connection signal="pressed" from="UI/UpgradeButton" to="." method="_on_upgrade_button_pressed"]
+[connection signal="pressed" from="UI/GameOverScreen/RestartButton" to="." method="_on_restart_button_pressed"]

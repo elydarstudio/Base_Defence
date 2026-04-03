@@ -8,18 +8,27 @@ var spawn_interval: float = 2.0
 
 var currency: int = 0
 
-# Upgrade tracking
 var attack_speed_level: int = 0
 var attack_speed_cost: int = 25
 var attack_speed_max: int = 10
+
+var wave: int = 1
+var enemies_this_wave: int = 0
+var enemies_per_wave: int = 10
+var enemies_killed: int = 0
+var phase: int = 1
+var game_over: bool = false
 
 func _ready():
 	bullet_scene = preload("res://Scenes/Projectile.tscn")
 	enemy_scene = preload("res://Scenes/Enemy.tscn")
 	$Base.set_bullet_scene(bullet_scene)
+	$Base.set_main(self)
 	_update_ui()
 
 func _process(delta):
+	if game_over:
+		return
 	spawn_timer += delta
 	if spawn_timer >= spawn_interval:
 		spawn_timer = 0.0
@@ -30,13 +39,41 @@ func _spawn_enemy():
 	add_child(e)
 	e.setup($Base, self)
 	e.global_position = _random_edge_position()
+	enemies_this_wave += 1
 
 func add_currency(amount: int):
 	currency += amount
+	enemies_killed += 1
+	_check_wave_complete()
 	_update_ui()
+
+func _check_wave_complete():
+	if enemies_killed >= enemies_per_wave * wave:
+		wave += 1
+		if wave > 20:
+			wave = 1
+			phase += 1
+			spawn_interval = max(0.5, spawn_interval * 0.85)
+		enemies_per_wave = int(enemies_per_wave * 1.1)
+		spawn_interval = max(0.5, 2.0 - (wave * 0.05))
+		_update_ui()
+
+func update_health_ui(hp: float):
+	$UI/BaseHealthLabel.text = "HP: " + str(int(hp))
+
+func trigger_game_over():
+	game_over = true
+	$UI/GameOverScreen.visible = true
+	$UI/GameOverScreen/PhaseLabel.text = "Phase Reached: " + str(phase)
+	get_tree().paused = true
+
+func _on_restart_button_pressed():
+	get_tree().paused = false
+	get_tree().reload_current_scene()
 
 func _update_ui():
 	$UI/CurrencyLabel.text = "Gold: " + str(currency)
+	$UI/WaveLabel.text = "Wave: " + str(wave) + " | Phase: " + str(phase)
 	var btn = $UI/UpgradeButton
 	if attack_speed_level >= attack_speed_max:
 		btn.text = "Attack Speed - MAXED"
@@ -52,8 +89,8 @@ func _on_upgrade_button_pressed():
 		return
 	currency -= attack_speed_cost
 	attack_speed_level += 1
-	attack_speed_cost = int(attack_speed_cost * 1.4)  # scaling cost
-	$Base.fire_rate += 0.5  # each level adds 0.5 shots/sec
+	attack_speed_cost = int(attack_speed_cost * 1.4)
+	$Base.fire_rate += 0.5
 	_update_ui()
 
 func _random_edge_position() -> Vector2:

@@ -1,10 +1,16 @@
 extends Area2D
 
 var speed: float = 80.0
-var health: float = 30.0
+var health: float = 15.0
 var base_node: Node2D = null
 var main_node: Node = null
 var currency_value: int = 5
+
+var attack_timer: float = 1.4
+var attack_interval: float = 1.5
+var attack_damage: float = 8.0
+var attack_range: float = 35.0
+var is_attacking: bool = false
 
 func _ready():
 	add_to_group("enemies")
@@ -22,8 +28,21 @@ func _draw_enemy():
 func _process(delta):
 	if base_node == null:
 		return
-	var dir = global_position.direction_to(base_node.global_position)
-	global_position += dir * speed * delta
+	var dist = global_position.distance_to(base_node.global_position)
+	if dist > attack_range:
+		# Walk toward base
+		is_attacking = false
+		var dir = global_position.direction_to(base_node.global_position)
+		global_position += dir * speed * delta
+	else:
+		# In range — stop and attack
+		is_attacking = true
+		attack_timer += delta
+		if attack_timer >= attack_interval:
+			attack_timer = 0.0
+			base_node.take_damage(attack_damage)
+			if main_node != null:
+				main_node.update_health_ui(base_node.health)
 
 func take_damage(amount: float):
 	health -= amount
