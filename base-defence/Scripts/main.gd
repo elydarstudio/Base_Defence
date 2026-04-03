@@ -12,6 +12,9 @@ var currency: int = 0
 var attack_speed_level: int = 0
 var attack_speed_cost: int = 25
 var attack_speed_max: int = 10
+var damage_level: int = 0
+var damage_cost: int = 30
+var damage_max: int = 10
 
 var wave: int = 1
 var wave_timer: float = 0.0
@@ -76,22 +79,22 @@ func on_boss_killed():
 	boss_wave = false
 	wave = 1
 	phase += 1
-	difficulty += 3  # boss kill = big difficulty jump
+	difficulty += 3
+	spawn_interval = max(0.5, 1.8 - (difficulty * 0.03))
 	enemies_killed = 0
-	enemies_needed = int(10 + (difficulty * 0.8))
 	_update_ui()
-
+	
 func add_currency(amount: int):
 	currency += amount
 	if not boss_wave:
 		enemies_killed += 1
 	_update_ui()
+	
 func _advance_wave():
 	wave += 1
 	difficulty += 1
-	enemies_needed = int(10 + (difficulty * 1.2))
-	spawn_interval = max(0.3, 1.5 - (difficulty * 0.05))
-	if wave >= 10:
+	spawn_interval = max(0.5, 1.8 - (difficulty * 0.03))
+	if wave % 10 == 0:
 		_spawn_boss()
 	else:
 		_update_ui()
@@ -119,6 +122,13 @@ func _update_ui():
 	else:
 		btn.text = "Attack Speed Lv" + str(attack_speed_level + 1) + " - " + str(attack_speed_cost) + "g"
 		btn.disabled = currency < attack_speed_cost
+	var dbtn = $UI/DamageButton
+	if damage_level >= damage_max:
+		dbtn.text = "Base Damage - MAXED"
+		dbtn.disabled = true
+	else:
+		dbtn.text = "Damage Lv" + str(damage_level + 1) + " - " + str(damage_cost) + "g"
+		dbtn.disabled = currency < damage_cost
 
 func _on_upgrade_button_pressed():
 	if currency < attack_speed_cost:
@@ -131,11 +141,22 @@ func _on_upgrade_button_pressed():
 	$Base.fire_rate += 0.5
 	_update_ui()
 
+func _on_damage_button_pressed():
+	if currency < damage_cost:
+		return
+	if damage_level >= damage_max:
+		return
+	currency -= damage_cost
+	damage_level += 1
+	damage_cost = int(damage_cost * 1.3)
+	$Base.bullet_damage += 1.0
+	_update_ui()
+
 func _random_edge_position() -> Vector2:
 	var edge = randi() % 4
 	match edge:
-		0: return Vector2(randf_range(0, 480), -20)
-		1: return Vector2(randf_range(0, 480), 874)
-		2: return Vector2(-20, randf_range(0, 854))
-		3: return Vector2(500, randf_range(0, 854))
+		0: return Vector2(randf_range(0, 720), -20)
+		1: return Vector2(randf_range(0, 720), 1300)
+		2: return Vector2(-20, randf_range(0, 1280))
+		3: return Vector2(740, randf_range(0, 1280))
 	return Vector2.ZERO

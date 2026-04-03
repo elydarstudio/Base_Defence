@@ -60,7 +60,7 @@ func _draw():
 	draw_rect(Rect2(offset, Vector2(bar_width * pct, bar_height)), fill_color)
 
 func scale_to_wave(difficulty: int):
-	var multiplier = 1.0 + (difficulty * 0.10)
+	var multiplier = 1.0 + (difficulty * 0.15)
 	health = 8.0 * multiplier
 	max_health = health
 	attack_damage = 4.0 * (1.0 + (difficulty * 0.06))

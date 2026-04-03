@@ -3,7 +3,7 @@ extends Area2D
 @export var fire_rate: float = 1.0
 @export var bullet_speed: float = 400.0
 @export var bullet_damage: float = 10.0
-@export var detection_radius: float = 250.0
+@export var detection_radius: float = 400.0
 
 var fire_timer: float = 0.0
 var bullet_scene: PackedScene
@@ -15,7 +15,7 @@ var main_node: Node = null
 var bullets_targeting: Dictionary = {}
 
 func _ready():
-	position = Vector2(240, 427)
+	position = Vector2(360, 580)
 	_draw_base()
 
 func _draw_base():
