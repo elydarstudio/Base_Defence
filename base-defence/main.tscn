@@ -25,3 +25,12 @@ offset_top = 10.0
 offset_right = 64.0
 offset_bottom = 33.0
 text = "Gold: 0"
+
+[node name="UpgradeButton" type="Button" parent="UI" unique_id=265391627]
+offset_left = 10.0
+offset_top = 40.0
+offset_right = 210.0
+offset_bottom = 80.0
+text = "Attack Speed - 25g"
+
+[connection signal="pressed" from="UI/UpgradeButton" to="." method="_on_upgrade_button_pressed"]
