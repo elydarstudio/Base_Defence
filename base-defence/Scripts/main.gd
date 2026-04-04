@@ -7,9 +7,9 @@ var damage_number_scene: PackedScene
 
 # Spawn
 var spawn_timer: float = 0.0
-var spawn_interval: float = 1.8
+var spawn_interval: float = 1.25
 var wave_timer: float = 0.0
-var wave_duration: float = 20.0
+var wave_duration: float = 25.0
 
 # Progress
 var wave: int = 1
@@ -29,7 +29,7 @@ var panel_open: bool = false
 
 # ── ATK stats ─────────────────────────────────
 var attack_speed_level: int = 0
-var attack_speed_cost: int = 25
+var attack_speed_cost: int = 35
 var attack_speed_max: int = 40
 
 var damage_level: int = 0
@@ -127,7 +127,7 @@ func _process(delta):
 		return
 	wave_timer += delta
 	spawn_timer += delta
-	var current_spawn_interval = max(0.4, spawn_interval - (difficulty * 0.03))
+	var current_spawn_interval = max(0.3, spawn_interval - (difficulty * 0.045))
 	if spawn_timer >= current_spawn_interval:
 		spawn_timer = 0.0
 		_spawn_enemy()
@@ -303,14 +303,14 @@ func _on_atk_spd_button_pressed():
 	currency -= attack_speed_cost
 	attack_speed_level += 1
 	attack_speed_cost = int(attack_speed_cost * 1.2)
-	$Base.fire_rate += 0.15
+	$Base.fire_rate += 0.125
 	_update_ui()
 
 func _on_dmg_button_pressed():
 	if currency < damage_cost or damage_level >= damage_max: return
 	currency -= damage_cost
 	damage_level += 1
-	damage_cost = int(damage_cost * 1.15)
+	damage_cost = int(damage_cost * 1.2)
 	$Base.bullet_damage += 1.0
 	_update_ui()
 
