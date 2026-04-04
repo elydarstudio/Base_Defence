@@ -116,9 +116,93 @@ func _ready():
 	enemy_scene = preload("res://Scenes/Enemy.tscn")
 	boss_scene = preload("res://Scenes/Boss.tscn")
 	damage_number_scene = preload("res://Scenes/damage_number.tscn")
+	phase = SaveManager.data.get("start_phase", 1)
 	$Base.set_bullet_scene(bullet_scene)
 	$Base.set_main(self)
+	_apply_workshop_floors()
 	_update_ui()
+
+func _apply_workshop_floors():
+	var d = SaveManager.data
+	# ATK
+	attack_speed_level = d["floor_attack_speed"]
+	attack_speed_cost = int(35 * pow(1.2, attack_speed_level))
+	$Base.fire_rate += attack_speed_level * 0.125
+
+	damage_level = d["floor_damage"]
+	damage_cost = int(30 * pow(1.2, damage_level))
+	$Base.bullet_damage += damage_level * 1.0
+
+	dmg_mult_level = d["floor_dmg_mult"]
+	dmg_mult_cost = int(60 * pow(1.25, dmg_mult_level))
+	$Base.damage_multiplier += dmg_mult_level * 0.1
+
+	crit_chance_level = d["floor_crit_chance"]
+	crit_chance_cost = int(40 * pow(1.3, crit_chance_level))
+	$Base.crit_chance += crit_chance_level * 0.05
+
+	crit_dmg_level = d["floor_crit_dmg"]
+	crit_dmg_cost = int(60 * pow(1.25, crit_dmg_level))
+	$Base.crit_damage += crit_dmg_level * 0.25
+
+	# DEF
+	shield_level = d["floor_shield"]
+	shield_cost = int(35 * pow(1.2, shield_level))
+	$Base.add_shield(shield_level * 20.0)
+
+	shield_regen_level = d["floor_shield_regen"]
+	shield_regen_cost = int(50 * pow(1.25, shield_regen_level))
+	$Base.shield_regen += shield_regen_level * 1.0
+
+	dmg_reduct_level = d["floor_dmg_reduct"]
+	dmg_reduct_cost = int(45 * pow(1.2, dmg_reduct_level))
+	$Base.damage_reduction += dmg_reduct_level * 0.02
+
+	kb_freq_level = d["floor_kb_freq"]
+	kb_freq_cost = int(40 * pow(1.2, kb_freq_level))
+	if kb_freq_level > 0:
+		$Base.knockback_freq = max(0.5, 5.0 - (kb_freq_level * 0.2))
+
+	kb_str_level = d["floor_kb_str"]
+	kb_str_cost = int(40 * pow(1.2, kb_str_level))
+	$Base.knockback_strength += kb_str_level * 20.0
+
+	# HP
+	max_hp_level = d["floor_max_hp"]
+	max_hp_cost = int(35 * pow(1.2, max_hp_level))
+	$Base.increase_max_health(max_hp_level * 20.0)
+
+	regen_amt_level = d["floor_regen_amt"]
+	regen_amt_cost = int(40 * pow(1.25, regen_amt_level))
+	$Base.hp_regen += regen_amt_level * 1.0
+
+	regen_spd_level = d["floor_regen_spd"]
+	regen_spd_cost = int(40 * pow(1.2, regen_spd_level))
+	$Base.regen_interval = max(1.0, 5.0 - (regen_spd_level * 0.1))
+
+	recov_delay_level = d["floor_recov_delay"]
+	recov_delay_cost = int(35 * pow(1.2, recov_delay_level))
+	$Base.recovery_delay = max(0.0, 3.0 - (recov_delay_level * 0.15))
+
+	heal_mult_level = d["floor_heal_mult"]
+	heal_mult_cost = int(60 * pow(1.25, heal_mult_level))
+	$Base.heal_multiplier += heal_mult_level * 0.1
+
+	# UTIL
+	gold_per_kill_level = d["floor_gold_per_kill"]
+	gold_per_kill_cost = int(20 * pow(1.2, gold_per_kill_level))
+
+	gold_mult_level = d["floor_gold_mult"]
+	gold_mult_cost = int(50 * pow(1.25, gold_mult_level))
+
+	legacy_per_wave_level = d["floor_legacy_per_wave"]
+	legacy_per_wave_cost = int(20 * pow(1.2, legacy_per_wave_level))
+
+	legacy_mult_level = d["floor_legacy_mult"]
+	legacy_mult_cost = int(50 * pow(1.25, legacy_mult_level))
+
+	legacy_drop_level = d["floor_legacy_drop"]
+	legacy_drop_cost = int(40 * pow(1.3, legacy_drop_level))
 
 func _process(delta):
 	if game_over:
@@ -201,6 +285,10 @@ func trigger_game_over():
 	game_over = true
 	$UI/GameOverScreen.visible = true
 	$UI/GameOverScreen/PhaseLabel.text = "Phase Reached: " + str(phase)
+	SaveManager.data["legacy_points"] += legacy_points
+	if phase > SaveManager.data["best_phase"]:
+		SaveManager.data["best_phase"] = phase
+	SaveManager.save_game()
 	get_tree().paused = true
 
 func _on_restart_button_pressed():
@@ -464,3 +552,27 @@ func _random_edge_position() -> Vector2:
 		2: return Vector2(-20, randf_range(0, 1280))
 		3: return Vector2(740, randf_range(0, 1280))
 	return Vector2.ZERO
+
+
+# ── Pause ─────────────────────────────────────
+func _on_pause_button_pressed():
+	get_tree().paused = true
+	$UI/PauseScreen.visible = true
+
+func _on_resume_button_pressed():
+	get_tree().paused = false
+	$UI/PauseScreen.visible = false
+
+func _on_pause_restart_button_pressed():
+	get_tree().paused = false
+	await get_tree().process_frame
+	get_tree().reload_current_scene()
+
+func _on_pause_menu_button_pressed():
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")
+
+# ── Game Over extra button ─────────────────────
+func _on_menu_button_pressed():
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")

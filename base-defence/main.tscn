@@ -71,6 +71,15 @@ offset_right = 435.0
 offset_bottom = 700.0
 text = "Run Again"
 
+[node name="MenuButton" type="Button" parent="UI/GameOverScreen" unique_id=835057921]
+process_mode = 3
+layout_mode = 0
+offset_left = 285.0
+offset_top = 720.0
+offset_right = 435.0
+offset_bottom = 770.0
+text = "MAIN MENU"
+
 [node name="UpgradePanel" type="Control" parent="UI" unique_id=2095261955]
 layout_mode = 3
 anchors_preset = 12
@@ -219,9 +228,59 @@ text = "LP MULT"
 layout_mode = 2
 text = "LP CHANCE"
 
+[node name="PauseButton" type="Button" parent="UI" unique_id=1040772999]
+offset_left = 650.0
+offset_top = 20.0
+offset_right = 700.0
+offset_bottom = 70.0
+text = " ⏸"
+
+[node name="PauseScreen" type="ColorRect" parent="UI" unique_id=23037150]
+process_mode = 3
+visible = false
+offset_right = 720.0
+offset_bottom = 1280.0
+color = Color(0, 0, 0, 0.003921569)
+
+[node name="PauseLabel" type="Label" parent="UI/PauseScreen" unique_id=248810584]
+layout_mode = 0
+offset_left = 290.0
+offset_top = 400.0
+offset_right = 356.0
+offset_bottom = 423.0
+text = "PAUSED "
+
+[node name="ResumeButton" type="Button" parent="UI/PauseScreen" unique_id=493426277]
+process_mode = 3
+layout_mode = 0
+offset_left = 285.0
+offset_top = 500.0
+offset_right = 435.0
+offset_bottom = 550.0
+text = "RESUME"
+
+[node name="PauseRestartButton" type="Button" parent="UI/PauseScreen" unique_id=743257159]
+process_mode = 3
+layout_mode = 0
+offset_left = 285.0
+offset_top = 570.0
+offset_right = 435.0
+offset_bottom = 620.0
+text = "RESTART"
+
+[node name="PauseMenuButton" type="Button" parent="UI/PauseScreen" unique_id=1543768184]
+process_mode = 3
+layout_mode = 0
+offset_left = 285.0
+offset_top = 640.0
+offset_right = 435.0
+offset_bottom = 690.0
+text = "MAIN MENU"
+
 [node name="DamageLayer" type="CanvasLayer" parent="." unique_id=1848438676]
 
 [connection signal="pressed" from="UI/GameOverScreen/RestartButton" to="." method="_on_restart_button_pressed"]
+[connection signal="pressed" from="UI/GameOverScreen/MenuButton" to="." method="_on_menu_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/PanelHandle" to="." method="_on_panel_handle_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton" to="." method="_on_atk_spd_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgButton" to="." method="_on_dmg_button_pressed"]
@@ -243,3 +302,8 @@ text = "LP CHANCE"
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyPerWaveButton" to="." method="_on_legacy_per_wave_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyMultButton" to="." method="_on_legacy_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyDropButton" to="." method="_on_legacy_drop_button_pressed"]
+[connection signal="pressed" from="UI/PauseButton" to="." method="_on_pause_button_pressed"]
+[connection signal="pressed" from="UI/PauseScreen/ResumeButton" to="." method="_on_resume_button_pressed"]
+[connection signal="pressed" from="UI/PauseScreen/PauseRestartButton" to="." method="_on_pause_restart_button_pressed"]
+[connection signal="pressed" from="UI/PauseScreen/PauseRestartButton" to="." method="_on_button_pause_restart_button_pressed"]
+[connection signal="pressed" from="UI/PauseScreen/PauseMenuButton" to="." method="_on_pause_menu_button_pressed"]
