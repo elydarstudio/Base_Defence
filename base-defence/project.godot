@@ -11,9 +11,13 @@ config_version=5
 [application]
 
 config/name="Base_Defence"
-run/main_scene="uid://bvft4b8tbtx0d"
+run/main_scene="uid://b1wm0cij1dasv"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+SaveManager="*uid://fp6mm7orsoog"
 
 [display]
 
