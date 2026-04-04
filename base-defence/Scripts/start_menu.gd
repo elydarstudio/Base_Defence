@@ -44,3 +44,14 @@ func _on_phase_select_button_pressed():
 
 func _on_work_shop_button_pressed() -> void:
 	pass # Replace with function body.
+
+
+func _on_debug_reset_button_pressed():
+	SaveManager.reset_save()
+	_update_ui()
+
+func _on_debug_unlock_button_pressed():
+	SaveManager.data["unlock_level"] = 3
+	SaveManager.data["legacy_points"] = 9999
+	SaveManager.save_game()
+	_update_ui()
