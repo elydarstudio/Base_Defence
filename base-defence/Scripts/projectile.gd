@@ -6,6 +6,7 @@ var damage: float = 10.0
 var lifetime: float = 2.0
 var target: Node2D = null
 var base: Node2D = null
+var is_crit: bool = false
 
 func _ready():
 	var poly = $Visual
@@ -13,19 +14,19 @@ func _ready():
 		Vector2(-4, -4), Vector2(4, -4),
 		Vector2(4, 4), Vector2(-4, 4)
 	])
-	poly.color = Color(1.0, 0.9, 0.2)
+	poly.color = Color(1.0, 0.4, 0.0) if is_crit else Color(1.0, 0.9, 0.2)
 	area_entered.connect(_on_area_entered)
 
-func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D):
+func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D, crit: bool = false):
 	direction = dir
 	speed = spd
 	damage = dmg
 	target = tgt
 	base = b
+	is_crit = crit
 
 func _process(delta):
 	if is_instance_valid(target):
-		# Lock onto original target, never switch
 		direction = global_position.direction_to(target.global_position)
 	position += direction * speed * delta
 	lifetime -= delta

@@ -20,73 +20,226 @@ shape = SubResource("CircleShape2D_0xm2m")
 [node name="UI" type="CanvasLayer" parent="." unique_id=1795136296]
 
 [node name="CurrencyLabel" type="Label" parent="UI" unique_id=1922688952]
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 64.0
-offset_bottom = 33.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 74.0
+offset_bottom = 43.0
 text = "Gold: 0"
 
-[node name="UpgradeButton" type="Button" parent="UI" unique_id=265391627]
-offset_left = 10.0
-offset_top = 40.0
-offset_right = 210.0
-offset_bottom = 80.0
-text = "Attack Speed - 25g"
-
 [node name="WaveLabel" type="Label" parent="UI" unique_id=1398830171]
-offset_left = 10.0
-offset_top = 85.0
-offset_right = 70.0
-offset_bottom = 108.0
+offset_left = 20.0
+offset_top = 50.0
+offset_right = 80.0
+offset_bottom = 73.0
 text = "Wave: 1"
 
 [node name="BaseHealthLabel" type="Label" parent="UI" unique_id=1943597403]
-offset_left = 10.0
-offset_top = 110.0
-offset_right = 68.0
-offset_bottom = 133.0
+offset_left = 20.0
+offset_top = 80.0
+offset_right = 78.0
+offset_bottom = 103.0
 text = "HP: 100"
 
 [node name="GameOverScreen" type="ColorRect" parent="UI" unique_id=1276885533]
 process_mode = 3
 visible = false
-offset_right = 480.0
-offset_bottom = 854.0
+offset_right = 720.0
+offset_bottom = 1280.0
 color = Color(0, 0, 0, 0.003921569)
 
 [node name="GameOverLabel" type="Label" parent="UI/GameOverScreen" unique_id=902884280]
 layout_mode = 0
-offset_left = 140.0
-offset_top = 300.0
-offset_right = 232.0
-offset_bottom = 323.0
+offset_left = 260.0
+offset_top = 500.0
+offset_right = 352.0
+offset_bottom = 523.0
 text = "GAME OVER"
 
 [node name="PhaseLabel" type="Label" parent="UI/GameOverScreen" unique_id=1105267217]
 layout_mode = 0
-offset_left = 160.0
-offset_top = 360.0
-offset_right = 225.0
-offset_bottom = 383.0
+offset_left = 280.0
+offset_top = 570.0
+offset_right = 345.0
+offset_bottom = 593.0
 text = "Phase: 1"
 
 [node name="RestartButton" type="Button" parent="UI/GameOverScreen" unique_id=1824560948]
 layout_mode = 0
-offset_left = 165.0
-offset_top = 430.0
-offset_right = 315.0
-offset_bottom = 480.0
+offset_left = 285.0
+offset_top = 650.0
+offset_right = 435.0
+offset_bottom = 700.0
 text = "Run Again"
 
-[node name="DamageButton" type="Button" parent="UI" unique_id=1447072445]
-offset_left = 10.0
-offset_top = 90.0
-offset_right = 210.0
-offset_bottom = 130.0
-text = "Damage Lv1 - 30g"
+[node name="UpgradePanel" type="Control" parent="UI" unique_id=2095261955]
+layout_mode = 3
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="PanelBG" type="ColorRect" parent="UI/UpgradePanel" unique_id=868860039]
+layout_mode = 0
+offset_right = 720.0
+offset_bottom = 400.0
+color = Color(0, 0, 0, 0.003921569)
+
+[node name="PanelHandle" type="Button" parent="UI/UpgradePanel" unique_id=1675845417]
+layout_mode = 0
+offset_left = 260.0
+offset_top = -40.0
+offset_right = 460.0
+text = "▲ UPGRADES"
+
+[node name="ColumnsContainer" type="HBoxContainer" parent="UI/UpgradePanel" unique_id=18871581]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 5.0
+offset_right = 715.0
+offset_bottom = 395.0
+
+[node name="ATKColumn" type="VBoxContainer" parent="UI/UpgradePanel/ColumnsContainer" unique_id=531521704]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+
+[node name="ATKHeader" type="Label" parent="UI/UpgradePanel/ColumnsContainer/ATKColumn" unique_id=646982421]
+layout_mode = 2
+text = "⚔ ATK"
+
+[node name="ATKSpdButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/ATKColumn" unique_id=765284130]
+layout_mode = 2
+text = "ATK SPD"
+
+[node name="DmgButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/ATKColumn" unique_id=967168043]
+layout_mode = 2
+text = "DMG"
+
+[node name="DmgMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/ATKColumn" unique_id=857109960]
+layout_mode = 2
+text = "DMG MULT
+"
+
+[node name="CritChanceButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/ATKColumn" unique_id=98424720]
+layout_mode = 2
+text = "CRIT %"
+
+[node name="CritDmgButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/ATKColumn" unique_id=925916963]
+layout_mode = 2
+text = "CRIT DMG
+"
+
+[node name="DEFColumn" type="VBoxContainer" parent="UI/UpgradePanel/ColumnsContainer" unique_id=1057792319]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+
+[node name="DEFHeader" type="Label" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1881426428]
+layout_mode = 2
+text = "🛡 DEF"
+
+[node name="ShieldButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1466170948]
+layout_mode = 2
+text = "SHIELD
+"
+
+[node name="ShieldRegenButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=820873393]
+layout_mode = 2
+text = "SHLD RGN"
+
+[node name="DmgReductButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1410586163]
+layout_mode = 2
+text = "DMG REDUCT
+"
+
+[node name="KnockbackFreqButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1595398467]
+layout_mode = 2
+text = "KB FREQ"
+
+[node name="KnockbackStrButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=220049738]
+layout_mode = 2
+text = "KB STR
+"
+
+[node name="HPColumn" type="VBoxContainer" parent="UI/UpgradePanel/ColumnsContainer" unique_id=27764103]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+
+[node name="HPHeader" type="Label" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1137413185]
+layout_mode = 2
+text = " ❤ HP"
+
+[node name="MaxHPButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=2106862756]
+layout_mode = 2
+text = "MAX HP"
+
+[node name="RegenAmtButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1872987175]
+layout_mode = 2
+text = "REGEN AMT"
+
+[node name="RegenSpdButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1551357618]
+layout_mode = 2
+text = "REGEN SPD
+"
+
+[node name="RecovDelayButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=110742347]
+layout_mode = 2
+text = "RECOV DLY"
+
+[node name="HealMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1091774583]
+layout_mode = 2
+text = "HEAL MULT"
+
+[node name="UTILColumn" type="VBoxContainer" parent="UI/UpgradePanel/ColumnsContainer" unique_id=1483226718]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+
+[node name="UTILHeader" type="Label" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=1035429353]
+layout_mode = 2
+text = "💰 UTIL"
+
+[node name="GoldPerKillButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=646222386]
+layout_mode = 2
+text = "GOLD/KILL"
+
+[node name="GoldMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=416462126]
+layout_mode = 2
+text = "GOLD MULT"
+
+[node name="LegacyPerWaveButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=1700874118]
+layout_mode = 2
+text = "LP/WAVE
+"
+
+[node name="LegacyMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=247809738]
+layout_mode = 2
+text = "LP MULT"
+
+[node name="LegacyDropButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=2048114754]
+layout_mode = 2
+text = "LP CHANCE"
 
 [node name="DamageLayer" type="CanvasLayer" parent="." unique_id=1848438676]
 
-[connection signal="pressed" from="UI/UpgradeButton" to="." method="_on_upgrade_button_pressed"]
 [connection signal="pressed" from="UI/GameOverScreen/RestartButton" to="." method="_on_restart_button_pressed"]
-[connection signal="pressed" from="UI/DamageButton" to="." method="_on_damage_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/PanelHandle" to="." method="_on_panel_handle_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton" to="." method="_on_atk_spd_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgButton" to="." method="_on_dmg_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgMultButton" to="." method="_on_dmg_mult_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/CritChanceButton" to="." method="_on_crit_chance_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/CritDmgButton" to="." method="_on_crit_dmg_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton" to="." method="_on_shield_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldRegenButton" to="." method="_on_shield_regen_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/DmgReductButton" to="." method="_on_dmg_reduc_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/KnockbackFreqButton" to="." method="_on_knockback_freq_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/KnockbackStrButton" to="." method="_on_knockback_str_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/MaxHPButton" to="." method="_on_max_hp_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/RegenAmtButton" to="." method="_on_regen_amt_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/RegenSpdButton" to="." method="_on_regen_spd_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/RecovDelayButton" to="." method="_on_recov_delay_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/HealMultButton" to="." method="_on_heal_mult_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldPerKillButton" to="." method="_on_gold_per_kill_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldMultButton" to="." method="_on_gold_mult_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyPerWaveButton" to="." method="_on_legacy_per_wave_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyMultButton" to="." method="_on_legacy_mult_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyDropButton" to="." method="_on_legacy_drop_button_pressed"]

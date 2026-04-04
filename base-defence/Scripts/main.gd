@@ -5,28 +5,111 @@ var enemy_scene: PackedScene
 var boss_scene: PackedScene
 var damage_number_scene: PackedScene
 
+# Spawn
 var spawn_timer: float = 0.0
-var spawn_interval: float = 1.5
-var currency: int = 0
-
-var attack_speed_level: int = 0
-var attack_speed_cost: int = 25
-var attack_speed_max: int = 10
-var damage_level: int = 0
-var damage_cost: int = 30
-var damage_max: int = 10
-
-var wave: int = 1
+var spawn_interval: float = 1.8
 var wave_timer: float = 0.0
-var wave_duration: float = 20.0  # seconds per wave
-var enemies_killed: int = 0
-var enemies_needed: int = 10
+var wave_duration: float = 20.0
+
+# Progress
+var wave: int = 1
 var phase: int = 1
+var difficulty: int = 0
+var enemies_killed: int = 0
 var game_over: bool = false
 var boss_wave: bool = false
 var boss_alive: bool = false
 
-var difficulty: int = 0
+# Economy
+var currency: int = 0
+var legacy_points: int = 0
+
+# UI state
+var panel_open: bool = false
+
+# ── ATK stats ─────────────────────────────────
+var attack_speed_level: int = 0
+var attack_speed_cost: int = 25
+var attack_speed_max: int = 40
+
+var damage_level: int = 0
+var damage_cost: int = 30
+var damage_max: int = 90
+
+var dmg_mult_level: int = 0
+var dmg_mult_cost: int = 60
+var dmg_mult_max: int = 999
+
+var crit_chance_level: int = 0
+var crit_chance_cost: int = 40
+var crit_chance_max: int = 16 # 16 * 5% = 80%
+
+var crit_dmg_level: int = 0
+var crit_dmg_cost: int = 60
+var crit_dmg_max: int = 999
+
+# ── DEF stats ─────────────────────────────────
+var shield_level: int = 0
+var shield_cost: int = 35
+var shield_max: int = 40
+
+var shield_regen_level: int = 0
+var shield_regen_cost: int = 50
+var shield_regen_max: int = 999
+
+var dmg_reduct_level: int = 0
+var dmg_reduct_cost: int = 45
+var dmg_reduct_max: int = 10 # 10 * 2% = 20% max reduction
+
+var kb_freq_level: int = 0
+var kb_freq_cost: int = 40
+var kb_freq_max: int = 20
+
+var kb_str_level: int = 0
+var kb_str_cost: int = 40
+var kb_str_max: int = 20
+
+# ── HP stats ──────────────────────────────────
+var max_hp_level: int = 0
+var max_hp_cost: int = 35
+var max_hp_max: int = 40
+
+var regen_amt_level: int = 0
+var regen_amt_cost: int = 40
+var regen_amt_max: int = 999
+
+var regen_spd_level: int = 0
+var regen_spd_cost: int = 40
+var regen_spd_max: int = 40
+
+var recov_delay_level: int = 0
+var recov_delay_cost: int = 35
+var recov_delay_max: int = 20
+
+var heal_mult_level: int = 0
+var heal_mult_cost: int = 60
+var heal_mult_max: int = 999
+
+# ── UTIL stats ────────────────────────────────
+var gold_per_kill_level: int = 0
+var gold_per_kill_cost: int = 20
+var gold_per_kill_max: int = 40
+
+var gold_mult_level: int = 0
+var gold_mult_cost: int = 50
+var gold_mult_max: int = 999
+
+var legacy_per_wave_level: int = 0
+var legacy_per_wave_cost: int = 20
+var legacy_per_wave_max: int = 40
+
+var legacy_mult_level: int = 0
+var legacy_mult_cost: int = 50
+var legacy_mult_max: int = 999
+
+var legacy_drop_level: int = 0
+var legacy_drop_cost: int = 40
+var legacy_drop_max: int = 8 # 8 * 5% = 40% max
 
 func _ready():
 	bullet_scene = preload("res://Scenes/Projectile.tscn")
@@ -38,16 +121,16 @@ func _ready():
 	_update_ui()
 
 func _process(delta):
-	if game_over or boss_wave:
+	if game_over:
+		return
+	if boss_wave:
 		return
 	wave_timer += delta
 	spawn_timer += delta
-	
-	var current_spawn_interval = max(0.3, spawn_interval - (difficulty * 0.05))
+	var current_spawn_interval = max(0.4, spawn_interval - (difficulty * 0.03))
 	if spawn_timer >= current_spawn_interval:
 		spawn_timer = 0.0
 		_spawn_enemy()
-	
 	if wave_timer >= wave_duration:
 		wave_timer = 0.0
 		_advance_wave()
@@ -66,41 +149,53 @@ func _spawn_boss():
 	add_child(b)
 	b.setup($Base, self)
 	b.scale_to_phase(difficulty)
-	b.global_position = Vector2(240, -40)
+	b.global_position = Vector2(360, -40)
 	$UI/WaveLabel.text = "⚠ BOSS WAVE ⚠ | Phase: " + str(phase)
-	
-func spawn_damage_number(amount: float, pos: Vector2):
-	var dn = damage_number_scene.instantiate()
-	$DamageLayer.add_child(dn)
-	dn.setup(amount, pos)
 
-func on_boss_killed():
-	boss_alive = false
-	boss_wave = false
-	wave = 1
-	phase += 1
-	difficulty += 3
-	spawn_interval = max(0.5, 1.8 - (difficulty * 0.03))
-	enemies_killed = 0
-	_update_ui()
-	
-func add_currency(amount: int):
-	currency += amount
-	if not boss_wave:
-		enemies_killed += 1
-	_update_ui()
-	
 func _advance_wave():
 	wave += 1
 	difficulty += 1
-	spawn_interval = max(0.5, 1.8 - (difficulty * 0.03))
+	spawn_interval = max(0.4, 1.8 - (difficulty * 0.03))
+	# Legacy per wave
+	var lp_earned = 1 + legacy_per_wave_level
+	var lp_total = int(lp_earned * (1.0 + (legacy_mult_level * 0.1)))
+	legacy_points += lp_total
 	if wave % 10 == 0:
 		_spawn_boss()
 	else:
 		_update_ui()
 
-func update_health_ui(hp: float):
-	$UI/BaseHealthLabel.text = "HP: " + str(int(hp))
+func on_boss_killed():
+	boss_alive = false
+	boss_wave = false
+	wave += 1
+	phase += 1
+	difficulty += 3
+	spawn_interval = max(0.4, 1.8 - (difficulty * 0.03))
+	enemies_killed = 0
+	_update_ui()
+
+func add_currency(amount: int):
+	var total = amount + (gold_per_kill_level * 2)
+	var multiplied = int(total * (1.0 + (gold_mult_level * 0.1)))
+	currency += multiplied
+	enemies_killed += 1
+	# Legacy drop chance
+	var drop_chance = legacy_drop_level * 0.05
+	if randf() < drop_chance:
+		legacy_points += 1
+	_update_ui()
+
+func spawn_damage_number(amount: float, pos: Vector2):
+	var dn = damage_number_scene.instantiate()
+	$DamageLayer.add_child(dn)
+	dn.setup(amount, pos)
+
+func update_health_ui(hp: float, shield: float = 0.0):
+	var text = "HP: " + str(int(hp))
+	if shield > 0:
+		text += "  |  Shield: " + str(int(shield))
+	$UI/BaseHealthLabel.text = text
 
 func trigger_game_over():
 	game_over = true
@@ -112,44 +207,253 @@ func _on_restart_button_pressed():
 	get_tree().paused = false
 	get_tree().reload_current_scene()
 
+# ── Panel toggle ──────────────────────────────
+func _on_panel_handle_pressed():
+	panel_open = !panel_open
+	var target_y = 1280 - 400 if panel_open else 1280
+	var panel = $UI/UpgradePanel
+	var tween = create_tween()
+	tween.tween_property(panel, "position:y", target_y, 0.2)
+	$UI/UpgradePanel/PanelHandle.text = "▼ UPGRADES" if panel_open else "▲ UPGRADES"
+
+# ── UI update ─────────────────────────────────
 func _update_ui():
-	$UI/CurrencyLabel.text = "Gold: " + str(currency)
+	$UI/CurrencyLabel.text = "Gold: " + str(currency) + "  |  LP: " + str(legacy_points)
 	$UI/WaveLabel.text = "Wave: " + str(wave) + " | Phase: " + str(phase)
-	var btn = $UI/UpgradeButton
-	if attack_speed_level >= attack_speed_max:
-		btn.text = "Attack Speed - MAXED"
+
+	# ATK
+	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton,
+		"ATK SPD", attack_speed_level, attack_speed_max, attack_speed_cost,
+		str(snappedf(1.0 + (attack_speed_level * 0.15), 0.01)) + "/s")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgButton,
+		"DMG", damage_level, damage_max, damage_cost,
+		str(10 + damage_level))
+	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgMultButton,
+		"DMG MULT", dmg_mult_level, dmg_mult_max, dmg_mult_cost,
+		"+" + str(dmg_mult_level * 10) + "%")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/CritChanceButton,
+		"CRIT %", crit_chance_level, crit_chance_max, crit_chance_cost,
+		str(crit_chance_level * 5) + "%")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/CritDmgButton,
+		"CRIT DMG", crit_dmg_level, crit_dmg_max, crit_dmg_cost,
+		"+" + str(crit_dmg_level * 25) + "%")
+
+	# DEF
+	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton,
+		"SHIELD", shield_level, shield_max, shield_cost,
+		str(shield_level * 20))
+	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldRegenButton,
+		"SHLD RGN", shield_regen_level, shield_regen_max, shield_regen_cost,
+		str(shield_regen_level) + "/s")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/DmgReductButton,
+		"DMG REDUCT", dmg_reduct_level, dmg_reduct_max, dmg_reduct_cost,
+		str(dmg_reduct_level * 2) + "%")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/KnockbackFreqButton,
+		"KB FREQ", kb_freq_level, kb_freq_max, kb_freq_cost,
+		str(kb_freq_level))
+	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/KnockbackStrButton,
+		"KB STR", kb_str_level, kb_str_max, kb_str_cost,
+		str(kb_str_level))
+
+	# HP
+	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/MaxHPButton,
+		"MAX HP", max_hp_level, max_hp_max, max_hp_cost,
+		str(100 + (max_hp_level * 20)))
+	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/RegenAmtButton,
+		"REGEN AMT", regen_amt_level, regen_amt_max, regen_amt_cost,
+		str(regen_amt_level) + " hp")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/RegenSpdButton,
+		"REGEN SPD", regen_spd_level, regen_spd_max, regen_spd_cost,
+		str(max(1.0, 5.0 - (regen_spd_level * 0.1))) + "s")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/RecovDelayButton,
+		"RECOV DLY", recov_delay_level, recov_delay_max, recov_delay_cost,
+		str(max(0.0, 3.0 - (recov_delay_level * 0.15))) + "s")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/HealMultButton,
+		"HEAL MULT", heal_mult_level, heal_mult_max, heal_mult_cost,
+		"+" + str(heal_mult_level * 10) + "%")
+
+	# UTIL
+	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldPerKillButton,
+		"GOLD/KILL", gold_per_kill_level, gold_per_kill_max, gold_per_kill_cost,
+		"+" + str(gold_per_kill_level * 2) + "g")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldMultButton,
+		"GOLD MULT", gold_mult_level, gold_mult_max, gold_mult_cost,
+		"+" + str(gold_mult_level * 10) + "%")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyPerWaveButton,
+		"LP/WAVE", legacy_per_wave_level, legacy_per_wave_max, legacy_per_wave_cost,
+		"+" + str(legacy_per_wave_level))
+	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyMultButton,
+		"LP MULT", legacy_mult_level, legacy_mult_max, legacy_mult_cost,
+		"+" + str(legacy_mult_level * 10) + "%")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyDropButton,
+		"LP CHANCE", legacy_drop_level, legacy_drop_max, legacy_drop_cost,
+		str(legacy_drop_level * 5) + "%")
+
+func _update_btn(btn: Button, label: String, level: int, max_level: int, cost: int, stat: String):
+	if level >= max_level:
+		btn.text = label + "\nMAX (" + stat + ")"
 		btn.disabled = true
 	else:
-		btn.text = "Attack Speed Lv" + str(attack_speed_level + 1) + " - " + str(attack_speed_cost) + "g"
-		btn.disabled = currency < attack_speed_cost
-	var dbtn = $UI/DamageButton
-	if damage_level >= damage_max:
-		dbtn.text = "Base Damage - MAXED"
-		dbtn.disabled = true
-	else:
-		dbtn.text = "Damage Lv" + str(damage_level + 1) + " - " + str(damage_cost) + "g"
-		dbtn.disabled = currency < damage_cost
+		btn.text = label + "\nLv" + str(level + 1) + " - " + str(cost) + "g\n" + stat
+		btn.disabled = currency < cost
 
-func _on_upgrade_button_pressed():
-	if currency < attack_speed_cost:
-		return
-	if attack_speed_level >= attack_speed_max:
-		return
+# ── ATK handlers ──────────────────────────────
+func _on_atk_spd_button_pressed():
+	if currency < attack_speed_cost or attack_speed_level >= attack_speed_max: return
 	currency -= attack_speed_cost
 	attack_speed_level += 1
-	attack_speed_cost = int(attack_speed_cost * 1.4)
-	$Base.fire_rate += 0.5
+	attack_speed_cost = int(attack_speed_cost * 1.2)
+	$Base.fire_rate += 0.15
 	_update_ui()
 
-func _on_damage_button_pressed():
-	if currency < damage_cost:
-		return
-	if damage_level >= damage_max:
-		return
+func _on_dmg_button_pressed():
+	if currency < damage_cost or damage_level >= damage_max: return
 	currency -= damage_cost
 	damage_level += 1
-	damage_cost = int(damage_cost * 1.3)
+	damage_cost = int(damage_cost * 1.15)
 	$Base.bullet_damage += 1.0
+	_update_ui()
+
+func _on_dmg_mult_button_pressed():
+	if currency < dmg_mult_cost or dmg_mult_level >= dmg_mult_max: return
+	currency -= dmg_mult_cost
+	dmg_mult_level += 1
+	dmg_mult_cost = int(dmg_mult_cost * 1.25)
+	$Base.damage_multiplier += 0.1
+	_update_ui()
+
+func _on_crit_chance_button_pressed():
+	if currency < crit_chance_cost or crit_chance_level >= crit_chance_max: return
+	currency -= crit_chance_cost
+	crit_chance_level += 1
+	crit_chance_cost = int(crit_chance_cost * 1.3)
+	$Base.crit_chance += 0.05
+	_update_ui()
+
+func _on_crit_dmg_button_pressed():
+	if currency < crit_dmg_cost or crit_dmg_level >= crit_dmg_max: return
+	currency -= crit_dmg_cost
+	crit_dmg_level += 1
+	crit_dmg_cost = int(crit_dmg_cost * 1.25)
+	$Base.crit_damage += 0.25
+	_update_ui()
+
+# ── DEF handlers ──────────────────────────────
+func _on_shield_button_pressed():
+	if currency < shield_cost or shield_level >= shield_max: return
+	currency -= shield_cost
+	shield_level += 1
+	shield_cost = int(shield_cost * 1.2)
+	$Base.add_shield(20.0)
+	_update_ui()
+
+func _on_shield_regen_button_pressed():
+	if currency < shield_regen_cost or shield_regen_level >= shield_regen_max: return
+	currency -= shield_regen_cost
+	shield_regen_level += 1
+	shield_regen_cost = int(shield_regen_cost * 1.25)
+	$Base.shield_regen += 1.0
+	_update_ui()
+
+func _on_dmg_reduct_button_pressed():
+	if currency < dmg_reduct_cost or dmg_reduct_level >= dmg_reduct_max: return
+	currency -= dmg_reduct_cost
+	dmg_reduct_level += 1
+	dmg_reduct_cost = int(dmg_reduct_cost * 1.2)
+	$Base.damage_reduction += 0.02
+	_update_ui()
+
+func _on_knockback_freq_button_pressed():
+	if currency < kb_freq_cost or kb_freq_level >= kb_freq_max: return
+	currency -= kb_freq_cost
+	kb_freq_level += 1
+	kb_freq_cost = int(kb_freq_cost * 1.2)
+	$Base.knockback_freq = max(0.5, 5.0 - (kb_freq_level * 0.2))
+	_update_ui()
+
+func _on_knockback_str_button_pressed():
+	if currency < kb_str_cost or kb_str_level >= kb_str_max: return
+	currency -= kb_str_cost
+	kb_str_level += 1
+	kb_str_cost = int(kb_str_cost * 1.2)
+	$Base.knockback_strength += 20.0
+	_update_ui()
+
+# ── HP handlers ───────────────────────────────
+func _on_max_hp_button_pressed():
+	if currency < max_hp_cost or max_hp_level >= max_hp_max: return
+	currency -= max_hp_cost
+	max_hp_level += 1
+	max_hp_cost = int(max_hp_cost * 1.2)
+	$Base.increase_max_health(20.0)
+	_update_ui()
+
+func _on_regen_amt_button_pressed():
+	if currency < regen_amt_cost or regen_amt_level >= regen_amt_max: return
+	currency -= regen_amt_cost
+	regen_amt_level += 1
+	regen_amt_cost = int(regen_amt_cost * 1.25)
+	$Base.hp_regen += 1.0
+	_update_ui()
+
+func _on_regen_spd_button_pressed():
+	if currency < regen_spd_cost or regen_spd_level >= regen_spd_max: return
+	currency -= regen_spd_cost
+	regen_spd_level += 1
+	regen_spd_cost = int(regen_spd_cost * 1.2)
+	$Base.regen_interval = max(1.0, 5.0 - (regen_spd_level * 0.1))
+	_update_ui()
+
+func _on_recov_delay_button_pressed():
+	if currency < recov_delay_cost or recov_delay_level >= recov_delay_max: return
+	currency -= recov_delay_cost
+	recov_delay_level += 1
+	recov_delay_cost = int(recov_delay_cost * 1.2)
+	$Base.recovery_delay = max(0.0, 3.0 - (recov_delay_level * 0.15))
+	_update_ui()
+
+func _on_heal_mult_button_pressed():
+	if currency < heal_mult_cost or heal_mult_level >= heal_mult_max: return
+	currency -= heal_mult_cost
+	heal_mult_level += 1
+	heal_mult_cost = int(heal_mult_cost * 1.25)
+	$Base.heal_multiplier += 0.1
+	_update_ui()
+
+# ── UTIL handlers ─────────────────────────────
+func _on_gold_per_kill_button_pressed():
+	if currency < gold_per_kill_cost or gold_per_kill_level >= gold_per_kill_max: return
+	currency -= gold_per_kill_cost
+	gold_per_kill_level += 1
+	gold_per_kill_cost = int(gold_per_kill_cost * 1.2)
+	_update_ui()
+
+func _on_gold_mult_button_pressed():
+	if currency < gold_mult_cost or gold_mult_level >= gold_mult_max: return
+	currency -= gold_mult_cost
+	gold_mult_level += 1
+	gold_mult_cost = int(gold_mult_cost * 1.25)
+	_update_ui()
+
+func _on_legacy_per_wave_button_pressed():
+	if currency < legacy_per_wave_cost or legacy_per_wave_level >= legacy_per_wave_max: return
+	currency -= legacy_per_wave_cost
+	legacy_per_wave_level += 1
+	legacy_per_wave_cost = int(legacy_per_wave_cost * 1.2)
+	_update_ui()
+
+func _on_legacy_mult_button_pressed():
+	if currency < legacy_mult_cost or legacy_mult_level >= legacy_mult_max: return
+	currency -= legacy_mult_cost
+	legacy_mult_level += 1
+	legacy_mult_cost = int(legacy_mult_cost * 1.25)
+	_update_ui()
+
+func _on_legacy_drop_button_pressed():
+	if currency < legacy_drop_cost or legacy_drop_level >= legacy_drop_max: return
+	currency -= legacy_drop_cost
+	legacy_drop_level += 1
+	legacy_drop_cost = int(legacy_drop_cost * 1.3)
 	_update_ui()
 
 func _random_edge_position() -> Vector2:
