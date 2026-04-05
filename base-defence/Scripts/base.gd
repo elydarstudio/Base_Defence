@@ -158,6 +158,9 @@ func take_damage(amount: float):
 		var absorbed = min(shield, reduced)
 		shield -= absorbed
 		reduced -= absorbed
+		print("shield AFTER subtraction: ", shield)
+		print("take_damage: amount=", amount, " shield=", shield, " reduction=", damage_reduction)
+		print("damage_reduction value: ", damage_reduction)
 	if reduced > 0:
 		health -= reduced
 	if main_node != null:

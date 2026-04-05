@@ -57,45 +57,45 @@ Main (Node2D) — main.gd
 │   └── Visual (Polygon2D)
 ├── DamageLayer (CanvasLayer)
 └── UI (CanvasLayer)
-    ├── CurrencyLabel
-    ├── WaveLabel
-    ├── BaseHealthLabel
-    ├── GameOverScreen (ColorRect) [hidden by default]
-    │   ├── GameOverLabel
-    │   ├── PhaseLabel
-    │   └── RestartButton
-    └── UpgradePanel (Control) [slides up from bottom]
-        ├── PanelBG (ColorRect)
-        ├── PanelHandle (Button) → _on_panel_handle_pressed
-        └── ColumnsContainer (HBoxContainer)
-            ├── ATKColumn (VBoxContainer)
-            │   ├── ATKHeader (Label)
-            │   ├── ATKSpdButton → _on_atk_spd_button_pressed
-            │   ├── DmgButton → _on_dmg_button_pressed
-            │   ├── DmgMultButton → _on_dmg_mult_button_pressed
-            │   ├── CritChanceButton → _on_crit_chance_button_pressed
-            │   └── CritDmgButton → _on_crit_dmg_button_pressed
-            ├── DEFColumn (VBoxContainer)
-            │   ├── DEFHeader (Label)
-            │   ├── ShieldButton → _on_shield_button_pressed
-            │   ├── ShieldRegenButton → _on_shield_regen_button_pressed
-            │   ├── DmgReductButton → _on_dmg_reduct_button_pressed
-            │   ├── KnockbackFreqButton → _on_knockback_freq_button_pressed
-            │   └── KnockbackStrButton → _on_knockback_str_button_pressed
-            ├── HPColumn (VBoxContainer)
-            │   ├── HPHeader (Label)
-            │   ├── MaxHPButton → _on_max_hp_button_pressed
-            │   ├── RegenAmtButton → _on_regen_amt_button_pressed
-            │   ├── RegenSpdButton → _on_regen_spd_button_pressed
-            │   ├── RecovDelayButton → _on_recov_delay_button_pressed
-            │   └── HealMultButton → _on_heal_mult_button_pressed
-            └── UTILColumn (VBoxContainer)
-                ├── UTILHeader (Label)
-                ├── GoldPerKillButton → _on_gold_per_kill_button_pressed
-                ├── GoldMultButton → _on_gold_mult_button_pressed
-                ├── LegacyPerWaveButton → _on_legacy_per_wave_button_pressed
-                ├── LegacyMultButton → _on_legacy_mult_button_pressed
-                └── LegacyDropButton → _on_legacy_drop_button_pressed
+	├── CurrencyLabel
+	├── WaveLabel
+	├── BaseHealthLabel
+	├── GameOverScreen (ColorRect) [hidden by default]
+	│   ├── GameOverLabel
+	│   ├── PhaseLabel
+	│   └── RestartButton
+	└── UpgradePanel (Control) [slides up from bottom]
+		├── PanelBG (ColorRect)
+		├── PanelHandle (Button) → _on_panel_handle_pressed
+		└── ColumnsContainer (HBoxContainer)
+			├── ATKColumn (VBoxContainer)
+			│   ├── ATKHeader (Label)
+			│   ├── ATKSpdButton → _on_atk_spd_button_pressed
+			│   ├── DmgButton → _on_dmg_button_pressed
+			│   ├── DmgMultButton → _on_dmg_mult_button_pressed
+			│   ├── CritChanceButton → _on_crit_chance_button_pressed
+			│   └── CritDmgButton → _on_crit_dmg_button_pressed
+			├── DEFColumn (VBoxContainer)
+			│   ├── DEFHeader (Label)
+			│   ├── ShieldButton → _on_shield_button_pressed
+			│   ├── ShieldRegenButton → _on_shield_regen_button_pressed
+			│   ├── DmgReductButton → _on_dmg_reduct_button_pressed
+			│   ├── KnockbackFreqButton → _on_knockback_freq_button_pressed
+			│   └── KnockbackStrButton → _on_knockback_str_button_pressed
+			├── HPColumn (VBoxContainer)
+			│   ├── HPHeader (Label)
+			│   ├── MaxHPButton → _on_max_hp_button_pressed
+			│   ├── RegenAmtButton → _on_regen_amt_button_pressed
+			│   ├── RegenSpdButton → _on_regen_spd_button_pressed
+			│   ├── RecovDelayButton → _on_recov_delay_button_pressed
+			│   └── HealMultButton → _on_heal_mult_button_pressed
+			└── UTILColumn (VBoxContainer)
+				├── UTILHeader (Label)
+				├── GoldPerKillButton → _on_gold_per_kill_button_pressed
+				├── GoldMultButton → _on_gold_mult_button_pressed
+				├── LegacyPerWaveButton → _on_legacy_per_wave_button_pressed
+				├── LegacyMultButton → _on_legacy_mult_button_pressed
+				└── LegacyDropButton → _on_legacy_drop_button_pressed
 ```
 
 ---
@@ -207,6 +207,18 @@ DEF Tree: Thorns, Block chance, Shield spike, Damage reflection
 HP Tree: Overheal aura, Regen burst, Healing pulse
 
 ---
+
+
+Skill Progression (Kill-Based)
+
+Skill points (from phase bosses) unlock skills
+Once unlocked, skills level up automatically through enemy kills
+Kill count is tracked globally and persists between runs
+Skill levels only apply to unlocked skills — kills before unlock don't count retroactively
+Runs are never pointless — kills always contribute to something
+Tournament mode resets kill-based skill levels to base for fair competition
+Kill counter should be visible to player so progression feels real
+Scaling should be steep enough that casual players feel growth, veterans feel mastery
 
 ## Meta Progression Loop
 1. Run → die → earn LP based on phase reached

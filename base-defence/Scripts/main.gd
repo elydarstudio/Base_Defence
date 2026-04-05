@@ -136,6 +136,9 @@ const UNLOCK_REQUIREMENTS = {
 	"LegacyPerWaveButton": 3,
 	"LegacyMultButton": 3,
 	"LegacyDropButton": 3,
+	"DEFLocked": 999,
+	"HPLocked": 999,
+	"UTILLocked": 999,
 }
 
 func _ready():
@@ -152,6 +155,8 @@ func _ready():
 	
 func _apply_unlock_level():
 	var unlock = SaveManager.data["unlock_level"]
+	
+	# Hide/show individual stat buttons
 	var columns = ["ATKColumn", "DEFColumn", "HPColumn", "UTILColumn"]
 	for col in columns:
 		var col_node = $UI/UpgradePanel/ColumnsContainer.get_node(col)
@@ -159,6 +164,15 @@ func _apply_unlock_level():
 			if child is Button:
 				var required = UNLOCK_REQUIREMENTS.get(child.name, 3)
 				child.visible = unlock >= required
+
+	# Show/hide locked placeholders
+	var def_locked = $UI/UpgradePanel/ColumnsContainer/DEFColumn/DEFLocked
+	var hp_locked = $UI/UpgradePanel/ColumnsContainer/HPColumn/HPLocked
+	var util_locked = $UI/UpgradePanel/ColumnsContainer/UTILColumn/UTILLocked
+
+	def_locked.visible = unlock < 1
+	hp_locked.visible = unlock < 2
+	util_locked.visible = unlock < 2
 
 func _check_unlock_progression():
 	var unlock = SaveManager.data["unlock_level"]
@@ -181,9 +195,8 @@ func _apply_workshop_floors():
 	dmg_mult_level = d["floor_dmg_mult"]
 	$Base.damage_multiplier += dmg_mult_level * 0.1
 	crit_chance_level = d["floor_crit_chance"]
-	$Base.crit_chance += crit_chance_level * 0.05
-	crit_dmg_level = d["floor_crit_dmg"]
-	$Base.crit_damage += crit_dmg_level * 0.25
+	$Base.crit_chance += crit_chance_level * 0.0125
+	$Base.crit_damage += crit_chance_level * 0.10
 	# DEF
 	shield_level = d["floor_shield"]
 	$Base.add_shield(shield_level * 20.0)
@@ -193,9 +206,9 @@ func _apply_workshop_floors():
 	$Base.damage_reduction += dmg_reduct_level * 0.02
 	kb_freq_level = d["floor_kb_freq"]
 	if kb_freq_level > 0:
-		$Base.knockback_freq = max(0.5, 5.0 - (kb_freq_level * 0.2))
+		$Base.knockback_freq = max(0.5, 5.0 - (kb_freq_level * 0.1))
 	kb_str_level = d["floor_kb_str"]
-	$Base.knockback_strength += kb_str_level * 20.0
+	$Base.knockback_strength += kb_str_level * 10.0
 	# HP
 	max_hp_level = d["floor_max_hp"]
 	$Base.increase_max_health(max_hp_level * 20.0)
@@ -276,7 +289,7 @@ func on_boss_killed():
 	_update_ui()
 
 func add_currency(amount: int):
-	var total = amount + (gold_per_kill_level * 2)
+	var total = amount + gold_per_kill_level
 	var multiplied = int(total * (1.0 + (gold_mult_level * 0.1)))
 	currency += multiplied
 	enemies_killed += 1
@@ -294,7 +307,7 @@ func spawn_damage_number(amount: float, pos: Vector2):
 	dn.setup(amount, pos)
 
 func update_health_ui(hp: float, shield: float = 0.0):
-	var text = "HP: " + str(int(hp))
+	var text = "HP: " + str(max(0, int(hp)))
 	if shield > 0:
 		text += "  |  Shield: " + str(int(shield))
 	$UI/BaseHealthLabel.text = text
@@ -339,10 +352,10 @@ func _update_ui():
 		"+" + str(dmg_mult_level * 10) + "%")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/CritChanceButton,
 		"CRIT %", crit_chance_level, crit_chance_max, crit_chance_cost,
-		str(crit_chance_level * 5) + "%")
+		str(snappedf(crit_chance_level * 1.25, 0.01)) + "%")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/CritDmgButton,
 		"CRIT DMG", crit_dmg_level, crit_dmg_max, crit_dmg_cost,
-		"+" + str(crit_dmg_level * 25) + "%")
+		"+" + str(crit_dmg_level * 10) + "%")
 
 	# DEF
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton,
@@ -359,7 +372,7 @@ func _update_ui():
 		str(kb_freq_level))
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/KnockbackStrButton,
 		"KB STR", kb_str_level, kb_str_max, kb_str_cost,
-		str(kb_str_level))
+		str(kb_str_level * 10))
 
 	# HP
 	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/MaxHPButton,
@@ -433,7 +446,7 @@ func _on_crit_chance_button_pressed():
 	currency -= crit_chance_cost
 	crit_chance_level += 1
 	crit_chance_cost = int(crit_chance_cost * 1.3)
-	$Base.crit_chance += 0.05
+	$Base.crit_chance += 0.0125
 	_update_ui()
 
 func _on_crit_dmg_button_pressed():
@@ -441,7 +454,7 @@ func _on_crit_dmg_button_pressed():
 	currency -= crit_dmg_cost
 	crit_dmg_level += 1
 	crit_dmg_cost = int(crit_dmg_cost * 1.25)
-	$Base.crit_damage += 0.25
+	$Base.crit_damage += 0.10
 	_update_ui()
 
 # ── DEF handlers ──────────────────────────────
@@ -474,7 +487,7 @@ func _on_knockback_freq_button_pressed():
 	currency -= kb_freq_cost
 	kb_freq_level += 1
 	kb_freq_cost = int(kb_freq_cost * 1.2)
-	$Base.knockback_freq = max(0.5, 5.0 - (kb_freq_level * 0.2))
+	$Base.knockback_freq = max(0.5, 5.0 - (kb_freq_level * 0.1))
 	_update_ui()
 
 func _on_knockback_str_button_pressed():
@@ -482,7 +495,7 @@ func _on_knockback_str_button_pressed():
 	currency -= kb_str_cost
 	kb_str_level += 1
 	kb_str_cost = int(kb_str_cost * 1.2)
-	$Base.knockback_strength += 20.0
+	$Base.knockback_strength += 10.0
 	_update_ui()
 
 # ── HP handlers ───────────────────────────────

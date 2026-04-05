@@ -170,6 +170,11 @@ layout_mode = 2
 text = "KB STR
 "
 
+[node name="DEFLocked" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=97852440]
+layout_mode = 2
+disabled = true
+text = "🔒 Reach Wave 10"
+
 [node name="HPColumn" type="VBoxContainer" parent="UI/UpgradePanel/ColumnsContainer" unique_id=27764103]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
@@ -199,6 +204,11 @@ text = "RECOV DLY"
 layout_mode = 2
 text = "HEAL MULT"
 
+[node name="HPLocked" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=774946569]
+layout_mode = 2
+disabled = true
+text = "🔒 Beat The First Boss"
+
 [node name="UTILColumn" type="VBoxContainer" parent="UI/UpgradePanel/ColumnsContainer" unique_id=1483226718]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
@@ -227,6 +237,11 @@ text = "LP MULT"
 [node name="LegacyDropButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=2048114754]
 layout_mode = 2
 text = "LP CHANCE"
+
+[node name="UTILLocked" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=367772935]
+layout_mode = 2
+disabled = true
+text = "🔒 Beat The First Boss"
 
 [node name="PauseButton" type="Button" parent="UI" unique_id=1040772999]
 offset_left = 650.0
