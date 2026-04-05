@@ -27,6 +27,28 @@ const COSTS = {
 	"floor_legacy_drop": 15,
 }
 
+const WORKSHOP_UNLOCK_REQUIREMENTS = {
+	"WFloorAtkSpd": 0,
+	"WFloorDmg": 0,
+	"WFloorShield": 1,
+	"WFloorShieldRegen": 1,
+	"WFloorMaxHP": 2,
+	"WFloorRegenAmt": 2,
+	"WFloorGoldPerKill": 2,
+	"WFloorGoldMult": 2,
+	"WFloorDmgMult": 3,
+	"WFloorCritChance": 3,
+	"WFloorCritDmg": 3,
+	"WFloorDmgReduct": 3,
+	"WFloorKbFreq": 3,
+	"WFloorKbStr": 3,
+	"WFloorRegenSpd": 3,
+	"WFloorRecovDelay": 3,
+	"WFloorHealMult": 3,
+	"WFloorLpPerWave": 3,
+	"WFloorLpMult": 3,
+	"WFloorLpDrop": 3,
+}
 # Map button node names to save keys
 const BUTTON_MAP = {
 	"WFloorAtkSpd": "floor_attack_speed",
@@ -74,7 +96,18 @@ const STAT_LABELS = {
 	"floor_legacy_drop": ["LP CHANCE", "+5%"],
 }
 
+func _apply_unlock_level():
+	var unlock = SaveManager.data["unlock_level"]
+	var columns = ["ATKColumn", "DEFColumn", "HPColumn", "UTILColumn"]
+	for col in columns:
+		var col_node = $CoreContent/ColumnsContainer.get_node(col)
+		for child in col_node.get_children():
+			if child is Button:
+				var required = WORKSHOP_UNLOCK_REQUIREMENTS.get(child.name, 3)
+				child.visible = unlock >= required
+
 func _ready():
+	_apply_unlock_level()
 	_update_ui()
 
 func _update_ui():

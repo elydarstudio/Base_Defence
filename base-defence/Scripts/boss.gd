@@ -64,13 +64,14 @@ func _draw():
 	# HP text above bar
 	draw_string(ThemeDB.fallback_font, Vector2(-25, -50), str(int(health)), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
 
-func scale_to_phase(d: int):
-	var multiplier = 1.0 + (d * 0.3)
-	health = 160.0 * multiplier
+func scale_to_phase(p: int):
+	var multiplier = 1.0 + (p * 0.3)
+	health = 200.0 * multiplier
 	max_health = health
-	attack_damage = 20.0 * multiplier
-	speed = min(50.0 + (d * 2.0), 110.0)
-
+	attack_damage = 22.0 * multiplier
+	attack_interval = 1.5
+	speed = min(50.0 + (p * 2.0), 110.0)
+	
 func take_damage(amount: float):
 	health -= amount
 	if health <= 0:

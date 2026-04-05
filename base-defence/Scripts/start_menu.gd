@@ -10,9 +10,9 @@ func _update_ui():
 	$BestPhaseLabel.text = "Best Phase: " + str(best)
 
 	# Workshop locked until unlock_level 2
-	if unlock < 2:
+	if unlock < 1:
 		$WorkshopButton.disabled = true
-		$WorkshopButton.text = "WORKSHOP (Beat Boss First)"
+		$WorkshopButton.text = "WORKSHOP (Reach Boss First)"
 	else:
 		$WorkshopButton.disabled = false
 		$WorkshopButton.text = "WORKSHOP"
@@ -43,7 +43,7 @@ func _on_phase_select_button_pressed():
 
 
 func _on_work_shop_button_pressed() -> void:
-	pass # Replace with function body.
+	get_tree().change_scene_to_file("res://Scenes/Workshop.tscn")
 
 
 func _on_debug_reset_button_pressed():

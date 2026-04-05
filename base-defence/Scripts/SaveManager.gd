@@ -53,4 +53,6 @@ func reset_save():
 	for key in data:
 		data[key] = 0
 	data["max_start_phase"] = 1
+	data["start_phase"] = 1
+	data["best_phase"] = 1
 	save_game()

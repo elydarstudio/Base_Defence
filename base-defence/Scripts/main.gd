@@ -111,6 +111,33 @@ var legacy_drop_level: int = 0
 var legacy_drop_cost: int = 40
 var legacy_drop_max: int = 8 # 8 * 5% = 40% max
 
+const UNLOCK_REQUIREMENTS = {
+	# unlock_level 0
+	"ATKSpdButton": 0,
+	"DmgButton": 0,
+	# unlock_level 1
+	"ShieldButton": 1,
+	"ShieldRegenButton": 1,
+	# unlock_level 2
+	"MaxHPButton": 2,
+	"RegenAmtButton": 2,
+	"GoldPerKillButton": 2,
+	"GoldMultButton": 2,
+	# unlock_level 3
+	"DmgMultButton": 3,
+	"CritChanceButton": 3,
+	"CritDmgButton": 3,
+	"DmgReductButton": 3,
+	"KnockbackFreqButton": 3,
+	"KnockbackStrButton": 3,
+	"RegenSpdButton": 3,
+	"RecovDelayButton": 3,
+	"HealMultButton": 3,
+	"LegacyPerWaveButton": 3,
+	"LegacyMultButton": 3,
+	"LegacyDropButton": 3,
+}
+
 func _ready():
 	bullet_scene = preload("res://Scenes/Projectile.tscn")
 	enemy_scene = preload("res://Scenes/Enemy.tscn")
@@ -120,89 +147,72 @@ func _ready():
 	$Base.set_bullet_scene(bullet_scene)
 	$Base.set_main(self)
 	_apply_workshop_floors()
+	_apply_unlock_level()
 	_update_ui()
+	
+func _apply_unlock_level():
+	var unlock = SaveManager.data["unlock_level"]
+	var columns = ["ATKColumn", "DEFColumn", "HPColumn", "UTILColumn"]
+	for col in columns:
+		var col_node = $UI/UpgradePanel/ColumnsContainer.get_node(col)
+		for child in col_node.get_children():
+			if child is Button:
+				var required = UNLOCK_REQUIREMENTS.get(child.name, 3)
+				child.visible = unlock >= required
+
+func _check_unlock_progression():
+	var unlock = SaveManager.data["unlock_level"]
+	# Reached boss wave for first time
+	if unlock == 0 and wave % 10 == 0:
+		SaveManager.data["unlock_level"] = 1
+		SaveManager.save_game()
+	# Reached phase 3
+	if unlock < 3 and phase >= 3:
+		SaveManager.data["unlock_level"] = 3
+		SaveManager.save_game()
 
 func _apply_workshop_floors():
 	var d = SaveManager.data
 	# ATK
 	attack_speed_level = d["floor_attack_speed"]
-	attack_speed_cost = int(35 * pow(1.2, attack_speed_level))
 	$Base.fire_rate += attack_speed_level * 0.125
-
 	damage_level = d["floor_damage"]
-	damage_cost = int(30 * pow(1.2, damage_level))
 	$Base.bullet_damage += damage_level * 1.0
-
 	dmg_mult_level = d["floor_dmg_mult"]
-	dmg_mult_cost = int(60 * pow(1.25, dmg_mult_level))
 	$Base.damage_multiplier += dmg_mult_level * 0.1
-
 	crit_chance_level = d["floor_crit_chance"]
-	crit_chance_cost = int(40 * pow(1.3, crit_chance_level))
 	$Base.crit_chance += crit_chance_level * 0.05
-
 	crit_dmg_level = d["floor_crit_dmg"]
-	crit_dmg_cost = int(60 * pow(1.25, crit_dmg_level))
 	$Base.crit_damage += crit_dmg_level * 0.25
-
 	# DEF
 	shield_level = d["floor_shield"]
-	shield_cost = int(35 * pow(1.2, shield_level))
 	$Base.add_shield(shield_level * 20.0)
-
 	shield_regen_level = d["floor_shield_regen"]
-	shield_regen_cost = int(50 * pow(1.25, shield_regen_level))
 	$Base.shield_regen += shield_regen_level * 1.0
-
 	dmg_reduct_level = d["floor_dmg_reduct"]
-	dmg_reduct_cost = int(45 * pow(1.2, dmg_reduct_level))
 	$Base.damage_reduction += dmg_reduct_level * 0.02
-
 	kb_freq_level = d["floor_kb_freq"]
-	kb_freq_cost = int(40 * pow(1.2, kb_freq_level))
 	if kb_freq_level > 0:
 		$Base.knockback_freq = max(0.5, 5.0 - (kb_freq_level * 0.2))
-
 	kb_str_level = d["floor_kb_str"]
-	kb_str_cost = int(40 * pow(1.2, kb_str_level))
 	$Base.knockback_strength += kb_str_level * 20.0
-
 	# HP
 	max_hp_level = d["floor_max_hp"]
-	max_hp_cost = int(35 * pow(1.2, max_hp_level))
 	$Base.increase_max_health(max_hp_level * 20.0)
-
 	regen_amt_level = d["floor_regen_amt"]
-	regen_amt_cost = int(40 * pow(1.25, regen_amt_level))
 	$Base.hp_regen += regen_amt_level * 1.0
-
 	regen_spd_level = d["floor_regen_spd"]
-	regen_spd_cost = int(40 * pow(1.2, regen_spd_level))
 	$Base.regen_interval = max(1.0, 5.0 - (regen_spd_level * 0.1))
-
 	recov_delay_level = d["floor_recov_delay"]
-	recov_delay_cost = int(35 * pow(1.2, recov_delay_level))
 	$Base.recovery_delay = max(0.0, 3.0 - (recov_delay_level * 0.15))
-
 	heal_mult_level = d["floor_heal_mult"]
-	heal_mult_cost = int(60 * pow(1.25, heal_mult_level))
 	$Base.heal_multiplier += heal_mult_level * 0.1
-
 	# UTIL
 	gold_per_kill_level = d["floor_gold_per_kill"]
-	gold_per_kill_cost = int(20 * pow(1.2, gold_per_kill_level))
-
 	gold_mult_level = d["floor_gold_mult"]
-	gold_mult_cost = int(50 * pow(1.25, gold_mult_level))
-
 	legacy_per_wave_level = d["floor_legacy_per_wave"]
-	legacy_per_wave_cost = int(20 * pow(1.2, legacy_per_wave_level))
-
 	legacy_mult_level = d["floor_legacy_mult"]
-	legacy_mult_cost = int(50 * pow(1.25, legacy_mult_level))
-
 	legacy_drop_level = d["floor_legacy_drop"]
-	legacy_drop_cost = int(40 * pow(1.3, legacy_drop_level))
 
 func _process(delta):
 	if game_over:
@@ -232,18 +242,21 @@ func _spawn_boss():
 	var b = boss_scene.instantiate()
 	add_child(b)
 	b.setup($Base, self)
-	b.scale_to_phase(difficulty)
+	b.scale_to_phase(phase)
 	b.global_position = Vector2(360, -40)
 	$UI/WaveLabel.text = "⚠ BOSS WAVE ⚠ | Phase: " + str(phase)
 
 func _advance_wave():
 	wave += 1
 	difficulty += 1
+	_check_unlock_progression()
 	spawn_interval = max(0.4, 1.8 - (difficulty * 0.03))
 	# Legacy per wave
 	var lp_earned = 1 + legacy_per_wave_level
 	var lp_total = int(lp_earned * (1.0 + (legacy_mult_level * 0.1)))
 	legacy_points += lp_total
+	SaveManager.data["legacy_points"] = legacy_points
+	SaveManager.save_game()
 	if wave % 10 == 0:
 		_spawn_boss()
 	else:
@@ -257,6 +270,9 @@ func on_boss_killed():
 	difficulty += 3
 	spawn_interval = max(0.4, 1.8 - (difficulty * 0.03))
 	enemies_killed = 0
+	if SaveManager.data["unlock_level"] < 2:
+		SaveManager.data["unlock_level"] = 2
+	SaveManager.save_game()
 	_update_ui()
 
 func add_currency(amount: int):
@@ -268,6 +284,8 @@ func add_currency(amount: int):
 	var drop_chance = legacy_drop_level * 0.05
 	if randf() < drop_chance:
 		legacy_points += 1
+		SaveManager.data["legacy_points"] = legacy_points
+		SaveManager.save_game()
 	_update_ui()
 
 func spawn_damage_number(amount: float, pos: Vector2):

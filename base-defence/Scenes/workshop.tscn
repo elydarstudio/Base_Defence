@@ -114,7 +114,7 @@ custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "SHIELD"
 
-[node name="WFloorShieldRege" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=652597496]
+[node name="WFloorShieldRegen" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=652597496]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "SHLD REGEN"
@@ -223,7 +223,7 @@ text = "Skill Tree unlocks at Phase 3"
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorCritChance" to="." method="_on_w_floor_crit_chance_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorCritDmg" to="." method="_on_w_floor_crit_dmg_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShield" to="." method="_on_w_floor_shield_pressed"]
-[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShieldRege" to="." method="_on_w_floor_shield_rege_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShieldRegen" to="." method="_on_w_floor_shield_rege_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorDmgReduct" to="." method="_on_w_floor_dmg_reduct_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorKbFreq" to="." method="_on_w_floor_kb_freq_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorKbStr" to="." method="_on_w_floor_kb_str_pressed"]
