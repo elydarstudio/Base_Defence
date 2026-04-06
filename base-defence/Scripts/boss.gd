@@ -72,8 +72,10 @@ func scale_to_phase(p: int):
 	attack_interval = 1.5
 	speed = min(50.0 + (p * 2.0), 110.0)
 	
-func take_damage(amount: float):
+func take_damage(amount: float, type: String = "normal"):
 	health -= amount
+	if main_node != null:
+		main_node.spawn_damage_number(amount, global_position + Vector2(0, -20), type)
 	if health <= 0:
 		_die()
 

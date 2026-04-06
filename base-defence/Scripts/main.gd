@@ -115,9 +115,9 @@ var legacy_drop_max: int = 100
 
 var tooltip_buttons: Dictionary = {}
 
-const BASE_ENEMIES_PER_WAVE = 15
+const BASE_ENEMIES_PER_WAVE = 12
 const ENEMIES_PER_WAVE_WAVE_SCALING = 2
-const ENEMIES_PER_WAVE_PHASE_SCALING = 3
+const ENEMIES_PER_WAVE_PHASE_SCALING = 2
 
 const UNLOCK_REQUIREMENTS = {
 	"ATKSpdButton": 0,
@@ -270,7 +270,7 @@ func _process(delta):
 	if wave_complete:
 		return
 	spawn_timer += delta
-	var current_spawn_interval = 1.8 / (1.0 + (difficulty * 0.09))
+	var current_spawn_interval = 0.8 / (1.0 + (difficulty * 0.09))
 	if spawn_timer >= current_spawn_interval and enemies_spawned < enemies_to_spawn:
 		spawn_timer = 0.0
 		enemies_spawned += 1
@@ -298,7 +298,7 @@ func _spawn_boss():
 	boss_wave = true
 	boss_alive = true
 	var b = boss_scene.instantiate()
-	add_child(b)
+	add_child.call_deferred(b)
 	b.setup($Base, self)
 	b.scale_to_phase(phase)
 	b.global_position = Vector2(360, -40)

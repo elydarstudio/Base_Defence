@@ -64,7 +64,7 @@ func scale_to_wave(difficulty: int):
 	max_health = health
 	attack_damage = 10.5 * (1.0 + (difficulty * 0.11))
 	speed = min(36.0 + (difficulty * 0.55), 77.5)
-	currency_value = (10 + (main_node.phase * 3)) * 2 if main_node != null else 10
+	currency_value = (5 + ((main_node.phase - 1) * 3)) * 2 if main_node != null else 10
 
 func take_damage(amount: float, type: String = "normal"):
 	health -= amount
