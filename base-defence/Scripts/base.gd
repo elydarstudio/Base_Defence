@@ -22,7 +22,7 @@ var heal_multiplier: float = 1.0
 # Shield
 var max_shield: float = 0.0
 var shield: float = 0.0
-var shield_regen: float = 1.0
+var shield_regen_interval: float = 1.0
 var shield_regen_timer: float = 0.0
 var shield_strength: float = 0.1
 var shield_multiplier: float = 1.0
@@ -67,13 +67,14 @@ func _process(delta):
 			if main_node != null:
 				_update_combat_ui()
 
-	# Shield regen
+	# Shield regen — 10% of max shield per tick, interval upgrades reduce tick rate
 	var effective_max_shield = max_shield * shield_multiplier
-	if shield_regen > 0 and shield < effective_max_shield:
+	if effective_max_shield > 0 and shield < effective_max_shield:
 		shield_regen_timer += delta
-		if shield_regen_timer >= 1.0:
+		if shield_regen_timer >= shield_regen_interval:
 			shield_regen_timer = 0.0
-			shield = min(shield + shield_regen, effective_max_shield)
+			var regen_amount = effective_max_shield * 0.10
+			shield = min(shield + regen_amount, effective_max_shield)
 			if main_node != null:
 				_update_combat_ui()
 

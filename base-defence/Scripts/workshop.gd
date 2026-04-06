@@ -52,10 +52,10 @@ const STAT_LABELS = {
 	"WFloorAtkSpd": ["ATK SPD", "+0.125/s"],
 	"WFloorDmg": ["DMG", "+1 dmg"],
 	"WFloorDmgMult": ["DMG MULT", "+10%"],
-	"WFloorCritChance": ["CRIT %", "+1.25%"],
+	"WFloorCritChance": ["CRIT %", "+0.8%"],
 	"WFloorCritDmg": ["CRIT DMG", "+10%"],
 	"WFloorShield": ["SHIELD", "+20"],
-	"WFloorShieldRegen": ["SHLD RGN", "+1/s"],
+	"WFloorShieldRegen": ["SHLD RGN", "-0.005s interval"],
 	"WFloorShieldStrength": ["SHLD STR", "+0.4%"],
 	"WFloorShieldMult": ["SHLD MULT", "+10%"],
 	"WFloorEvasion": ["EVASION", "+0.2%"],
@@ -215,8 +215,8 @@ func _on_w_floor_gold_per_kill_pressed():
 func _on_w_floor_gold_mult_pressed():
 	_purchase("WFloorGoldMult")
 
-func _on_w_floor_lp_per_wave_pressed():
-	_purchase("WFloorLpPerWave")
+func _on_w_floor_lp_gain_pressed():
+	_purchase("WFloorLpGain")
 
 func _on_w_floor_lp_mult_pressed():
 	_purchase("WFloorLpMult")

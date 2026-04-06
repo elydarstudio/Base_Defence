@@ -40,26 +40,26 @@ Everything below is BUILT and WORKING:
 ```
 Base_Defence/
 └── base-defence/          # Godot project root
-    ├── main.tscn          # Main game scene
-    ├── project.godot
-    ├── Scenes/
-    │   ├── Enemy.tscn
-    │   ├── Boss.tscn
-    │   ├── Projectile.tscn
-    │   ├── damage_number.tscn
-    │   ├── StartMenu.tscn
-    │   └── Workshop.tscn
-    ├── Scripts/
-    │   ├── main.gd            # Game loop, spawning, all 20 upgrade handlers, UI
-    │   ├── base.gd            # Shooting, crit, shield, HP regen, evasion, damage
-    │   ├── enemy.gd           # Movement, melee attack, health bar, scaling
-    │   ├── boss.gd            # Boss behavior, HP bar with number, scaling
-    │   ├── projectile.gd      # Bullet movement, homing, crit type passing
-    │   ├── damage_number.gd   # Floating text, 6 color types
-    │   ├── start_menu.gd      # Start menu, phase select, debug buttons
-    │   ├── workshop.gd        # LP spending, floor upgrades, 3-tier cost curve
-    │   └── SaveManager.gd     # Autoload, persistent save, all data keys
-    └── Assets/
+	├── main.tscn          # Main game scene
+	├── project.godot
+	├── Scenes/
+	│   ├── Enemy.tscn
+	│   ├── Boss.tscn
+	│   ├── Projectile.tscn
+	│   ├── damage_number.tscn
+	│   ├── StartMenu.tscn
+	│   └── Workshop.tscn
+	├── Scripts/
+	│   ├── main.gd            # Game loop, spawning, all 20 upgrade handlers, UI
+	│   ├── base.gd            # Shooting, crit, shield, HP regen, evasion, damage
+	│   ├── enemy.gd           # Movement, melee attack, health bar, scaling
+	│   ├── boss.gd            # Boss behavior, HP bar with number, scaling
+	│   ├── projectile.gd      # Bullet movement, homing, crit type passing
+	│   ├── damage_number.gd   # Floating text, 6 color types
+	│   ├── start_menu.gd      # Start menu, phase select, debug buttons
+	│   ├── workshop.gd        # LP spending, floor upgrades, 3-tier cost curve
+	│   └── SaveManager.gd     # Autoload, persistent save, all data keys
+	└── Assets/
 ```
 
 ---
@@ -74,55 +74,55 @@ Main (Node2D) — main.gd
 │   └── ShieldLabel (Label)   # shows under base
 ├── DamageLayer (CanvasLayer)
 └── UI (CanvasLayer)
-    ├── CurrencyLabel
-    ├── WaveLabel
-    ├── PauseButton
-    ├── PauseScreen (ColorRect) [hidden, Process Mode: Always]
-    │   ├── PauseLabel
-    │   ├── ResumeButton
-    │   ├── PauseRestartButton
-    │   └── PauseMenuButton
-    ├── GameOverScreen (ColorRect) [hidden, Process Mode: Always]
-    │   ├── GameOverLabel
-    │   ├── PhaseLabel
-    │   ├── RestartButton
-    │   └── MenuButton
-    └── UpgradePanel (Control) [slides up from bottom]
-        ├── PanelBG (ColorRect)
-        ├── PanelHandle (Button)
-        └── ColumnsContainer (HBoxContainer)
-            ├── ATKColumn (VBoxContainer)
-            │   ├── ATKHeader
-            │   ├── ATKSpdButton      unlock: 0
-            │   ├── DmgButton         unlock: 0
-            │   ├── DmgMultButton     unlock: 3
-            │   ├── CritChanceButton  unlock: 4
-            │   └── CritDmgButton     unlock: 4
-            ├── HPColumn (VBoxContainer)
-            │   ├── HPHeader
-            │   ├── MaxHPButton       unlock: 1
-            │   ├── RegenAmtButton    unlock: 1
-            │   ├── HPMultButton      unlock: 3
-            │   ├── RegenSpdButton    unlock: 4
+	├── CurrencyLabel
+	├── WaveLabel
+	├── PauseButton
+	├── PauseScreen (ColorRect) [hidden, Process Mode: Always]
+	│   ├── PauseLabel
+	│   ├── ResumeButton
+	│   ├── PauseRestartButton
+	│   └── PauseMenuButton
+	├── GameOverScreen (ColorRect) [hidden, Process Mode: Always]
+	│   ├── GameOverLabel
+	│   ├── PhaseLabel
+	│   ├── RestartButton
+	│   └── MenuButton
+	└── UpgradePanel (Control) [slides up from bottom]
+		├── PanelBG (ColorRect)
+		├── PanelHandle (Button)
+		└── ColumnsContainer (HBoxContainer)
+			├── ATKColumn (VBoxContainer)
+			│   ├── ATKHeader
+			│   ├── ATKSpdButton      unlock: 0
+			│   ├── DmgButton         unlock: 0
+			│   ├── DmgMultButton     unlock: 3
+			│   ├── CritChanceButton  unlock: 4
+			│   └── CritDmgButton     unlock: 4
+			├── HPColumn (VBoxContainer)
+			│   ├── HPHeader
+			│   ├── MaxHPButton       unlock: 1
+			│   ├── RegenAmtButton    unlock: 1
+			│   ├── HPMultButton      unlock: 3
+			│   ├── RegenSpdButton    unlock: 4
 
-            │   ├── HealMultButton    unlock: 4
-            │   └── HPLocked          (placeholder)
-            ├── DEFColumn (VBoxContainer)
-            │   ├── DEFHeader
-            │   ├── ShieldButton      unlock: 2
-            │   ├── ShieldRegenButton unlock: 2
-            │   ├── ShieldStrengthButton unlock: 3
-            │   ├── ShieldMultButton  unlock: 4
-            │   ├── EvasionButton     unlock: 4
-            │   └── DEFLocked         (placeholder)
-            └── UTILColumn (VBoxContainer)
-                ├── UTILHeader
-                ├── GoldPerKillButton unlock: 2
-                ├── LPGainButton      unlock: 2
-                ├── GoldMultButton    unlock: 3
-                ├── LegacyMultButton  unlock: 3
-                ├── LegacyDropButton  unlock: 4
-                └── UTILLocked        (placeholder)
+			│   ├── HealMultButton    unlock: 4
+			│   └── HPLocked          (placeholder)
+			├── DEFColumn (VBoxContainer)
+			│   ├── DEFHeader
+			│   ├── ShieldButton      unlock: 2
+			│   ├── ShieldRegenButton unlock: 2
+			│   ├── ShieldStrengthButton unlock: 3
+			│   ├── ShieldMultButton  unlock: 4
+			│   ├── EvasionButton     unlock: 4
+			│   └── DEFLocked         (placeholder)
+			└── UTILColumn (VBoxContainer)
+				├── UTILHeader
+				├── GoldPerKillButton unlock: 2
+				├── LPGainButton      unlock: 2
+				├── GoldMultButton    unlock: 3
+				├── LegacyMultButton  unlock: 3
+				├── LegacyDropButton  unlock: 4
+				└── UTILLocked        (placeholder)
 ```
 
 ---
@@ -224,11 +224,11 @@ Main (Node2D) — main.gd
 ### Cost Helper (_calc_cost in main.gd)
 ```gdscript
 func _calc_cost(base: int, level: int, is_capped: bool) -> int:
-    if is_capped:
-        var scale = 1.23 if level < 50 else 1.4
-        return int(base * pow(scale, level))
-    else:
-        return int(base * pow(1.2, level))
+	if is_capped:
+		var scale = 1.23 if level < 50 else 1.4
+		return int(base * pow(scale, level))
+	else:
+		return int(base * pow(1.2, level))
 ```
 
 ---

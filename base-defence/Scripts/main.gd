@@ -66,8 +66,8 @@ var shield_cost: int = 30
 var shield_max: int = 999
 
 var shield_regen_level: int = 0
-var shield_regen_cost: int = 30
-var shield_regen_max: int = 999
+var shield_regen_cost: int = 45
+var shield_regen_max: int = 100
 
 var shield_mult_level: int = 0
 var shield_mult_cost: int = 30
@@ -84,8 +84,8 @@ var regen_amt_cost: int = 30
 var regen_amt_max: int = 999
 
 var regen_spd_level: int = 0
-var regen_spd_cost: int = 30
-var regen_spd_max: int = 999
+var regen_spd_cost: int = 45
+var regen_spd_max: int = 100
 
 var hp_mult_level: int = 0
 var hp_mult_cost: int = 30
@@ -114,8 +114,8 @@ var legacy_mult_cost: int = 30
 var legacy_mult_max: int = 999
 
 var legacy_drop_level: int = 0
-var legacy_drop_cost: int = 30
-var legacy_drop_max: int = 50  # 50 * 0.8% = 40% cap
+var legacy_drop_cost: int = 45
+var legacy_drop_max: int = 100 # 50 * 0.8% = 40% cap
 
 const UNLOCK_REQUIREMENTS = {
 	# unlock_level 0
@@ -218,7 +218,7 @@ func _apply_workshop_floors():
 	$Base.max_shield += shield_level * 20.0
 	$Base.shield += shield_level * 20.0
 	shield_regen_level = d["floor_shield_regen"]
-	$Base.shield_regen += shield_regen_level * 1.0
+	$Base.shield_regen_interval = max(0.5, 1.0 - (shield_regen_level * 0.005))
 	shield_strength_level = d["floor_shield_strength"]
 	$Base.shield_strength += shield_strength_level * 0.004
 	shield_mult_level = d["floor_shield_mult"]
@@ -279,7 +279,7 @@ func _advance_wave():
 	wave += 1
 	difficulty += 1
 	_check_unlock_progression()
-	spawn_interval = 1.8 / (1.0 + (difficulty * 0.12))
+	spawn_interval = 1.8 / (1.0 + (difficulty * 0.09))
 	# Legacy per wave
 	var lp_earned = 1 + lp_gain_level
 	var lp_total = int(lp_earned * (1.0 + (legacy_mult_level * 0.1)))
@@ -317,7 +317,7 @@ func add_currency(amount: int):
 	currency += multiplied
 	enemies_killed += 1
 	# Legacy drop chance
-	var drop_chance = 0.1 + (legacy_drop_level * 0.008)
+	var drop_chance = 0.05 + (legacy_drop_level * 0.0035)
 	if randf() < drop_chance:
 		var drop = int((1 + lp_gain_level) * (1.0 + (legacy_mult_level * 0.1)))
 		legacy_points += drop
@@ -370,7 +370,7 @@ func _update_ui():
 		"+" + str(dmg_mult_level * 10) + "%")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/CritChanceButton,
 		"CRIT %", crit_chance_level, crit_chance_max, crit_chance_cost,
-		str(snappedf(crit_chance_level * 1.25, 0.01)) + "%")
+		str(snappedf(crit_chance_level * 0.8, 0.1)) + "%")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/CritDmgButton,
 		"CRIT DMG", crit_dmg_level, crit_dmg_max, crit_dmg_cost,
 		"+" + str(crit_dmg_level * 10) + "%")
@@ -382,7 +382,7 @@ func _update_ui():
 		str(shield_level * 20))
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldRegenButton,
 		"SHLD RGN", shield_regen_level, shield_regen_max, shield_regen_cost,
-		str(shield_regen_level) + "/s")
+		str(snappedf(max(0.5, 1.0 - (shield_regen_level * 0.005)), 0.01)) + "s")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldStrengthButton,
 		"SHLD STR", shield_strength_level, shield_strength_max, shield_strength_cost,
 		str(snappedf(shield_strength_level * 0.4, 0.1)) + "%")
@@ -396,7 +396,7 @@ func _update_ui():
 	# HP
 	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/MaxHPButton,
 		"MAX HP", max_hp_level, max_hp_max, max_hp_cost,
-		str(100 + (max_hp_level * 20)))
+		str(100 + (max_hp_level * 10)))
 	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/RegenAmtButton,
 		"REGEN AMT", regen_amt_level, regen_amt_max, regen_amt_cost,
 		str(regen_amt_level) + " hp")
@@ -425,7 +425,7 @@ func _update_ui():
 		"+" + str(legacy_mult_level * 10) + "%")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyDropButton,
 		"LP CHANCE", legacy_drop_level, legacy_drop_max, legacy_drop_cost,
-		str(legacy_drop_level * 5) + "%")
+		str(snappedf(5.0 + (legacy_drop_level * 0.35), 0.1)) + "%")
 
 func _update_btn(btn: Button, label: String, level: int, max_level: int, cost: int, stat: String):
 	if level >= max_level:
@@ -492,8 +492,8 @@ func _on_shield_regen_button_pressed():
 	if currency < shield_regen_cost or shield_regen_level >= shield_regen_max: return
 	currency -= shield_regen_cost
 	shield_regen_level += 1
-	shield_regen_cost = _calc_cost(30, shield_regen_level, false)
-	$Base.shield_regen += 1.0
+	shield_regen_cost = _calc_cost(45, shield_regen_level, true)
+	$Base.shield_regen_interval = max(0.5, 1.0 - (shield_regen_level * 0.005))
 	_update_ui()
 
 func _on_shield_strength_button_pressed():
@@ -542,7 +542,7 @@ func _on_regen_spd_button_pressed():
 	currency -= regen_spd_cost
 	regen_spd_level += 1
 	regen_spd_cost = _calc_cost(30, regen_spd_level, false)
-	$Base.regen_interval = max(1.0, 5.0 - (regen_spd_level * 0.04))
+	$Base.regen_interval = max(0.5, 5.0 - (regen_spd_level * 0.045))
 	_update_ui()
 
 func _on_heal_mult_button_pressed():
@@ -594,7 +594,7 @@ func _on_legacy_drop_button_pressed():
 	if currency < legacy_drop_cost or legacy_drop_level >= legacy_drop_max: return
 	currency -= legacy_drop_cost
 	legacy_drop_level += 1
-	legacy_drop_cost = _calc_cost(30, legacy_drop_level, false)
+	legacy_drop_cost = _calc_cost(45, legacy_drop_level, true)
 	_update_ui()
 
 func _random_edge_position() -> Vector2:
