@@ -38,7 +38,7 @@ func _process(delta):
 			attack_timer = 0.0
 			base_node.take_damage(attack_damage)
 			if main_node != null:
-				main_node.update_health_ui(base_node.health, base_node.shield)
+				base_node._update_combat_ui()
 	queue_redraw()
 
 func _draw():

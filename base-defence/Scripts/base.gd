@@ -24,7 +24,7 @@ var max_shield: float = 0.0
 var shield: float = 0.0
 var shield_regen: float = 1.0
 var shield_regen_timer: float = 0.0
-var shield_strength: float = 0.0
+var shield_strength: float = 0.1
 var shield_multiplier: float = 1.0
 var evasion: float = 0.0
 
@@ -36,6 +36,7 @@ var bullets_targeting: Dictionary = {}
 func _ready():
 	position = Vector2(360, 500)
 	_draw_base()
+	_update_combat_ui()
 
 func _draw_base():
 	var poly = $Visual
@@ -45,6 +46,10 @@ func _draw_base():
 		points.append(Vector2(cos(angle), sin(angle)) * 30)
 	poly.polygon = points
 	poly.color = Color(0.2, 0.6, 1.0)
+
+func _update_combat_ui():
+	$HPLabel.text = "HP: " + str(max(0, int(health)))
+	$ShieldLabel.text = "SH: " + str(int(shield))
 
 func _process(delta):
 	fire_timer += delta
@@ -60,7 +65,7 @@ func _process(delta):
 			var heal_amount = hp_regen * heal_multiplier
 			health = min(health + heal_amount, max_health)
 			if main_node != null:
-				main_node.update_health_ui(health, shield)
+				_update_combat_ui()
 
 	# Shield regen
 	var effective_max_shield = max_shield * shield_multiplier
@@ -70,7 +75,7 @@ func _process(delta):
 			shield_regen_timer = 0.0
 			shield = min(shield + shield_regen, effective_max_shield)
 			if main_node != null:
-				main_node.update_health_ui(health, shield)
+				_update_combat_ui()
 
 func _try_shoot():
 	var target = _get_best_target()
@@ -142,7 +147,7 @@ func take_damage(amount: float):
 	health = max(0.0, health)
 
 	if main_node != null:
-		main_node.update_health_ui(health, shield)
+		_update_combat_ui()
 		if shield_absorbed > 0:
 			main_node.spawn_damage_number(shield_absorbed, global_position + Vector2(randf_range(-20, 20), -20), "shield")
 		main_node.spawn_damage_number(hp_damage, global_position + Vector2(randf_range(-20, 20), -40), "hp")
@@ -152,16 +157,16 @@ func take_damage(amount: float):
 			main_node.trigger_game_over()
 
 func add_shield(amount: float):
+	print("add_shield called: ", amount, " shield now: ", shield)
 	max_shield += amount
 	shield += amount
-	if main_node != null:
-		main_node.update_health_ui(health, shield)
+	_update_combat_ui()
 
 func increase_max_health(amount: float):
 	max_health += amount
 	health += amount
 	if main_node != null:
-		main_node.update_health_ui(health, shield)
+		_update_combat_ui()
 
 func set_bullet_scene(scene: PackedScene):
 	bullet_scene = scene

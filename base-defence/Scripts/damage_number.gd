@@ -4,10 +4,16 @@ var velocity: Vector2 = Vector2(0, -60)
 var lifetime: float = 0.8
 var elapsed: float = 0.0
 
-func setup(amount: float, pos: Vector2):
+func setup(amount: float, pos: Vector2, type: String = "normal"):
 	global_position = pos
 	$Label.text = str(int(amount))
-	$Label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.2))
+	match type:
+		"shield":
+			$Label.add_theme_color_override("font_color", Color(0.2, 0.6, 1.0))  # blue
+		"hp":
+			$Label.add_theme_color_override("font_color", Color(1.0, 0.2, 0.2))  # red
+		_:
+			$Label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0))  # white
 	$Label.add_theme_font_size_override("font_size", 16)
 
 func _process(delta):

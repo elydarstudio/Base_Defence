@@ -116,27 +116,28 @@ const UNLOCK_REQUIREMENTS = {
 	# unlock_level 0
 	"ATKSpdButton": 0,
 	"DmgButton": 0,
-	# unlock_level 1
-	"ShieldButton": 1,
-	"ShieldRegenButton": 1,
-	# unlock_level 2
-	"MaxHPButton": 2,
-	"RegenAmtButton": 2,
+	# unlock_level 1 — reach wave 10
+	"MaxHPButton": 1,
+	"RegenAmtButton": 1,
+	# unlock_level 2 — beat boss 1
+	"ShieldButton": 2,
+	"ShieldRegenButton": 2,
 	"GoldPerKillButton": 2,
-	"GoldMultButton": 2,
-	"ShieldStrengthButton": 2,
-	# unlock_level 3
+	"LegacyPerWaveButton": 2,
+	# unlock_level 3 — beat boss 2
 	"DmgMultButton": 3,
-	"CritChanceButton": 3,
-	"CritDmgButton": 3,
-	"RegenSpdButton": 3,
-	"HealMultButton": 3,
 	"HPMultButton": 3,
-	"ShieldMultButton": 3,
-	"EvasionButton": 3,
-	"LegacyPerWaveButton": 3,
+	"ShieldStrengthButton": 3,
+	"GoldMultButton": 3,
 	"LegacyMultButton": 3,
-	"LegacyDropButton": 3,
+	# unlock_level 4 — reach phase 3 boss
+	"CritChanceButton": 4,
+	"CritDmgButton": 4,
+	"RegenSpdButton": 4,
+	"HealMultButton": 4,
+	"ShieldMultButton": 4,
+	"EvasionButton": 4,
+	"LegacyDropButton": 4,
 	# locked placeholders
 	"DEFLocked": 999,
 	"HPLocked": 999,
@@ -178,14 +179,13 @@ func _apply_unlock_level():
 
 func _check_unlock_progression():
 	var unlock = SaveManager.data["unlock_level"]
-	# Reached boss wave for first time
 	if unlock == 0 and wave % 10 == 0:
 		SaveManager.data["unlock_level"] = 1
 		SaveManager.save_game()
-	# Reached phase 3
-	if unlock < 3 and phase >= 3:
-		SaveManager.data["unlock_level"] = 3
+	if unlock < 4 and phase >= 3:
+		SaveManager.data["unlock_level"] = 4
 		SaveManager.save_game()
+		_apply_unlock_level()
 
 func _apply_workshop_floors():
 	var d = SaveManager.data
@@ -285,9 +285,13 @@ func on_boss_killed():
 	difficulty += 3
 	spawn_interval = max(0.4, 1.8 - (difficulty * 0.03))
 	enemies_killed = 0
-	if SaveManager.data["unlock_level"] < 2:
+	var unlock = SaveManager.data["unlock_level"]
+	if phase == 2 and unlock < 2:
 		SaveManager.data["unlock_level"] = 2
-	SaveManager.save_game()
+		SaveManager.save_game()
+	elif phase == 3 and unlock < 3:
+		SaveManager.data["unlock_level"] = 3
+		SaveManager.save_game()
 	_update_ui()
 
 func add_currency(amount: int):
@@ -303,16 +307,10 @@ func add_currency(amount: int):
 		SaveManager.save_game()
 	_update_ui()
 
-func spawn_damage_number(amount: float, pos: Vector2):
+func spawn_damage_number(amount: float, pos: Vector2, type: String = "normal"):
 	var dn = damage_number_scene.instantiate()
 	$DamageLayer.add_child(dn)
-	dn.setup(amount, pos)
-
-func update_health_ui(hp: float, shield: float = 0.0):
-	var text = "HP: " + str(max(0, int(hp)))
-	if shield > 0:
-		text += "  |  Shield: " + str(int(shield))
-	$UI/BaseHealthLabel.text = text
+	dn.setup(amount, pos, type)
 
 func trigger_game_over():
 	game_over = true
@@ -468,6 +466,7 @@ func _on_shield_button_pressed():
 	shield_cost = int(shield_cost * 1.2)
 	$Base.max_shield += 20.0
 	$Base.shield += 20.0
+	$Base._update_combat_ui()
 	_update_ui()
 
 func _on_shield_regen_button_pressed():

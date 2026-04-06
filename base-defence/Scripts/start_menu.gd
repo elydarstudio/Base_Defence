@@ -51,7 +51,7 @@ func _on_debug_reset_button_pressed():
 	_update_ui()
 
 func _on_debug_unlock_button_pressed():
-	SaveManager.data["unlock_level"] = 3
+	SaveManager.data["unlock_level"] = 4
 	SaveManager.data["legacy_points"] = 9999
 	SaveManager.save_game()
 	_update_ui()

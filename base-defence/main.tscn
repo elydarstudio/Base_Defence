@@ -17,6 +17,20 @@ shape = SubResource("CircleShape2D_0xm2m")
 
 [node name="Visual" type="Polygon2D" parent="Base" unique_id=722642048]
 
+[node name="HPLabel" type="Label" parent="Base" unique_id=1410328042]
+offset_left = -40.0
+offset_top = 40.0
+offset_right = 18.0
+offset_bottom = 89.0
+text = "HP: 100
+"
+
+[node name="ShieldLabel" type="Label" parent="Base" unique_id=2020117927]
+offset_left = -40.0
+offset_top = 55.0
+offset_bottom = 78.0
+text = "Shield: 0"
+
 [node name="UI" type="CanvasLayer" parent="." unique_id=1795136296]
 
 [node name="CurrencyLabel" type="Label" parent="UI" unique_id=1922688952]
@@ -32,13 +46,6 @@ offset_top = 50.0
 offset_right = 80.0
 offset_bottom = 73.0
 text = "Wave: 1"
-
-[node name="BaseHealthLabel" type="Label" parent="UI" unique_id=1943597403]
-offset_left = 20.0
-offset_top = 80.0
-offset_right = 78.0
-offset_bottom = 103.0
-text = "HP: 100"
 
 [node name="GameOverScreen" type="ColorRect" parent="UI" unique_id=1276885533]
 process_mode = 3
@@ -139,40 +146,6 @@ layout_mode = 2
 text = "CRIT DMG
 "
 
-[node name="DEFColumn" type="VBoxContainer" parent="UI/UpgradePanel/ColumnsContainer" unique_id=1057792319]
-custom_minimum_size = Vector2(173, 0)
-layout_mode = 2
-
-[node name="DEFHeader" type="Label" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1881426428]
-layout_mode = 2
-text = "🛡 DEF"
-
-[node name="ShieldButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1466170948]
-layout_mode = 2
-text = "SHIELD
-"
-
-[node name="ShieldRegenButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=820873393]
-layout_mode = 2
-text = "SHLD RGN"
-
-[node name="ShieldStrengthButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=920779380]
-layout_mode = 2
-text = "SHLD STR"
-
-[node name="ShieldMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1969434538]
-layout_mode = 2
-text = "SHLD MULT"
-
-[node name="EvasionButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=509706783]
-layout_mode = 2
-text = "EVASION"
-
-[node name="DEFLocked" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=97852440]
-layout_mode = 2
-disabled = true
-text = "🔒 Reach Wave 10"
-
 [node name="HPColumn" type="VBoxContainer" parent="UI/UpgradePanel/ColumnsContainer" unique_id=27764103]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
@@ -205,7 +178,41 @@ text = "HEAL MULT"
 [node name="HPLocked" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=774946569]
 layout_mode = 2
 disabled = true
-text = "🔒 Beat The First Boss"
+text = "🔒 Reach Wave 10"
+
+[node name="DEFColumn" type="VBoxContainer" parent="UI/UpgradePanel/ColumnsContainer" unique_id=1057792319]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+
+[node name="DEFHeader" type="Label" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1881426428]
+layout_mode = 2
+text = "🛡 DEF"
+
+[node name="ShieldButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1466170948]
+layout_mode = 2
+text = "SHIELD
+"
+
+[node name="ShieldRegenButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=820873393]
+layout_mode = 2
+text = "SHLD RGN"
+
+[node name="ShieldStrengthButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=920779380]
+layout_mode = 2
+text = "SHLD STR"
+
+[node name="ShieldMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1969434538]
+layout_mode = 2
+text = "SHLD MULT"
+
+[node name="EvasionButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=509706783]
+layout_mode = 2
+text = "EVASION"
+
+[node name="DEFLocked" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=97852440]
+layout_mode = 2
+disabled = true
+text = "🔒 Beat Boss 1"
 
 [node name="UTILColumn" type="VBoxContainer" parent="UI/UpgradePanel/ColumnsContainer" unique_id=1483226718]
 custom_minimum_size = Vector2(173, 0)
@@ -239,7 +246,7 @@ text = "LP CHANCE"
 [node name="UTILLocked" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=367772935]
 layout_mode = 2
 disabled = true
-text = "🔒 Beat The First Boss"
+text = "🔒 Beat Boss 1"
 
 [node name="PauseButton" type="Button" parent="UI" unique_id=1040772999]
 offset_left = 650.0
@@ -300,16 +307,16 @@ text = "MAIN MENU"
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgMultButton" to="." method="_on_dmg_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/CritChanceButton" to="." method="_on_crit_chance_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/CritDmgButton" to="." method="_on_crit_dmg_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton" to="." method="_on_shield_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldRegenButton" to="." method="_on_shield_regen_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldStrengthButton" to="." method="_on_shield_strength_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldMultButton" to="." method="_on_shield_mult_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/EvasionButton" to="." method="_on_evasion_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/MaxHPButton" to="." method="_on_max_hp_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/HPMultButton" to="." method="_on_hp_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/RegenAmtButton" to="." method="_on_regen_amt_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/RegenSpdButton" to="." method="_on_regen_spd_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/HealMultButton" to="." method="_on_heal_mult_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton" to="." method="_on_shield_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldRegenButton" to="." method="_on_shield_regen_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldStrengthButton" to="." method="_on_shield_strength_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldMultButton" to="." method="_on_shield_mult_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/EvasionButton" to="." method="_on_evasion_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldPerKillButton" to="." method="_on_gold_per_kill_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldMultButton" to="." method="_on_gold_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyPerWaveButton" to="." method="_on_legacy_per_wave_button_pressed"]

@@ -102,39 +102,6 @@ custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "CRIT DMG"
 
-[node name="DEFColumn" type="VBoxContainer" parent="CoreContent/ColumnsContainer" unique_id=1358423566]
-layout_mode = 2
-
-[node name="DEFHeader" type="Label" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=1816303983]
-layout_mode = 2
-text = "🛡 DEF"
-
-[node name="WFloorShield" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=672656909]
-custom_minimum_size = Vector2(173, 0)
-layout_mode = 2
-text = "SHIELD"
-
-[node name="WFloorShieldRegen" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=652597496]
-custom_minimum_size = Vector2(173, 0)
-layout_mode = 2
-text = "SHLD REGEN"
-
-[node name="WFloorDmgReduct" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=52113571]
-custom_minimum_size = Vector2(173, 0)
-layout_mode = 2
-text = "DMG REDUCT"
-
-[node name="WFloorKbFreq" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=2135860025]
-custom_minimum_size = Vector2(173, 0)
-layout_mode = 2
-text = "KB FREQ
-"
-
-[node name="WFloorKbStr" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=1436682713]
-custom_minimum_size = Vector2(173, 0)
-layout_mode = 2
-text = "KB STR"
-
 [node name="HPColumn" type="VBoxContainer" parent="CoreContent/ColumnsContainer" unique_id=896993688]
 layout_mode = 2
 
@@ -152,20 +119,48 @@ custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "REGEN AMT"
 
-[node name="WFloorRegenSpd" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=227387477]
-custom_minimum_size = Vector2(173, 0)
+[node name="WFloorHPMult" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=318670114]
 layout_mode = 2
-text = "REGEN SPD"
-
-[node name="WFloorRecovDelay" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=1054370141]
-custom_minimum_size = Vector2(173, 0)
-layout_mode = 2
-text = "RECOV DLY"
+text = "HP MULT"
 
 [node name="WFloorHealMult" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=278061399]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "HEAL MULT"
+
+[node name="WFloorRegenSpd" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=227387477]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "REGEN SPD"
+
+[node name="DEFColumn" type="VBoxContainer" parent="CoreContent/ColumnsContainer" unique_id=1358423566]
+layout_mode = 2
+
+[node name="DEFHeader" type="Label" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=1816303983]
+layout_mode = 2
+text = "🛡 DEF"
+
+[node name="WFloorShield" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=672656909]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "SHIELD"
+
+[node name="WFloorShieldRegen" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=652597496]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "SHLD REGEN"
+
+[node name="WFloorShieldStrength" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=1276483042]
+layout_mode = 2
+text = "SHLD STR"
+
+[node name="WFloorShieldMult" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=969545979]
+layout_mode = 2
+text = "SHLD MULT"
+
+[node name="WFloorEvasion" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=1491459940]
+layout_mode = 2
+text = "EVASION"
 
 [node name="UTILColumn" type="VBoxContainer" parent="CoreContent/ColumnsContainer" unique_id=1431723202]
 layout_mode = 2
@@ -222,16 +217,16 @@ text = "Skill Tree unlocks at Phase 3"
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorDmgMult" to="." method="_on_w_floor_dmg_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorCritChance" to="." method="_on_w_floor_crit_chance_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorCritDmg" to="." method="_on_w_floor_crit_dmg_pressed"]
-[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShield" to="." method="_on_w_floor_shield_pressed"]
-[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShieldRegen" to="." method="_on_w_floor_shield_rege_pressed"]
-[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorDmgReduct" to="." method="_on_w_floor_dmg_reduct_pressed"]
-[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorKbFreq" to="." method="_on_w_floor_kb_freq_pressed"]
-[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorKbStr" to="." method="_on_w_floor_kb_str_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorMaxHP" to="." method="_on_w_floor_max_hp_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorRegenAmt" to="." method="_on_w_floor_regen_amt_pressed"]
-[connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorRegenSpd" to="." method="_on_w_floor_regen_spd_pressed"]
-[connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorRecovDelay" to="." method="_on_w_floor_recov_delay_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorHPMult" to="." method="_on_button_w_floor_hp_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorHealMult" to="." method="_on_w_floor_heal_mult_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorRegenSpd" to="." method="_on_w_floor_regen_spd_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShield" to="." method="_on_w_floor_shield_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShieldRegen" to="." method="_on_w_floor_shield_rege_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShieldStrength" to="." method="_on_w_floor_shield_strength_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShieldMult" to="." method="_on_w_floor_shield_mult_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorEvasion" to="." method="_on_w_floor_evasion_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorGoldPerKill" to="." method="_on_w_floor_gold_per_kill_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorGoldMult" to="." method="_on_w_floor_gold_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorLpPerWave" to="." method="_on_w_floor_lp_per_wave_pressed"]
