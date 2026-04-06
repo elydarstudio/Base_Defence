@@ -54,7 +54,7 @@ const STAT_LABELS = {
 	"WFloorDmgMult": ["DMG MULT", "+10%"],
 	"WFloorCritChance": ["CRIT %", "+0.8%"],
 	"WFloorCritDmg": ["CRIT DMG", "+10%"],
-	"WFloorShield": ["SHIELD", "+20"],
+	"WFloorShield": ["SHIELD", "+50"],
 	"WFloorShieldRegen": ["SHLD RGN", "-0.005s interval"],
 	"WFloorShieldStrength": ["SHLD STR", "+0.4%"],
 	"WFloorShieldMult": ["SHLD MULT", "+10%"],
@@ -111,17 +111,65 @@ func _apply_unlock_level():
 func _update_ui():
 	var lp = SaveManager.data["legacy_points"]
 	$LPLabel.text = "Legacy Points: " + str(lp)
-	for btn_name in BUTTON_MAP:
-		var key = BUTTON_MAP[btn_name]
-		var level = SaveManager.data[key]
+	var d = SaveManager.data
+
+	var levels = {
+		"WFloorAtkSpd": d["floor_attack_speed"],
+		"WFloorDmg": d["floor_damage"],
+		"WFloorDmgMult": d["floor_dmg_mult"],
+		"WFloorCritChance": d["floor_crit_chance"],
+		"WFloorCritDmg": d["floor_crit_dmg"],
+		"WFloorShield": d["floor_shield"],
+		"WFloorShieldRegen": d["floor_shield_regen"],
+		"WFloorShieldStrength": d["floor_shield_strength"],
+		"WFloorShieldMult": d["floor_shield_mult"],
+		"WFloorEvasion": d["floor_evasion"],
+		"WFloorMaxHP": d["floor_max_hp"],
+		"WFloorRegenAmt": d["floor_regen_amt"],
+		"WFloorRegenSpd": d["floor_regen_spd"],
+		"WFloorHealMult": d["floor_heal_mult"],
+		"WFloorHPMult": d["floor_hp_mult"],
+		"WFloorGoldPerKill": d["floor_gold_per_kill"],
+		"WFloorGoldMult": d["floor_gold_mult"],
+		"WFloorLpGain": d["floor_lp_gain"],
+		"WFloorLpMult": d["floor_legacy_mult"],
+		"WFloorLpDrop": d["floor_legacy_drop"],
+	}
+
+	var current_vals = {
+		"WFloorAtkSpd": str(snappedf(1.0 + (levels["WFloorAtkSpd"] * 0.125), 0.01)) + "/s",
+		"WFloorDmg": str(10 + levels["WFloorDmg"]),
+		"WFloorDmgMult": "+" + str(levels["WFloorDmgMult"] * 10) + "%",
+		"WFloorCritChance": str(snappedf(levels["WFloorCritChance"] * 0.8, 0.1)) + "%",
+		"WFloorCritDmg": str(snappedf(1.5 + (levels["WFloorCritDmg"] * 0.1), 0.01)) + "x",
+		"WFloorShield": str(levels["WFloorShield"] * 50),
+		"WFloorShieldRegen": str(snappedf(max(0.5, 5.0 - (levels["WFloorShieldRegen"] * 0.045)), 0.01)) + "s",
+		"WFloorShieldStrength": str(snappedf(10.0 + (levels["WFloorShieldStrength"] * 0.3), 0.1)) + "%",
+		"WFloorShieldMult": "+" + str(levels["WFloorShieldMult"] * 10) + "%",
+		"WFloorEvasion": str(snappedf(levels["WFloorEvasion"] * 0.2, 0.1)) + "%",
+		"WFloorMaxHP": str(100 + (levels["WFloorMaxHP"] * 10)),
+		"WFloorRegenAmt": str(levels["WFloorRegenAmt"]) + " hp",
+		"WFloorRegenSpd": str(snappedf(max(0.5, 5.0 - (levels["WFloorRegenSpd"] * 0.045)), 0.01)) + "s",
+		"WFloorHealMult": "+" + str(levels["WFloorHealMult"] * 10) + "%",
+		"WFloorHPMult": "+" + str(levels["WFloorHPMult"] * 10) + "%",
+		"WFloorGoldPerKill": "+" + str(levels["WFloorGoldPerKill"]) + "g",
+		"WFloorGoldMult": "+" + str(levels["WFloorGoldMult"] * 10) + "%",
+		"WFloorLpGain": str(1 + levels["WFloorLpGain"]) + " LP",
+		"WFloorLpMult": "+" + str(levels["WFloorLpMult"] * 10) + "%",
+		"WFloorLpDrop": str(snappedf(5.0 + (levels["WFloorLpDrop"] * 0.35), 0.1)) + "%",
+	}
+
+	for btn_name in levels:
+		var level = levels[btn_name]
 		var base_cost = COSTS[btn_name]
 		var cost = _calc_lp_cost(base_cost, level)
 		var label = STAT_LABELS[btn_name][0]
 		var per_level = STAT_LABELS[btn_name][1]
+		var current = current_vals[btn_name]
 		var btn = _find_button(btn_name)
 		if btn == null:
 			continue
-		btn.text = label + "\nLv" + str(level) + " → " + str(level + 1) + "\n" + per_level + " | " + str(cost) + " LP"
+		btn.text = label + "\n" + current + " | " + per_level + "\n" + str(cost) + " LP"
 		btn.disabled = lp < cost
 
 func _find_button(btn_name: String) -> Button:

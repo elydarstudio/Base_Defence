@@ -215,10 +215,10 @@ func _apply_workshop_floors():
 	$Base.crit_damage += crit_dmg_level * 0.10
 	# DEF
 	shield_level = d["floor_shield"]
-	$Base.max_shield += shield_level * 20.0
-	$Base.shield += shield_level * 20.0
+	$Base.max_shield += shield_level * 50.0
+	$Base.shield += shield_level * 50.0
 	shield_regen_level = d["floor_shield_regen"]
-	$Base.shield_regen_interval = max(0.5, 1.0 - (shield_regen_level * 0.005))
+	$Base.shield_regen_interval = max(0.5, 5.0 - (shield_regen_level * 0.045))
 	shield_strength_level = d["floor_shield_strength"]
 	$Base.shield_strength += shield_strength_level * 0.004
 	shield_mult_level = d["floor_shield_mult"]
@@ -379,10 +379,10 @@ func _update_ui():
 	# DEF
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton,
 		"SHIELD", shield_level, shield_max, shield_cost,
-		str(shield_level * 20))
+		str(shield_level * 50))
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldRegenButton,
 		"SHLD RGN", shield_regen_level, shield_regen_max, shield_regen_cost,
-		str(snappedf(max(0.5, 1.0 - (shield_regen_level * 0.005)), 0.01)) + "s")
+		str(snappedf(max(0.5, 5.0 - (shield_regen_level * 0.045)), 0.01)) + "s")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldStrengthButton,
 		"SHLD STR", shield_strength_level, shield_strength_max, shield_strength_cost,
 		str(snappedf(shield_strength_level * 0.4, 0.1)) + "%")
@@ -483,8 +483,8 @@ func _on_shield_button_pressed():
 	currency -= shield_cost
 	shield_level += 1
 	shield_cost = _calc_cost(30, shield_level, false)
-	$Base.max_shield += 20.0
-	$Base.shield += 20.0
+	$Base.max_shield += 50.0
+	$Base.shield += 50.0
 	$Base._update_combat_ui()
 	_update_ui()
 
@@ -493,7 +493,7 @@ func _on_shield_regen_button_pressed():
 	currency -= shield_regen_cost
 	shield_regen_level += 1
 	shield_regen_cost = _calc_cost(45, shield_regen_level, true)
-	$Base.shield_regen_interval = max(0.5, 1.0 - (shield_regen_level * 0.005))
+	$Base.shield_regen_interval = max(0.5, 5.0 - (shield_regen_level * 0.045))
 	_update_ui()
 
 func _on_shield_strength_button_pressed():

@@ -22,7 +22,7 @@ var heal_multiplier: float = 1.0
 # Shield
 var max_shield: float = 0.0
 var shield: float = 0.0
-var shield_regen_interval: float = 1.0
+var shield_regen_interval: float = 5.0
 var shield_regen_timer: float = 0.0
 var shield_strength: float = 0.1
 var shield_multiplier: float = 1.0
