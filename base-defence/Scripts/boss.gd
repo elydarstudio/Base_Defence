@@ -81,7 +81,15 @@ func take_damage(amount: float, type: String = "normal"):
 
 func _die():
 	if main_node != null:
-		main_node.add_currency(100)
+		main_node.add_currency(100 + ((main_node.phase - 1) * 20))
+		var lp_drop = 10 + ((main_node.phase - 1) * 3)
+		var lp_gain = main_node.lp_gain_level
+		var lp_mult = main_node.legacy_mult_level
+		var total_lp = int((lp_drop + lp_gain) * (1.0 + (lp_mult * 0.1)))
+		main_node.run_lp += total_lp
+		SaveManager.data["legacy_points"] += total_lp
+		SaveManager.save_game()
+		main_node.spawn_damage_number(total_lp, global_position + Vector2(0, -50), "lp")
 		main_node.on_boss_killed()
 	queue_free()
 
