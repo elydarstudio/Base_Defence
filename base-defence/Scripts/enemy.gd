@@ -81,8 +81,9 @@ func _die():
 		var base_gold = 5 + (main_node.phase * 3)
 		main_node.add_currency(base_gold)
 		main_node.spawn_damage_number(base_gold, global_position + Vector2(0, -35), "gold")
+		main_node.on_enemy_killed()
 	queue_free()
-
+	
 func setup(base: Node2D, main: Node):
 	base_node = base
 	main_node = main

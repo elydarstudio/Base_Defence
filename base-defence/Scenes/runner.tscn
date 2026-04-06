@@ -2,9 +2,12 @@
 
 [ext_resource type="Script" uid="uid://c770bt3b300dr" path="res://Scripts/runner.gd" id="1_q3e2r"]
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_q3e2r"]
+
 [node name="Runner" type="Area2D" unique_id=844063752]
 script = ExtResource("1_q3e2r")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1623066600]
+shape = SubResource("CircleShape2D_q3e2r")
 
 [node name="Visual" type="Polygon2D" parent="." unique_id=18544040]

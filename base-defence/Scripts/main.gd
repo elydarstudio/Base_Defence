@@ -9,9 +9,9 @@ var damage_number_scene: PackedScene
 
 # Spawn
 var spawn_timer: float = 0.0
-var spawn_interval: float = 1.25
-var wave_timer: float = 0.0
-var wave_duration: float = 25.0
+var enemies_to_spawn: int = 0
+var enemies_spawned: int = 0
+var wave_complete: bool = false
 
 # Progress
 var wave: int = 1
@@ -30,16 +30,14 @@ var legacy_points: int = 0
 var panel_open: bool = false
 
 # ── ATK stats ─────────────────────────────────
-# CAPPED
 var attack_speed_level: int = 0
 var attack_speed_cost: int = 45
-var attack_speed_max: int = 100  # 100 * 0.06/s = 6.0 + base 1.0 = 7.0/s cap
+var attack_speed_max: int = 100
 
 var crit_chance_level: int = 0
 var crit_chance_cost: int = 45
-var crit_chance_max: int = 100  # 100 * 0.8% = 80% cap
+var crit_chance_max: int = 100
 
-# INFINITE
 var damage_level: int = 0
 var damage_cost: int = 30
 var damage_max: int = 999
@@ -53,16 +51,14 @@ var crit_dmg_cost: int = 30
 var crit_dmg_max: int = 999
 
 # ── DEF stats ─────────────────────────────────
-# CAPPED
 var shield_strength_level: int = 0
 var shield_strength_cost: int = 45
-var shield_strength_max: int = 100  # 100 * 0.3% = 30% + base 10% = 40% cap
+var shield_strength_max: int = 100
 
 var evasion_level: int = 0
 var evasion_cost: int = 45
-var evasion_max: int = 100  # 100 * 0.2% = 20% cap
+var evasion_max: int = 100
 
-# INFINITE
 var shield_level: int = 0
 var shield_cost: int = 30
 var shield_max: int = 999
@@ -76,7 +72,6 @@ var shield_mult_cost: int = 30
 var shield_mult_max: int = 999
 
 # ── HP stats ──────────────────────────────────
-# INFINITE
 var max_hp_level: int = 0
 var max_hp_cost: int = 30
 var max_hp_max: int = 999
@@ -98,7 +93,6 @@ var heal_mult_cost: int = 30
 var heal_mult_max: int = 999
 
 # ── UTIL stats ────────────────────────────────
-# INFINITE
 var gold_per_kill_level: int = 0
 var gold_per_kill_cost: int = 30
 var gold_per_kill_max: int = 999
@@ -117,29 +111,28 @@ var legacy_mult_max: int = 999
 
 var legacy_drop_level: int = 0
 var legacy_drop_cost: int = 45
-var legacy_drop_max: int = 100 # 50 * 0.8% = 40% cap
+var legacy_drop_max: int = 100
 
 var tooltip_buttons: Dictionary = {}
 
+const BASE_ENEMIES_PER_WAVE = 15
+const ENEMIES_PER_WAVE_WAVE_SCALING = 2
+const ENEMIES_PER_WAVE_PHASE_SCALING = 3
+
 const UNLOCK_REQUIREMENTS = {
-	# unlock_level 0
 	"ATKSpdButton": 0,
 	"DmgButton": 0,
-	# unlock_level 1 — reach wave 10
 	"MaxHPButton": 1,
 	"RegenAmtButton": 1,
-	# unlock_level 2 — beat boss 1
 	"ShieldButton": 2,
 	"ShieldRegenButton": 2,
 	"GoldPerKillButton": 2,
 	"LPGainButton": 2,
-	# unlock_level 3 — beat boss 2
 	"DmgMultButton": 3,
 	"HPMultButton": 3,
 	"ShieldStrengthButton": 3,
 	"GoldMultButton": 3,
 	"LegacyMultButton": 3,
-	# unlock_level 4 — reach phase 3 boss
 	"CritChanceButton": 4,
 	"CritDmgButton": 4,
 	"RegenSpdButton": 4,
@@ -147,7 +140,6 @@ const UNLOCK_REQUIREMENTS = {
 	"ShieldMultButton": 4,
 	"EvasionButton": 4,
 	"LegacyDropButton": 4,
-	# locked placeholders
 	"DEFLocked": 999,
 	"HPLocked": 999,
 	"UTILLocked": 999,
@@ -166,6 +158,7 @@ func _ready():
 	$Base.set_main(self)
 	_apply_workshop_floors()
 	_apply_unlock_level()
+	enemies_to_spawn = _get_wave_enemy_count()
 	_update_ui()
 	tooltip_buttons = {
 		$UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton: "atk_spd",
@@ -193,6 +186,10 @@ func _ready():
 		var key = tooltip_buttons[btn]
 		btn.mouse_entered.connect(func(): _show_tooltip(key))
 		btn.mouse_exited.connect(func(): _hide_tooltip())
+
+func _get_wave_enemy_count() -> int:
+	return BASE_ENEMIES_PER_WAVE + (wave * ENEMIES_PER_WAVE_WAVE_SCALING) + (phase * ENEMIES_PER_WAVE_PHASE_SCALING)
+
 func _calc_cost(base: int, level: int, is_capped: bool) -> int:
 	if is_capped:
 		var scale = 1.23 if level < 50 else 1.4
@@ -202,8 +199,6 @@ func _calc_cost(base: int, level: int, is_capped: bool) -> int:
 
 func _apply_unlock_level():
 	var unlock = SaveManager.data["unlock_level"]
-	
-	# Hide/show individual stat buttons
 	var columns = ["ATKColumn", "DEFColumn", "HPColumn", "UTILColumn"]
 	for col in columns:
 		var col_node = $UI/UpgradePanel/ColumnsContainer.get_node(col)
@@ -211,12 +206,9 @@ func _apply_unlock_level():
 			if child is Button:
 				var required = UNLOCK_REQUIREMENTS.get(child.name, 3)
 				child.visible = unlock >= required
-
-	# Show/hide locked placeholders
 	var def_locked = $UI/UpgradePanel/ColumnsContainer/DEFColumn/DEFLocked
 	var hp_locked = $UI/UpgradePanel/ColumnsContainer/HPColumn/HPLocked
 	var util_locked = $UI/UpgradePanel/ColumnsContainer/UTILColumn/UTILLocked
-
 	def_locked.visible = unlock < 1
 	hp_locked.visible = unlock < 2
 	util_locked.visible = unlock < 2
@@ -233,7 +225,6 @@ func _check_unlock_progression():
 
 func _apply_workshop_floors():
 	var d = SaveManager.data
-	# ATK
 	attack_speed_level = d["floor_attack_speed"]
 	$Base.fire_rate += attack_speed_level * 0.125
 	damage_level = d["floor_damage"]
@@ -244,7 +235,6 @@ func _apply_workshop_floors():
 	$Base.crit_chance += crit_chance_level * 0.0125
 	crit_dmg_level = d["floor_crit_dmg"]
 	$Base.crit_damage += crit_dmg_level * 0.10
-	# DEF
 	shield_level = d["floor_shield"]
 	$Base.max_shield += shield_level * 50.0
 	$Base.shield += shield_level * 50.0
@@ -256,38 +246,38 @@ func _apply_workshop_floors():
 	$Base.shield_multiplier += shield_mult_level * 0.1
 	evasion_level = d["floor_evasion"]
 	$Base.evasion += evasion_level * 0.002
-	# HP
 	max_hp_level = d["floor_max_hp"]
 	$Base.increase_max_health(max_hp_level * 10.0)
 	regen_amt_level = d["floor_regen_amt"]
 	$Base.hp_regen += regen_amt_level * 1.0
 	regen_spd_level = d["floor_regen_spd"]
-	$Base.regen_interval = max(1.0, 5.0 - (regen_spd_level * 0.1))
+	$Base.regen_interval = max(0.5, 5.0 - (regen_spd_level * 0.045))
 	heal_mult_level = d["floor_heal_mult"]
 	$Base.heal_multiplier += heal_mult_level * 0.1
 	hp_mult_level = d["floor_hp_mult"]
 	$Base.hp_multiplier += hp_mult_level * 0.1
-	# UTIL
 	gold_per_kill_level = d["floor_gold_per_kill"]
 	gold_mult_level = d["floor_gold_mult"]
 	lp_gain_level = d["floor_lp_gain"]
 	legacy_mult_level = d["floor_legacy_mult"]
 	legacy_drop_level = d["floor_legacy_drop"]
-	
+
 func _process(delta):
 	if game_over:
 		return
 	if boss_wave:
 		return
-	wave_timer += delta
+	if wave_complete:
+		return
 	spawn_timer += delta
-	var current_spawn_interval = spawn_interval / (1.0 + (difficulty * 0.09))
-	if spawn_timer >= current_spawn_interval:
+	var current_spawn_interval = 1.8 / (1.0 + (difficulty * 0.09))
+	if spawn_timer >= current_spawn_interval and enemies_spawned < enemies_to_spawn:
 		spawn_timer = 0.0
+		enemies_spawned += 1
 		_spawn_enemy()
-	if wave_timer >= wave_duration:
-		wave_timer = 0.0
-		_advance_wave()
+
+func _get_spawn_scene() -> PackedScene:
+	return enemy_scene
 
 func _spawn_enemy():
 	var scene = _get_spawn_scene()
@@ -297,20 +287,13 @@ func _spawn_enemy():
 	e.scale_to_wave(difficulty)
 	e.global_position = _random_edge_position()
 
-func _get_spawn_scene() -> PackedScene:
-	var brute_chance = 0.0
-	var runner_chance = 0.0
-	if phase >= 2:
-		brute_chance = min(0.05 + ((phase - 2) * 0.005), 0.15)
-	if phase >= 3:
-		runner_chance = min(0.05 + ((phase - 3) * 0.005), 0.15)
-	var roll = randf()
-	if roll < brute_chance:
-		return brute_scene
-	elif roll < brute_chance + runner_chance:
-		return runner_scene
-	return enemy_scene
-
+func on_enemy_killed():
+	if enemies_spawned >= enemies_to_spawn and not boss_wave:
+		var remaining = get_tree().get_nodes_in_group("enemies").size()
+		if remaining <= 1:
+			wave_complete = true
+			_advance_wave()
+			
 func _spawn_boss():
 	boss_wave = true
 	boss_alive = true
@@ -324,9 +307,10 @@ func _spawn_boss():
 func _advance_wave():
 	wave += 1
 	difficulty += 1
+	enemies_spawned = 0
+	enemies_to_spawn = _get_wave_enemy_count()
+	wave_complete = false
 	_check_unlock_progression()
-	spawn_interval = 1.8 / (1.0 + (difficulty * 0.09))
-	# Legacy per wave
 	var lp_earned = 1 + lp_gain_level
 	var lp_total = int(lp_earned * (1.0 + (legacy_mult_level * 0.1)))
 	legacy_points += lp_total
@@ -343,7 +327,9 @@ func on_boss_killed():
 	wave += 1
 	phase += 1
 	difficulty += 3
-	spawn_interval = 1.8 / (1.0 + (difficulty * 0.09))
+	enemies_spawned = 0
+	enemies_to_spawn = _get_wave_enemy_count()
+	wave_complete = false
 	enemies_killed = 0
 	var unlock = SaveManager.data["unlock_level"]
 	if phase > SaveManager.data["max_start_phase"]:
@@ -362,7 +348,6 @@ func add_currency(amount: int):
 	var multiplied = int(total * (1.0 + (gold_mult_level * 0.1)))
 	currency += multiplied
 	enemies_killed += 1
-	# Legacy drop chance
 	var drop_chance = 0.05 + (legacy_drop_level * 0.0035)
 	if randf() < drop_chance:
 		var drop = int((1 + lp_gain_level) * (1.0 + (legacy_mult_level * 0.1)))
@@ -390,7 +375,6 @@ func _on_restart_button_pressed():
 	get_tree().paused = false
 	get_tree().reload_current_scene()
 
-# ── Panel toggle ──────────────────────────────
 func _on_panel_handle_pressed():
 	panel_open = !panel_open
 	var target_y = 1280 - 400 if panel_open else 1280
@@ -399,12 +383,9 @@ func _on_panel_handle_pressed():
 	tween.tween_property(panel, "position:y", target_y, 0.2)
 	$UI/UpgradePanel/PanelHandle.text = "▼ UPGRADES" if panel_open else "▲ UPGRADES"
 
-# ── UI update ─────────────────────────────────
 func _update_ui():
 	$UI/CurrencyLabel.text = "Gold: " + str(currency) + "  |  LP: " + str(legacy_points)
 	$UI/WaveLabel.text = "Wave: " + str(wave) + " | Phase: " + str(phase)
-
-	# ATK
 	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton,
 		"ATK SPD", attack_speed_level, attack_speed_max, attack_speed_cost,
 		str(snappedf($Base.fire_rate, 0.01)) + "/s")
@@ -420,9 +401,6 @@ func _update_ui():
 	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/CritDmgButton,
 		"CRIT DMG", crit_dmg_level, crit_dmg_max, crit_dmg_cost,
 		"+" + str(crit_dmg_level * 10) + "%")
-
-	# DEF
-	# DEF
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton,
 		"SHIELD", shield_level, shield_max, shield_cost,
 		str(shield_level * 50))
@@ -431,15 +409,13 @@ func _update_ui():
 		str(snappedf(max(0.5, 5.0 - (shield_regen_level * 0.045)), 0.01)) + "s")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldStrengthButton,
 		"SHLD STR", shield_strength_level, shield_strength_max, shield_strength_cost,
-		str(snappedf(shield_strength_level * 0.4, 0.1)) + "%")
+		str(snappedf(10.0 + (shield_strength_level * 0.3), 0.1)) + "%")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldMultButton,
 		"SHLD MULT", shield_mult_level, shield_mult_max, shield_mult_cost,
 		"+" + str(shield_mult_level * 10) + "%")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/EvasionButton,
 		"EVASION", evasion_level, evasion_max, evasion_cost,
 		str(snappedf(evasion_level * 0.2, 0.1)) + "%")
-
-	# HP
 	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/MaxHPButton,
 		"MAX HP", max_hp_level, max_hp_max, max_hp_cost,
 		str(100 + (max_hp_level * 10)))
@@ -448,18 +424,16 @@ func _update_ui():
 		str(regen_amt_level) + " hp")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/RegenSpdButton,
 		"REGEN SPD", regen_spd_level, regen_spd_max, regen_spd_cost,
-		str(max(1.0, 5.0 - (regen_spd_level * 0.1))) + "s")
+		str(snappedf(max(0.5, 5.0 - (regen_spd_level * 0.045)), 0.01)) + "s")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/HPMultButton,
 		"HP MULT", hp_mult_level, hp_mult_max, hp_mult_cost,
 		"+" + str(hp_mult_level * 10) + "%")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/HealMultButton,
 		"HEAL MULT", heal_mult_level, heal_mult_max, heal_mult_cost,
 		"+" + str(heal_mult_level * 10) + "%")
-
-	# UTIL
 	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldPerKillButton,
 		"GOLD/KILL", gold_per_kill_level, gold_per_kill_max, gold_per_kill_cost,
-		"+" + str(gold_per_kill_level * 2) + "g")
+		"+" + str(gold_per_kill_level) + "g")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldMultButton,
 		"GOLD MULT", gold_mult_level, gold_mult_max, gold_mult_cost,
 		"+" + str(gold_mult_level * 10) + "%")
@@ -501,7 +475,7 @@ func _on_tooltip_timer_timeout():
 			x = mouse.x - panel_width - 10
 		$UI/TooltipPanel.position = Vector2(x, mouse.y - 60)
 		$UI/TooltipPanel.visible = true
-		
+
 func _show_tooltip_instant(key: String):
 	$UI/TooltipPanel/TooltipLabel.text = TooltipData.TIPS[key]
 	var mouse = get_viewport().get_mouse_position()
@@ -511,7 +485,7 @@ func _show_tooltip_instant(key: String):
 		x = mouse.x - panel_width - 10
 	$UI/TooltipPanel.position = Vector2(x, mouse.y - 60)
 	$UI/TooltipPanel.visible = true
-			
+
 func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		for btn in tooltip_buttons:
@@ -529,7 +503,7 @@ func _on_atk_spd_button_pressed():
 	var gain = 0.12 / (1.0 + attack_speed_level * 0.02)
 	$Base.fire_rate += gain
 	_update_ui()
-	
+
 func _on_dmg_button_pressed():
 	if currency < damage_cost or damage_level >= damage_max: return
 	currency -= damage_cost
@@ -626,7 +600,7 @@ func _on_regen_spd_button_pressed():
 	if currency < regen_spd_cost or regen_spd_level >= regen_spd_max: return
 	currency -= regen_spd_cost
 	regen_spd_level += 1
-	regen_spd_cost = _calc_cost(30, regen_spd_level, false)
+	regen_spd_cost = _calc_cost(45, regen_spd_level, true)
 	$Base.regen_interval = max(0.5, 5.0 - (regen_spd_level * 0.045))
 	_update_ui()
 
@@ -691,7 +665,6 @@ func _random_edge_position() -> Vector2:
 		3: return Vector2(740, randf_range(0, 1280))
 	return Vector2.ZERO
 
-
 # ── Pause ─────────────────────────────────────
 func _on_pause_button_pressed():
 	get_tree().paused = true
@@ -710,7 +683,7 @@ func _on_pause_menu_button_pressed():
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")
 
-# ── Game Over extra button ─────────────────────
+# ── Game Over ─────────────────────────────────
 func _on_menu_button_pressed():
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")

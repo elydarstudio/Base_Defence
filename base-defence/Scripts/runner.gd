@@ -77,6 +77,7 @@ func _die():
 	if main_node != null:
 		main_node.add_currency(currency_value)
 		main_node.spawn_damage_number(currency_value, global_position + Vector2(0, -35), "gold")
+		main_node.on_enemy_killed()
 	queue_free()
 
 func setup(base: Node2D, main: Node):
