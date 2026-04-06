@@ -105,9 +105,9 @@ var gold_mult_level: int = 0
 var gold_mult_cost: int = 30
 var gold_mult_max: int = 999
 
-var legacy_per_wave_level: int = 0
-var legacy_per_wave_cost: int = 30
-var legacy_per_wave_max: int = 999
+var lp_gain_level: int = 0
+var lp_gain_cost: int = 30
+var lp_gain_max: int = 999
 
 var legacy_mult_level: int = 0
 var legacy_mult_cost: int = 30
@@ -128,7 +128,7 @@ const UNLOCK_REQUIREMENTS = {
 	"ShieldButton": 2,
 	"ShieldRegenButton": 2,
 	"GoldPerKillButton": 2,
-	"LegacyPerWaveButton": 2,
+	"LPGainButton": 2,
 	# unlock_level 3 — beat boss 2
 	"DmgMultButton": 3,
 	"HPMultButton": 3,
@@ -238,7 +238,7 @@ func _apply_workshop_floors():
 	# UTIL
 	gold_per_kill_level = d["floor_gold_per_kill"]
 	gold_mult_level = d["floor_gold_mult"]
-	legacy_per_wave_level = d["floor_legacy_per_wave"]
+	lp_gain_level = d["floor_lp_gain"]
 	legacy_mult_level = d["floor_legacy_mult"]
 	legacy_drop_level = d["floor_legacy_drop"]
 	
@@ -280,7 +280,7 @@ func _advance_wave():
 	_check_unlock_progression()
 	spawn_interval = 1.8 / (1.0 + (difficulty * 0.12))
 	# Legacy per wave
-	var lp_earned = 1 + legacy_per_wave_level
+	var lp_earned = 1 + lp_gain_level
 	var lp_total = int(lp_earned * (1.0 + (legacy_mult_level * 0.1)))
 	legacy_points += lp_total
 	SaveManager.data["legacy_points"] = legacy_points
@@ -313,9 +313,10 @@ func add_currency(amount: int):
 	currency += multiplied
 	enemies_killed += 1
 	# Legacy drop chance
-	var drop_chance = legacy_drop_level * 0.05
+	var drop_chance = 0.1 + (legacy_drop_level * 0.008)
 	if randf() < drop_chance:
-		legacy_points += 1
+		var drop = int((1 + lp_gain_level) * (1.0 + (legacy_mult_level * 0.1)))
+		legacy_points += drop
 		SaveManager.data["legacy_points"] = legacy_points
 		SaveManager.save_game()
 	_update_ui()
@@ -412,9 +413,9 @@ func _update_ui():
 	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldMultButton,
 		"GOLD MULT", gold_mult_level, gold_mult_max, gold_mult_cost,
 		"+" + str(gold_mult_level * 10) + "%")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyPerWaveButton,
-		"LP/WAVE", legacy_per_wave_level, legacy_per_wave_max, legacy_per_wave_cost,
-		"+" + str(legacy_per_wave_level))
+	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/LPGainButton,
+		"LP GAIN", lp_gain_level, lp_gain_max, lp_gain_cost,
+		"+" + str(lp_gain_level) + " LP")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyMultButton,
 		"LP MULT", legacy_mult_level, legacy_mult_max, legacy_mult_cost,
 		"+" + str(legacy_mult_level * 10) + "%")
@@ -571,11 +572,11 @@ func _on_gold_mult_button_pressed():
 	gold_mult_cost = _calc_cost(30, gold_mult_level, false)
 	_update_ui()
 
-func _on_legacy_per_wave_button_pressed():
-	if currency < legacy_per_wave_cost or legacy_per_wave_level >= legacy_per_wave_max: return
-	currency -= legacy_per_wave_cost
-	legacy_per_wave_level += 1
-	legacy_per_wave_cost = _calc_cost(30, legacy_per_wave_level, false)
+func _on_lp_gain_button_pressed():
+	if currency < lp_gain_cost or lp_gain_level >= lp_gain_max: return
+	currency -= lp_gain_cost
+	lp_gain_level += 1
+	lp_gain_cost = _calc_cost(30, lp_gain_level, false)
 	_update_ui()
 
 func _on_legacy_mult_button_pressed():

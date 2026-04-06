@@ -20,7 +20,7 @@ const COSTS = {
 	"WFloorHPMult": 20,
 	"WFloorGoldPerKill": 8,
 	"WFloorGoldMult": 18,
-	"WFloorLpPerWave": 8,
+	"WFloorLpGain": 8,
 	"WFloorLpMult": 18,
 	"WFloorLpDrop": 15,
 }
@@ -43,7 +43,7 @@ const BUTTON_MAP = {
 	"WFloorHPMult": "floor_hp_mult",
 	"WFloorGoldPerKill": "floor_gold_per_kill",
 	"WFloorGoldMult": "floor_gold_mult",
-	"WFloorLpPerWave": "floor_legacy_per_wave",
+	"WFloorLpGain": "floor_lp_gain",
 	"WFloorLpMult": "floor_legacy_mult",
 	"WFloorLpDrop": "floor_legacy_drop",
 }
@@ -66,7 +66,7 @@ const STAT_LABELS = {
 	"WFloorHPMult": ["HP MULT", "+10%"],
 	"WFloorGoldPerKill": ["GOLD/KILL", "+1g"],
 	"WFloorGoldMult": ["GOLD MULT", "+10%"],
-	"WFloorLpPerWave": ["LP/WAVE", "+1"],
+	"WFloorLpGain": ["LP GAIN", "+1 LP"],
 	"WFloorLpMult": ["LP MULT", "+10%"],
 	"WFloorLpDrop": ["LP CHANCE", "+5%"],
 }
@@ -79,7 +79,7 @@ const WORKSHOP_UNLOCK_REQUIREMENTS = {
 	"WFloorShield": 2,
 	"WFloorShieldRegen": 2,
 	"WFloorGoldPerKill": 2,
-	"WFloorLpPerWave": 2,
+	"WFloorLpGain": 2,
 	"WFloorDmgMult": 3,
 	"WFloorHPMult": 3,
 	"WFloorShieldStrength": 3,

@@ -24,7 +24,7 @@ var data = {
 	"floor_heal_mult": 0,
 	"floor_gold_per_kill": 0,
 	"floor_gold_mult": 0,
-	"floor_legacy_per_wave": 0,
+	"floor_lp_gain": 0,  # replaces floor_legacy_per_wave
 	"floor_legacy_mult": 0,
 	"floor_legacy_drop": 0,
 	# Phase start

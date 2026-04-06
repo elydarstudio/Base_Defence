@@ -230,7 +230,7 @@ text = "GOLD/KILL"
 layout_mode = 2
 text = "GOLD MULT"
 
-[node name="LegacyPerWaveButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=1700874118]
+[node name="LPGainButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=1700874118]
 layout_mode = 2
 text = "LP/WAVE
 "
@@ -319,7 +319,7 @@ text = "MAIN MENU"
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/EvasionButton" to="." method="_on_evasion_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldPerKillButton" to="." method="_on_gold_per_kill_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldMultButton" to="." method="_on_gold_mult_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyPerWaveButton" to="." method="_on_legacy_per_wave_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LPGainButton" to="." method="_on_lp_gain_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyMultButton" to="." method="_on_legacy_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyDropButton" to="." method="_on_legacy_drop_button_pressed"]
 [connection signal="pressed" from="UI/PauseButton" to="." method="_on_pause_button_pressed"]
