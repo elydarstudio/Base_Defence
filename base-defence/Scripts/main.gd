@@ -7,7 +7,7 @@ var runner_scene: PackedScene
 var boss_scene: PackedScene
 var damage_number_scene: PackedScene
 
-#Game Speed
+# Game Speed
 var speed_index: int = 0
 var speed_steps: Array = [1.0, 1.5, 2.0]
 
@@ -29,7 +29,7 @@ var boss_alive: bool = false
 
 # Economy
 var currency: int = 0
-var legacy_points: int = 0
+var run_lp: int = 0  # LP earned THIS run, shown in-game
 
 # UI state
 var panel_open: bool = false
@@ -119,6 +119,7 @@ var legacy_drop_cost: int = 45
 var legacy_drop_max: int = 100
 
 var tooltip_buttons: Dictionary = {}
+var tooltip_key: String = ""
 
 const BASE_ENEMIES_PER_WAVE = 12
 const ENEMIES_PER_WAVE_WAVE_SCALING = 2
@@ -298,7 +299,7 @@ func on_enemy_killed():
 		if remaining <= 1:
 			wave_complete = true
 			_advance_wave()
-			
+
 func _spawn_boss():
 	boss_wave = true
 	boss_alive = true
@@ -316,10 +317,11 @@ func _advance_wave():
 	enemies_to_spawn = _get_wave_enemy_count()
 	wave_complete = false
 	_check_unlock_progression()
+	# LP per wave — add to run total and save incrementally
 	var lp_earned = 1 + lp_gain_level
 	var lp_total = int(lp_earned * (1.0 + (legacy_mult_level * 0.1)))
-	legacy_points += lp_total
-	SaveManager.data["legacy_points"] = legacy_points
+	run_lp += lp_total
+	SaveManager.data["legacy_points"] += lp_total
 	SaveManager.save_game()
 	if wave % 10 == 0:
 		_spawn_boss()
@@ -353,11 +355,12 @@ func add_currency(amount: int):
 	var multiplied = int(total * (1.0 + (gold_mult_level * 0.1)))
 	currency += multiplied
 	enemies_killed += 1
+	# LP drop chance — add to run total and save incrementally
 	var drop_chance = 0.05 + (legacy_drop_level * 0.0035)
 	if randf() < drop_chance:
 		var drop = int((1 + lp_gain_level) * (1.0 + (legacy_mult_level * 0.1)))
-		legacy_points += drop
-		SaveManager.data["legacy_points"] = legacy_points
+		run_lp += drop
+		SaveManager.data["legacy_points"] += drop
 		SaveManager.save_game()
 	_update_ui()
 
@@ -370,7 +373,6 @@ func trigger_game_over():
 	game_over = true
 	$UI/GameOverScreen.visible = true
 	$UI/GameOverScreen/PhaseLabel.text = "Phase Reached: " + str(phase)
-	SaveManager.data["legacy_points"] += legacy_points
 	if phase > SaveManager.data["best_phase"]:
 		SaveManager.data["best_phase"] = phase
 	SaveManager.save_game()
@@ -378,9 +380,9 @@ func trigger_game_over():
 	get_tree().paused = true
 
 func _on_restart_button_pressed():
+	Engine.time_scale = 1.0
 	get_tree().paused = false
 	get_tree().reload_current_scene()
-	Engine.time_scale = 1.0
 
 func _on_panel_handle_pressed():
 	panel_open = !panel_open
@@ -391,7 +393,7 @@ func _on_panel_handle_pressed():
 	$UI/UpgradePanel/PanelHandle.text = "▼ UPGRADES" if panel_open else "▲ UPGRADES"
 
 func _update_ui():
-	$UI/CurrencyLabel.text = "Gold: " + str(currency) + "  |  LP: " + str(legacy_points)
+	$UI/CurrencyLabel.text = "💰 " + str(currency) + "  |  ⭐ " + str(run_lp)
 	$UI/WaveLabel.text = "Wave: " + str(wave) + " | Phase: " + str(phase)
 	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton,
 		"ATK SPD", attack_speed_level, attack_speed_max, attack_speed_cost,
@@ -461,8 +463,6 @@ func _update_btn(btn: Button, label: String, level: int, max_level: int, cost: i
 	else:
 		btn.text = label + "\nLv" + str(level + 1) + " - " + str(cost) + "g\n" + stat
 		btn.disabled = currency < cost
-
-var tooltip_key: String = ""
 
 func _show_tooltip(key: String):
 	tooltip_key = key
@@ -666,12 +666,12 @@ func _on_legacy_drop_button_pressed():
 func _random_edge_position() -> Vector2:
 	spawn_edge = (spawn_edge + 1) % 6
 	match spawn_edge:
-		0: return Vector2(randf_range(0, 720), -20)          # top
-		1: return Vector2(randf_range(0, 720), 1300)         # bottom
-		2: return Vector2(-20, randf_range(0, 640))          # left top
-		3: return Vector2(-20, randf_range(640, 1280))       # left bottom
-		4: return Vector2(740, randf_range(0, 640))          # right top
-		5: return Vector2(740, randf_range(640, 1280))       # right bottom
+		0: return Vector2(randf_range(0, 720), -20)
+		1: return Vector2(randf_range(0, 720), 1300)
+		2: return Vector2(-20, randf_range(0, 640))
+		3: return Vector2(-20, randf_range(640, 1280))
+		4: return Vector2(740, randf_range(0, 640))
+		5: return Vector2(740, randf_range(640, 1280))
 	return Vector2.ZERO
 
 # ── Pause ─────────────────────────────────────
@@ -684,22 +684,22 @@ func _on_resume_button_pressed():
 	$UI/PauseScreen.visible = false
 
 func _on_pause_restart_button_pressed():
+	Engine.time_scale = 1.0
 	get_tree().paused = false
 	await get_tree().process_frame
 	get_tree().reload_current_scene()
-	Engine.time_scale = 1.0
 
 func _on_pause_menu_button_pressed():
+	Engine.time_scale = 1.0
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")
-	Engine.time_scale = 1.0
 
 # ── Game Over ─────────────────────────────────
 func _on_menu_button_pressed():
+	Engine.time_scale = 1.0
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")
-	Engine.time_scale = 1.0
-	
+
 func _on_speed_button_pressed():
 	speed_index = (speed_index + 1) % speed_steps.size()
 	Engine.time_scale = speed_steps[speed_index]
