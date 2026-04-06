@@ -24,6 +24,8 @@ TooltipData="*uid://dq4cdowwcg7y6"
 
 window/size/viewport_width=720
 window/size/viewport_height=1280
+window/size/window_width_override=540
+window/size/window_height_override=880
 window/stretch/mode="canvas_items"
 
 [physics]

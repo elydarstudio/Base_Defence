@@ -197,7 +197,7 @@ func _update_ui():
 		var btn = _find_button(btn_name)
 		if btn == null:
 			continue
-		btn.text = label + "\n" + current + " | " + per_level + "\n" + str(cost) + " LP"
+		btn.text = label + " (Lv" + str(level) + ")\n" + current + " | " + per_level + "\n" + str(cost) + " LP"
 		btn.disabled = lp < cost
 
 func _find_button(btn_name: String) -> Button:
