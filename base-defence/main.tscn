@@ -156,19 +156,17 @@ text = "SHIELD
 layout_mode = 2
 text = "SHLD RGN"
 
-[node name="DmgReductButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1410586163]
+[node name="ShieldStrengthButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=920779380]
 layout_mode = 2
-text = "DMG REDUCT
-"
+text = "SHLD STR"
 
-[node name="KnockbackFreqButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1595398467]
+[node name="ShieldMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=1969434538]
 layout_mode = 2
-text = "KB FREQ"
+text = "SHLD MULT"
 
-[node name="KnockbackStrButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=220049738]
+[node name="EvasionButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=509706783]
 layout_mode = 2
-text = "KB STR
-"
+text = "EVASION"
 
 [node name="DEFLocked" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=97852440]
 layout_mode = 2
@@ -187,6 +185,10 @@ text = " ❤ HP"
 layout_mode = 2
 text = "MAX HP"
 
+[node name="HPMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1589441328]
+layout_mode = 2
+text = "HP MULT"
+
 [node name="RegenAmtButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1872987175]
 layout_mode = 2
 text = "REGEN AMT"
@@ -195,10 +197,6 @@ text = "REGEN AMT"
 layout_mode = 2
 text = "REGEN SPD
 "
-
-[node name="RecovDelayButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=110742347]
-layout_mode = 2
-text = "RECOV DLY"
 
 [node name="HealMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1091774583]
 layout_mode = 2
@@ -304,13 +302,13 @@ text = "MAIN MENU"
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/CritDmgButton" to="." method="_on_crit_dmg_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton" to="." method="_on_shield_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldRegenButton" to="." method="_on_shield_regen_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/DmgReductButton" to="." method="_on_dmg_reduc_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/KnockbackFreqButton" to="." method="_on_knockback_freq_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/KnockbackStrButton" to="." method="_on_knockback_str_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldStrengthButton" to="." method="_on_shield_strength_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldMultButton" to="." method="_on_shield_mult_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/EvasionButton" to="." method="_on_evasion_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/MaxHPButton" to="." method="_on_max_hp_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/HPMultButton" to="." method="_on_hp_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/RegenAmtButton" to="." method="_on_regen_amt_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/RegenSpdButton" to="." method="_on_regen_spd_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/RecovDelayButton" to="." method="_on_recov_delay_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/HealMultButton" to="." method="_on_heal_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldPerKillButton" to="." method="_on_gold_per_kill_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldMultButton" to="." method="_on_gold_mult_button_pressed"]

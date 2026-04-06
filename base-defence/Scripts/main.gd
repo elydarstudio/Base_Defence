@@ -49,6 +49,7 @@ var crit_dmg_cost: int = 60
 var crit_dmg_max: int = 999
 
 # ── DEF stats ─────────────────────────────────
+# DEF upgrades
 var shield_level: int = 0
 var shield_cost: int = 35
 var shield_max: int = 40
@@ -57,17 +58,17 @@ var shield_regen_level: int = 0
 var shield_regen_cost: int = 50
 var shield_regen_max: int = 999
 
-var dmg_reduct_level: int = 0
-var dmg_reduct_cost: int = 45
-var dmg_reduct_max: int = 10 # 10 * 2% = 20% max reduction
+var shield_strength_level: int = 0
+var shield_strength_cost: int = 45
+var shield_strength_max: int = 100  # 100 * 0.4% = 40%
 
-var kb_freq_level: int = 0
-var kb_freq_cost: int = 40
-var kb_freq_max: int = 20
+var shield_mult_level: int = 0
+var shield_mult_cost: int = 60
+var shield_mult_max: int = 999
 
-var kb_str_level: int = 0
-var kb_str_cost: int = 40
-var kb_str_max: int = 20
+var evasion_level: int = 0
+var evasion_cost: int = 50
+var evasion_max: int = 100  # 100 * 0.2% = 20%
 
 # ── HP stats ──────────────────────────────────
 var max_hp_level: int = 0
@@ -82,9 +83,9 @@ var regen_spd_level: int = 0
 var regen_spd_cost: int = 40
 var regen_spd_max: int = 40
 
-var recov_delay_level: int = 0
-var recov_delay_cost: int = 35
-var recov_delay_max: int = 20
+var hp_mult_level: int = 0
+var hp_mult_cost: int = 60
+var hp_mult_max: int = 999
 
 var heal_mult_level: int = 0
 var heal_mult_cost: int = 60
@@ -123,19 +124,20 @@ const UNLOCK_REQUIREMENTS = {
 	"RegenAmtButton": 2,
 	"GoldPerKillButton": 2,
 	"GoldMultButton": 2,
+	"ShieldStrengthButton": 2,
 	# unlock_level 3
 	"DmgMultButton": 3,
 	"CritChanceButton": 3,
 	"CritDmgButton": 3,
-	"DmgReductButton": 3,
-	"KnockbackFreqButton": 3,
-	"KnockbackStrButton": 3,
 	"RegenSpdButton": 3,
-	"RecovDelayButton": 3,
 	"HealMultButton": 3,
+	"HPMultButton": 3,
+	"ShieldMultButton": 3,
+	"EvasionButton": 3,
 	"LegacyPerWaveButton": 3,
 	"LegacyMultButton": 3,
 	"LegacyDropButton": 3,
+	# locked placeholders
 	"DEFLocked": 999,
 	"HPLocked": 999,
 	"UTILLocked": 999,
@@ -196,37 +198,37 @@ func _apply_workshop_floors():
 	$Base.damage_multiplier += dmg_mult_level * 0.1
 	crit_chance_level = d["floor_crit_chance"]
 	$Base.crit_chance += crit_chance_level * 0.0125
-	$Base.crit_damage += crit_chance_level * 0.10
+	crit_dmg_level = d["floor_crit_dmg"]
+	$Base.crit_damage += crit_dmg_level * 0.10
 	# DEF
 	shield_level = d["floor_shield"]
-	$Base.add_shield(shield_level * 20.0)
+	$Base.max_shield += shield_level * 20.0
+	$Base.shield += shield_level * 20.0
 	shield_regen_level = d["floor_shield_regen"]
 	$Base.shield_regen += shield_regen_level * 1.0
-	dmg_reduct_level = d["floor_dmg_reduct"]
-	$Base.damage_reduction += dmg_reduct_level * 0.02
-	kb_freq_level = d["floor_kb_freq"]
-	if kb_freq_level > 0:
-		$Base.knockback_freq = max(0.5, 5.0 - (kb_freq_level * 0.1))
-	kb_str_level = d["floor_kb_str"]
-	$Base.knockback_strength += kb_str_level * 10.0
+	shield_strength_level = d["floor_shield_strength"]
+	$Base.shield_strength += shield_strength_level * 0.004
+	shield_mult_level = d["floor_shield_mult"]
+	$Base.shield_multiplier += shield_mult_level * 0.1
+	evasion_level = d["floor_evasion"]
+	$Base.evasion += evasion_level * 0.002
 	# HP
 	max_hp_level = d["floor_max_hp"]
-	$Base.increase_max_health(max_hp_level * 20.0)
+	$Base.increase_max_health(max_hp_level * 10.0)
 	regen_amt_level = d["floor_regen_amt"]
 	$Base.hp_regen += regen_amt_level * 1.0
 	regen_spd_level = d["floor_regen_spd"]
 	$Base.regen_interval = max(1.0, 5.0 - (regen_spd_level * 0.1))
-	recov_delay_level = d["floor_recov_delay"]
-	$Base.recovery_delay = max(0.0, 3.0 - (recov_delay_level * 0.15))
 	heal_mult_level = d["floor_heal_mult"]
 	$Base.heal_multiplier += heal_mult_level * 0.1
+	hp_mult_level = d["floor_hp_mult"]
+	$Base.hp_multiplier += hp_mult_level * 0.1
 	# UTIL
 	gold_per_kill_level = d["floor_gold_per_kill"]
 	gold_mult_level = d["floor_gold_mult"]
 	legacy_per_wave_level = d["floor_legacy_per_wave"]
 	legacy_mult_level = d["floor_legacy_mult"]
 	legacy_drop_level = d["floor_legacy_drop"]
-
 func _process(delta):
 	if game_over:
 		return
@@ -358,21 +360,22 @@ func _update_ui():
 		"+" + str(crit_dmg_level * 10) + "%")
 
 	# DEF
+	# DEF
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton,
 		"SHIELD", shield_level, shield_max, shield_cost,
 		str(shield_level * 20))
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldRegenButton,
 		"SHLD RGN", shield_regen_level, shield_regen_max, shield_regen_cost,
 		str(shield_regen_level) + "/s")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/DmgReductButton,
-		"DMG REDUCT", dmg_reduct_level, dmg_reduct_max, dmg_reduct_cost,
-		str(dmg_reduct_level * 2) + "%")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/KnockbackFreqButton,
-		"KB FREQ", kb_freq_level, kb_freq_max, kb_freq_cost,
-		str(kb_freq_level))
-	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/KnockbackStrButton,
-		"KB STR", kb_str_level, kb_str_max, kb_str_cost,
-		str(kb_str_level * 10))
+	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldStrengthButton,
+		"SHLD STR", shield_strength_level, shield_strength_max, shield_strength_cost,
+		str(snappedf(shield_strength_level * 0.4, 0.1)) + "%")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldMultButton,
+		"SHLD MULT", shield_mult_level, shield_mult_max, shield_mult_cost,
+		"+" + str(shield_mult_level * 10) + "%")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/EvasionButton,
+		"EVASION", evasion_level, evasion_max, evasion_cost,
+		str(snappedf(evasion_level * 0.2, 0.1)) + "%")
 
 	# HP
 	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/MaxHPButton,
@@ -384,9 +387,9 @@ func _update_ui():
 	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/RegenSpdButton,
 		"REGEN SPD", regen_spd_level, regen_spd_max, regen_spd_cost,
 		str(max(1.0, 5.0 - (regen_spd_level * 0.1))) + "s")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/RecovDelayButton,
-		"RECOV DLY", recov_delay_level, recov_delay_max, recov_delay_cost,
-		str(max(0.0, 3.0 - (recov_delay_level * 0.15))) + "s")
+	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/HPMultButton,
+		"HP MULT", hp_mult_level, hp_mult_max, hp_mult_cost,
+		"+" + str(hp_mult_level * 10) + "%")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/HealMultButton,
 		"HEAL MULT", heal_mult_level, heal_mult_max, heal_mult_cost,
 		"+" + str(heal_mult_level * 10) + "%")
@@ -463,7 +466,8 @@ func _on_shield_button_pressed():
 	currency -= shield_cost
 	shield_level += 1
 	shield_cost = int(shield_cost * 1.2)
-	$Base.add_shield(20.0)
+	$Base.max_shield += 20.0
+	$Base.shield += 20.0
 	_update_ui()
 
 func _on_shield_regen_button_pressed():
@@ -474,28 +478,28 @@ func _on_shield_regen_button_pressed():
 	$Base.shield_regen += 1.0
 	_update_ui()
 
-func _on_dmg_reduct_button_pressed():
-	if currency < dmg_reduct_cost or dmg_reduct_level >= dmg_reduct_max: return
-	currency -= dmg_reduct_cost
-	dmg_reduct_level += 1
-	dmg_reduct_cost = int(dmg_reduct_cost * 1.2)
-	$Base.damage_reduction += 0.02
+func _on_shield_strength_button_pressed():
+	if currency < shield_strength_cost or shield_strength_level >= shield_strength_max: return
+	currency -= shield_strength_cost
+	shield_strength_level += 1
+	shield_strength_cost = int(shield_strength_cost * 1.3)
+	$Base.shield_strength += 0.004  # 0.4% per level
 	_update_ui()
 
-func _on_knockback_freq_button_pressed():
-	if currency < kb_freq_cost or kb_freq_level >= kb_freq_max: return
-	currency -= kb_freq_cost
-	kb_freq_level += 1
-	kb_freq_cost = int(kb_freq_cost * 1.2)
-	$Base.knockback_freq = max(0.5, 5.0 - (kb_freq_level * 0.1))
+func _on_shield_mult_button_pressed():
+	if currency < shield_mult_cost or shield_mult_level >= shield_mult_max: return
+	currency -= shield_mult_cost
+	shield_mult_level += 1
+	shield_mult_cost = int(shield_mult_cost * 1.25)
+	$Base.shield_multiplier += 0.1
 	_update_ui()
 
-func _on_knockback_str_button_pressed():
-	if currency < kb_str_cost or kb_str_level >= kb_str_max: return
-	currency -= kb_str_cost
-	kb_str_level += 1
-	kb_str_cost = int(kb_str_cost * 1.2)
-	$Base.knockback_strength += 10.0
+func _on_evasion_button_pressed():
+	if currency < evasion_cost or evasion_level >= evasion_max: return
+	currency -= evasion_cost
+	evasion_level += 1
+	evasion_cost = int(evasion_cost * 1.3)
+	$Base.evasion += 0.002  # 0.2% per level
 	_update_ui()
 
 # ── HP handlers ───────────────────────────────
@@ -521,14 +525,6 @@ func _on_regen_spd_button_pressed():
 	regen_spd_level += 1
 	regen_spd_cost = int(regen_spd_cost * 1.2)
 	$Base.regen_interval = max(1.0, 5.0 - (regen_spd_level * 0.1))
-	_update_ui()
-
-func _on_recov_delay_button_pressed():
-	if currency < recov_delay_cost or recov_delay_level >= recov_delay_max: return
-	currency -= recov_delay_cost
-	recov_delay_level += 1
-	recov_delay_cost = int(recov_delay_cost * 1.2)
-	$Base.recovery_delay = max(0.0, 3.0 - (recov_delay_level * 0.15))
 	_update_ui()
 
 func _on_heal_mult_button_pressed():
@@ -607,3 +603,12 @@ func _on_pause_menu_button_pressed():
 func _on_menu_button_pressed():
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")
+
+
+func _on_hp_mult_button_pressed():
+	if currency < hp_mult_cost or hp_mult_level >= hp_mult_max: return
+	currency -= hp_mult_cost
+	hp_mult_level += 1
+	hp_mult_cost = int(hp_mult_cost * 1.25)
+	$Base.hp_multiplier += 0.1
+	_update_ui()

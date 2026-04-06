@@ -10,28 +10,23 @@ var crit_chance: float = 0.0
 var crit_damage: float = 1.5
 var damage_multiplier: float = 1.0
 
-# Defense
-var damage_reduction: float = 0.0
-var knockback_freq: float = 999.0
-var knockback_strength: float = 0.0
-var knockback_timer: float = 0.0
-
 # Health
 var max_health: float = 100.0
 var health: float = 100.0
 var hp_regen: float = 0.0
-var regen_interval: float = 5.0
 var hp_regen_timer: float = 0.0
-var recovery_delay: float = 3.0
-var recovery_timer: float = 0.0
-var taking_damage: bool = false
+var regen_interval: float = 5.0
+var hp_multiplier: float = 1.0
 var heal_multiplier: float = 1.0
 
 # Shield
 var max_shield: float = 0.0
 var shield: float = 0.0
-var shield_regen: float = 0.0
+var shield_regen: float = 1.0
 var shield_regen_timer: float = 0.0
+var shield_strength: float = 0.0
+var shield_multiplier: float = 1.0
+var evasion: float = 0.0
 
 var fire_timer: float = 0.0
 var bullet_scene: PackedScene
@@ -57,15 +52,8 @@ func _process(delta):
 		fire_timer = 0.0
 		_try_shoot()
 
-	# Recovery delay
-	if taking_damage:
-		recovery_timer += delta
-		if recovery_timer >= recovery_delay:
-			taking_damage = false
-			recovery_timer = 0.0
-
 	# HP regen
-	if not taking_damage and hp_regen > 0 and health < max_health:
+	if hp_regen > 0 and health < max_health:
 		hp_regen_timer += delta
 		if hp_regen_timer >= regen_interval:
 			hp_regen_timer = 0.0
@@ -75,28 +63,14 @@ func _process(delta):
 				main_node.update_health_ui(health, shield)
 
 	# Shield regen
-	if shield_regen > 0 and shield < max_shield:
+	var effective_max_shield = max_shield * shield_multiplier
+	if shield_regen > 0 and shield < effective_max_shield:
 		shield_regen_timer += delta
 		if shield_regen_timer >= 1.0:
 			shield_regen_timer = 0.0
-			shield = min(shield + shield_regen, max_shield)
+			shield = min(shield + shield_regen, effective_max_shield)
 			if main_node != null:
 				main_node.update_health_ui(health, shield)
-
-	# Knockback
-	if knockback_strength > 0:
-		knockback_timer += delta
-		if knockback_timer >= knockback_freq:
-			knockback_timer = 0.0
-			_do_knockback()
-
-func _do_knockback():
-	var enemies = get_tree().get_nodes_in_group("enemies")
-	for e in enemies:
-		var dist = global_position.distance_to(e.global_position)
-		if dist < 200.0:
-			var dir = global_position.direction_to(e.global_position)
-			e.global_position += dir * knockback_strength
 
 func _try_shoot():
 	var target = _get_best_target()
@@ -109,7 +83,6 @@ func _try_shoot():
 	var b = bullet_scene.instantiate()
 	get_parent().add_child(b)
 	b.global_position = global_position
-	# Calculate crit
 	var is_crit = randf() < crit_chance
 	var final_damage = bullet_damage * damage_multiplier
 	if is_crit:
@@ -150,21 +123,30 @@ func _get_best_target() -> Node2D:
 	return closest
 
 func take_damage(amount: float):
-	taking_damage = true
-	recovery_timer = 0.0
-	hp_regen_timer = 0.0
-	var reduced = amount * (1.0 - damage_reduction)
+	# Evasion check
+	if randf() < evasion:
+		return
+
+	var hp_damage = amount
+	var shield_absorbed = 0.0
+
+	# Shield absorption
 	if shield > 0:
-		var absorbed = min(shield, reduced)
+		var absorbed = min(shield, amount)
+		shield_absorbed = absorbed
 		shield -= absorbed
-		reduced -= absorbed
-		print("shield AFTER subtraction: ", shield)
-		print("take_damage: amount=", amount, " shield=", shield, " reduction=", damage_reduction)
-		print("damage_reduction value: ", damage_reduction)
-	if reduced > 0:
-		health -= reduced
+		hp_damage = amount * (1.0 - shield_strength)
+
+	# HP takes damage
+	health -= hp_damage
+	health = max(0.0, health)
+
 	if main_node != null:
 		main_node.update_health_ui(health, shield)
+		if shield_absorbed > 0:
+			main_node.spawn_damage_number(shield_absorbed, global_position + Vector2(randf_range(-20, 20), -20), "shield")
+		main_node.spawn_damage_number(hp_damage, global_position + Vector2(randf_range(-20, 20), -40), "hp")
+
 	if health <= 0:
 		if main_node != null:
 			main_node.trigger_game_over()
