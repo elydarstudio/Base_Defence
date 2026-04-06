@@ -69,17 +69,18 @@ func scale_to_wave(difficulty: int):
 	speed = min(72.0 + (difficulty * 1.1), 155.0)
 	currency_value = 5 + (main_node.phase * 3) if main_node != null else 5
 
-func take_damage(amount: float):
+func take_damage(amount: float, type: String = "normal"):
 	health -= amount
 	if main_node != null:
-		main_node.spawn_damage_number(amount, global_position + Vector2(0, -20))
+		main_node.spawn_damage_number(amount, global_position + Vector2(0, -20), type)
 	if health <= 0:
 		_die()
 
 func _die():
 	if main_node != null:
-		var base_gold = 2 + (main_node.phase * 3)
+		var base_gold = 5 + (main_node.phase * 3)
 		main_node.add_currency(base_gold)
+		main_node.spawn_damage_number(base_gold, global_position + Vector2(0, -35), "gold")
 	queue_free()
 
 func setup(base: Node2D, main: Node):

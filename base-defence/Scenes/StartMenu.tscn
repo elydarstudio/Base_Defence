@@ -62,11 +62,29 @@ text = "WORKSHOP"
 
 [node name="PhaseSelectButton" type="Button" parent="." unique_id=2069543955]
 layout_mode = 1
+offset_left = 235.0
+offset_top = 680.0
+offset_right = 485.0
+offset_bottom = 730.0
+text = "START FROM PHASE 1"
+
+[node name="PhaseDownButton" type="Button" parent="." unique_id=1548821993]
+visible = false
+layout_mode = 0
 offset_left = 185.0
+offset_top = 680.0
+offset_right = 235.0
+offset_bottom = 730.0
+text = " ◀"
+
+[node name="PhaseUpButton" type="Button" parent="." unique_id=41705128]
+visible = false
+layout_mode = 0
+offset_left = 485.0
 offset_top = 680.0
 offset_right = 535.0
 offset_bottom = 730.0
-text = "START FROM PHASE 1"
+text = "▶"
 
 [node name="DebugResetButton" type="Button" parent="." unique_id=1571964507]
 layout_mode = 0
@@ -87,5 +105,7 @@ text = "[DEBUG] UNLOCK ALL"
 [connection signal="pressed" from="PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="WorkshopButton" to="." method="_on_work_shop_button_pressed"]
 [connection signal="pressed" from="PhaseSelectButton" to="." method="_on_phase_select_button_pressed"]
+[connection signal="pressed" from="PhaseDownButton" to="." method="_on_phase_down_button_pressed"]
+[connection signal="pressed" from="PhaseUpButton" to="." method="_on_phase_up_button_pressed"]
 [connection signal="pressed" from="DebugResetButton" to="." method="_on_debug_reset_button_pressed"]
 [connection signal="pressed" from="DebugUnlockButton" to="." method="_on_debug_unlock_button_pressed"]

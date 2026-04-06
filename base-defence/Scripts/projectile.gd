@@ -36,7 +36,8 @@ func _process(delta):
 
 func _on_area_entered(area):
 	if area == target:
-		area.take_damage(damage)
+		var type = "crit" if is_crit else "normal"
+		area.take_damage(damage, type)
 		_resolve()
 		queue_free()
 
