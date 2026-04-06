@@ -309,6 +309,7 @@ func _spawn_boss():
 	b.scale_to_phase(phase)
 	b.global_position = Vector2(360, -40)
 	$UI/WaveLabel.text = "⚠ BOSS WAVE ⚠ | Phase: " + str(phase)
+	_on_boss_spawn_flash()
 
 func _advance_wave():
 	wave += 1
@@ -316,6 +317,7 @@ func _advance_wave():
 	enemies_spawned = 0
 	enemies_to_spawn = _get_wave_enemy_count()
 	wave_complete = false
+	_on_wave_complete_flash()
 	_check_unlock_progression()
 	# LP per wave — add to run total and save incrementally
 	var lp_earned = 1 + lp_gain_level
@@ -463,6 +465,19 @@ func _update_btn(btn: Button, label: String, level: int, max_level: int, cost: i
 	else:
 		btn.text = label + "\nLv" + str(level + 1) + " - " + str(cost) + "g\n" + stat
 		btn.disabled = currency < cost
+
+func _flash_screen(color: Color, alpha: float = 0.3, duration: float = 0.4):
+	var flash = $UI/ScreenFlash
+	flash.color = color
+	flash.modulate.a = alpha
+	var tween = create_tween()
+	tween.tween_property(flash, "modulate:a", 0.0, duration)
+
+func _on_wave_complete_flash():
+	_flash_screen(Color(0.2, 1.0, 0.3), 0.08, 0.6)
+
+func _on_boss_spawn_flash():
+	_flash_screen(Color(0.6, 0.0, 0.8), 0.5, 0.8)
 
 func _show_tooltip(key: String):
 	tooltip_key = key
