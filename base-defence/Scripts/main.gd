@@ -2,6 +2,8 @@ extends Node2D
 
 var bullet_scene: PackedScene
 var enemy_scene: PackedScene
+var brute_scene: PackedScene
+var runner_scene: PackedScene
 var boss_scene: PackedScene
 var damage_number_scene: PackedScene
 
@@ -154,6 +156,8 @@ const UNLOCK_REQUIREMENTS = {
 func _ready():
 	bullet_scene = preload("res://Scenes/Projectile.tscn")
 	enemy_scene = preload("res://Scenes/Enemy.tscn")
+	brute_scene = preload("res://Scenes/Brute.tscn")
+	runner_scene = preload("res://Scenes/Runner.tscn")
 	boss_scene = preload("res://Scenes/Boss.tscn")
 	damage_number_scene = preload("res://Scenes/damage_number.tscn")
 	phase = SaveManager.data.get("start_phase", 1)
@@ -286,11 +290,26 @@ func _process(delta):
 		_advance_wave()
 
 func _spawn_enemy():
-	var e = enemy_scene.instantiate()
+	var scene = _get_spawn_scene()
+	var e = scene.instantiate()
 	add_child(e)
 	e.setup($Base, self)
 	e.scale_to_wave(difficulty)
 	e.global_position = _random_edge_position()
+
+func _get_spawn_scene() -> PackedScene:
+	var brute_chance = 0.0
+	var runner_chance = 0.0
+	if phase >= 2:
+		brute_chance = min(0.05 + ((phase - 2) * 0.005), 0.15)
+	if phase >= 3:
+		runner_chance = min(0.05 + ((phase - 3) * 0.005), 0.15)
+	var roll = randf()
+	if roll < brute_chance:
+		return brute_scene
+	elif roll < brute_chance + runner_chance:
+		return runner_scene
+	return enemy_scene
 
 func _spawn_boss():
 	boss_wave = true

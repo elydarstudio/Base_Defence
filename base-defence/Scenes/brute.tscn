@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://6j5gofgkf3pq"]
+
+[ext_resource type="Script" uid="uid://ivcqhfi4vt1i" path="res://Scripts/brute.gd" id="1_cbuok"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_cbuok"]
+radius = 25.0
+
+[node name="Brute" type="Area2D" unique_id=1009851537]
+script = ExtResource("1_cbuok")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=455635894]
+shape = SubResource("CircleShape2D_cbuok")
+
+[node name="Visual" type="Polygon2D" parent="." unique_id=394033688]
