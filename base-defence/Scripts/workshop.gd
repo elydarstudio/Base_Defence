@@ -94,10 +94,38 @@ const WORKSHOP_UNLOCK_REQUIREMENTS = {
 	"WFloorLpDrop": 4,
 }
 
+var tooltip_buttons: Dictionary = {}
+
 func _ready():
 	_apply_unlock_level()
 	_update_ui()
-
+	tooltip_buttons = {
+		$CoreContent/ColumnsContainer/ATKColumn/WFloorAtkSpd: "atk_spd",
+		$CoreContent/ColumnsContainer/ATKColumn/WFloorDmg: "damage",
+		$CoreContent/ColumnsContainer/ATKColumn/WFloorDmgMult: "dmg_mult",
+		$CoreContent/ColumnsContainer/ATKColumn/WFloorCritChance: "crit_chance",
+		$CoreContent/ColumnsContainer/ATKColumn/WFloorCritDmg: "crit_dmg",
+		$CoreContent/ColumnsContainer/DEFColumn/WFloorShield: "shield",
+		$CoreContent/ColumnsContainer/DEFColumn/WFloorShieldRegen: "shield_regen",
+		$CoreContent/ColumnsContainer/DEFColumn/WFloorShieldStrength: "shield_strength",
+		$CoreContent/ColumnsContainer/DEFColumn/WFloorShieldMult: "shield_mult",
+		$CoreContent/ColumnsContainer/DEFColumn/WFloorEvasion: "evasion",
+		$CoreContent/ColumnsContainer/HPColumn/WFloorMaxHP: "max_hp",
+		$CoreContent/ColumnsContainer/HPColumn/WFloorRegenAmt: "regen_amt",
+		$CoreContent/ColumnsContainer/HPColumn/WFloorRegenSpd: "regen_spd",
+		$CoreContent/ColumnsContainer/HPColumn/WFloorHPMult: "hp_mult",
+		$CoreContent/ColumnsContainer/HPColumn/WFloorHealMult: "heal_mult",
+		$CoreContent/ColumnsContainer/UTILColumn/WFloorGoldPerKill: "gold_per_kill",
+		$CoreContent/ColumnsContainer/UTILColumn/WFloorGoldMult: "gold_mult",
+		$CoreContent/ColumnsContainer/UTILColumn/WFloorLpGain: "lp_gain",
+		$CoreContent/ColumnsContainer/UTILColumn/WFloorLpMult: "lp_mult",
+		$CoreContent/ColumnsContainer/UTILColumn/WFloorLpDrop: "lp_drop",
+	}
+	for btn in tooltip_buttons:
+		var key = tooltip_buttons[btn]
+		btn.mouse_entered.connect(func(): _show_tooltip(key))
+		btn.mouse_exited.connect(func(): _hide_tooltip())
+		
 func _apply_unlock_level():
 	var unlock = SaveManager.data["unlock_level"]
 	var columns = ["ATKColumn", "DEFColumn", "HPColumn", "UTILColumn"]
@@ -200,6 +228,45 @@ func _calc_lp_cost(base: int, level: int) -> int:
 		return int(base * pow(1.25, 4) * pow(1.35, level - 4))
 	else:
 		return int(base * pow(1.25, 4) * pow(1.35, 10) * pow(1.5, level - 14))
+		
+var tooltip_key: String = ""
+
+func _show_tooltip(key: String):
+	tooltip_key = key
+	$TooltipTimer.start()
+
+func _hide_tooltip():
+	$TooltipTimer.stop()
+	$TooltipPanel.visible = false
+
+func _on_tooltip_timer_timeout():
+	if tooltip_key != "":
+		$TooltipPanel/TooltipLabel.text = TooltipData.TIPS[tooltip_key]
+		var mouse = get_viewport().get_mouse_position()
+		var panel_width = 400
+		var x = mouse.x + 10
+		if x + panel_width > get_viewport().get_visible_rect().size.x:
+			x = mouse.x - panel_width - 10
+		$TooltipPanel.position = Vector2(x, mouse.y - 60)
+		$TooltipPanel.visible = true
+		
+func _show_tooltip_instant(key: String):
+	$TooltipPanel/TooltipLabel.text = TooltipData.TIPS[key]
+	var mouse = get_viewport().get_mouse_position()
+	var panel_width = 400
+	var x = mouse.x + 10
+	if x + panel_width > get_viewport().get_visible_rect().size.x:
+		x = mouse.x - panel_width - 10
+	$TooltipPanel.position = Vector2(x, mouse.y - 60)
+	$TooltipPanel.visible = true
+
+func _input(event):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		for btn in tooltip_buttons:
+			if btn.get_global_rect().has_point(event.position):
+				_show_tooltip_instant(tooltip_buttons[btn])
+				return
+		_hide_tooltip()
 
 func _on_core_tab_pressed():
 	$CoreContent.visible = true

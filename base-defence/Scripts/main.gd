@@ -117,6 +117,8 @@ var legacy_drop_level: int = 0
 var legacy_drop_cost: int = 45
 var legacy_drop_max: int = 100 # 50 * 0.8% = 40% cap
 
+var tooltip_buttons: Dictionary = {}
+
 const UNLOCK_REQUIREMENTS = {
 	# unlock_level 0
 	"ATKSpdButton": 0,
@@ -155,13 +157,38 @@ func _ready():
 	boss_scene = preload("res://Scenes/Boss.tscn")
 	damage_number_scene = preload("res://Scenes/damage_number.tscn")
 	phase = SaveManager.data.get("start_phase", 1)
-	difficulty = (phase - 1) * 13  # 10 waves + 3 boss = 13 per phase
+	difficulty = (phase - 1) * 13
 	$Base.set_bullet_scene(bullet_scene)
 	$Base.set_main(self)
 	_apply_workshop_floors()
 	_apply_unlock_level()
 	_update_ui()
-	
+	tooltip_buttons = {
+		$UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton: "atk_spd",
+		$UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgButton: "damage",
+		$UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgMultButton: "dmg_mult",
+		$UI/UpgradePanel/ColumnsContainer/ATKColumn/CritChanceButton: "crit_chance",
+		$UI/UpgradePanel/ColumnsContainer/ATKColumn/CritDmgButton: "crit_dmg",
+		$UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton: "shield",
+		$UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldRegenButton: "shield_regen",
+		$UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldStrengthButton: "shield_strength",
+		$UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldMultButton: "shield_mult",
+		$UI/UpgradePanel/ColumnsContainer/DEFColumn/EvasionButton: "evasion",
+		$UI/UpgradePanel/ColumnsContainer/HPColumn/MaxHPButton: "max_hp",
+		$UI/UpgradePanel/ColumnsContainer/HPColumn/RegenAmtButton: "regen_amt",
+		$UI/UpgradePanel/ColumnsContainer/HPColumn/RegenSpdButton: "regen_spd",
+		$UI/UpgradePanel/ColumnsContainer/HPColumn/HPMultButton: "hp_mult",
+		$UI/UpgradePanel/ColumnsContainer/HPColumn/HealMultButton: "heal_mult",
+		$UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldPerKillButton: "gold_per_kill",
+		$UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldMultButton: "gold_mult",
+		$UI/UpgradePanel/ColumnsContainer/UTILColumn/LPGainButton: "lp_gain",
+		$UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyMultButton: "lp_mult",
+		$UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyDropButton: "lp_drop",
+	}
+	for btn in tooltip_buttons:
+		var key = tooltip_buttons[btn]
+		btn.mouse_entered.connect(func(): _show_tooltip(key))
+		btn.mouse_exited.connect(func(): _hide_tooltip())
 func _calc_cost(base: int, level: int, is_capped: bool) -> int:
 	if is_capped:
 		var scale = 1.23 if level < 50 else 1.4
@@ -434,6 +461,45 @@ func _update_btn(btn: Button, label: String, level: int, max_level: int, cost: i
 	else:
 		btn.text = label + "\nLv" + str(level + 1) + " - " + str(cost) + "g\n" + stat
 		btn.disabled = currency < cost
+
+var tooltip_key: String = ""
+
+func _show_tooltip(key: String):
+	tooltip_key = key
+	$UI/TooltipTimer.start()
+
+func _hide_tooltip():
+	$UI/TooltipTimer.stop()
+	$UI/TooltipPanel.visible = false
+
+func _on_tooltip_timer_timeout():
+	if tooltip_key != "":
+		$UI/TooltipPanel/TooltipLabel.text = TooltipData.TIPS[tooltip_key]
+		var mouse = get_viewport().get_mouse_position()
+		var panel_width = 400
+		var x = mouse.x + 10
+		if x + panel_width > get_viewport().get_visible_rect().size.x:
+			x = mouse.x - panel_width - 10
+		$UI/TooltipPanel.position = Vector2(x, mouse.y - 60)
+		$UI/TooltipPanel.visible = true
+		
+func _show_tooltip_instant(key: String):
+	$UI/TooltipPanel/TooltipLabel.text = TooltipData.TIPS[key]
+	var mouse = get_viewport().get_mouse_position()
+	var panel_width = 400
+	var x = mouse.x + 10
+	if x + panel_width > get_viewport().get_visible_rect().size.x:
+		x = mouse.x - panel_width - 10
+	$UI/TooltipPanel.position = Vector2(x, mouse.y - 60)
+	$UI/TooltipPanel.visible = true
+			
+func _input(event):
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		for btn in tooltip_buttons:
+			if btn.get_global_rect().has_point(event.position):
+				_show_tooltip_instant(tooltip_buttons[btn])
+				return
+		_hide_tooltip()
 
 # ── ATK handlers ──────────────────────────────
 func _on_atk_spd_button_pressed():

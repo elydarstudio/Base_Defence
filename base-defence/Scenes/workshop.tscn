@@ -210,6 +210,30 @@ offset_right = 560.0
 offset_bottom = 460.0
 text = "Skill Tree unlocks at Phase 3"
 
+[node name="TooltipPanel" type="PanelContainer" parent="." unique_id=105591139]
+visible = false
+custom_minimum_size = Vector2(400, 80)
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -560.0
+offset_top = 10.0
+offset_right = -160.0
+offset_bottom = 90.0
+grow_horizontal = 2
+
+[node name="TooltipLabel" type="Label" parent="TooltipPanel" unique_id=1434416564]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="TooltipTimer" type="Timer" parent="." unique_id=1402980638]
+wait_time = 1.75
+one_shot = true
+
 [connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="pressed" from="CoreTab" to="." method="_on_core_tab_pressed"]
 [connection signal="pressed" from="SkillTab" to="." method="_on_skill_tab_pressed"]
@@ -233,3 +257,4 @@ text = "Skill Tree unlocks at Phase 3"
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorGoldMult" to="." method="_on_w_floor_gold_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorLpMult" to="." method="_on_w_floor_lp_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorLpDrop" to="." method="_on_w_floor_lp_drop_pressed"]
+[connection signal="timeout" from="TooltipTimer" to="." method="_on_tooltip_timer_timeout"]

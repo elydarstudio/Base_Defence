@@ -298,6 +298,29 @@ offset_right = 435.0
 offset_bottom = 690.0
 text = "MAIN MENU"
 
+[node name="TooltipPanel" type="PanelContainer" parent="UI" unique_id=1910841886]
+visible = false
+custom_minimum_size = Vector2(400, 80)
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -740.0
+offset_top = 10.0
+offset_right = -340.0
+offset_bottom = 90.0
+grow_horizontal = 2
+
+[node name="TooltipLabel" type="Label" parent="UI/TooltipPanel" unique_id=1760471865]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="TooltipTimer" type="Timer" parent="UI" unique_id=187365830]
+wait_time = 1.75
+one_shot = true
+
 [node name="DamageLayer" type="CanvasLayer" parent="." unique_id=1848438676]
 
 [connection signal="pressed" from="UI/GameOverScreen/RestartButton" to="." method="_on_restart_button_pressed"]
@@ -328,3 +351,4 @@ text = "MAIN MENU"
 [connection signal="pressed" from="UI/PauseScreen/PauseRestartButton" to="." method="_on_pause_restart_button_pressed"]
 [connection signal="pressed" from="UI/PauseScreen/PauseRestartButton" to="." method="_on_button_pause_restart_button_pressed"]
 [connection signal="pressed" from="UI/PauseScreen/PauseMenuButton" to="." method="_on_pause_menu_button_pressed"]
+[connection signal="timeout" from="UI/TooltipTimer" to="." method="_on_tooltip_timer_timeout"]
