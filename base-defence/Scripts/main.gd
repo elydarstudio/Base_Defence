@@ -155,6 +155,7 @@ func _ready():
 	boss_scene = preload("res://Scenes/Boss.tscn")
 	damage_number_scene = preload("res://Scenes/damage_number.tscn")
 	phase = SaveManager.data.get("start_phase", 1)
+	difficulty = (phase - 1) * 13  # 10 waves + 3 boss = 13 per phase
 	$Base.set_bullet_scene(bullet_scene)
 	$Base.set_main(self)
 	_apply_workshop_floors()
@@ -296,9 +297,12 @@ func on_boss_killed():
 	wave += 1
 	phase += 1
 	difficulty += 3
-	spawn_interval = 1.8 / (1.0 + (difficulty * 0.12))
+	spawn_interval = 1.8 / (1.0 + (difficulty * 0.09))
 	enemies_killed = 0
 	var unlock = SaveManager.data["unlock_level"]
+	if phase > SaveManager.data["max_start_phase"]:
+		SaveManager.data["max_start_phase"] = phase
+	SaveManager.save_game()
 	if phase == 2 and unlock < 2:
 		SaveManager.data["unlock_level"] = 2
 		SaveManager.save_game()
