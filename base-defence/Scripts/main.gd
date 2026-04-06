@@ -241,6 +241,7 @@ func _apply_workshop_floors():
 	legacy_per_wave_level = d["floor_legacy_per_wave"]
 	legacy_mult_level = d["floor_legacy_mult"]
 	legacy_drop_level = d["floor_legacy_drop"]
+	
 func _process(delta):
 	if game_over:
 		return
@@ -248,7 +249,7 @@ func _process(delta):
 		return
 	wave_timer += delta
 	spawn_timer += delta
-	var current_spawn_interval = max(0.3, spawn_interval - (difficulty * 0.045))
+	var current_spawn_interval = spawn_interval / (1.0 + (difficulty * 0.09))
 	if spawn_timer >= current_spawn_interval:
 		spawn_timer = 0.0
 		_spawn_enemy()
@@ -277,7 +278,7 @@ func _advance_wave():
 	wave += 1
 	difficulty += 1
 	_check_unlock_progression()
-	spawn_interval = max(0.4, 1.8 - (difficulty * 0.03))
+	spawn_interval = 1.8 / (1.0 + (difficulty * 0.12))
 	# Legacy per wave
 	var lp_earned = 1 + legacy_per_wave_level
 	var lp_total = int(lp_earned * (1.0 + (legacy_mult_level * 0.1)))
@@ -295,7 +296,7 @@ func on_boss_killed():
 	wave += 1
 	phase += 1
 	difficulty += 3
-	spawn_interval = max(0.4, 1.8 - (difficulty * 0.03))
+	spawn_interval = 1.8 / (1.0 + (difficulty * 0.12))
 	enemies_killed = 0
 	var unlock = SaveManager.data["unlock_level"]
 	if phase == 2 and unlock < 2:
@@ -355,7 +356,7 @@ func _update_ui():
 	# ATK
 	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton,
 		"ATK SPD", attack_speed_level, attack_speed_max, attack_speed_cost,
-		str(snappedf(1.0 + (attack_speed_level * 0.15), 0.01)) + "/s")
+		str(snappedf($Base.fire_rate, 0.01)) + "/s")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgButton,
 		"DMG", damage_level, damage_max, damage_cost,
 		str(10 + damage_level))
@@ -435,9 +436,10 @@ func _on_atk_spd_button_pressed():
 	currency -= attack_speed_cost
 	attack_speed_level += 1
 	attack_speed_cost = _calc_cost(45, attack_speed_level, true)
-	$Base.fire_rate += 0.06
+	var gain = 0.12 / (1.0 + attack_speed_level * 0.02)
+	$Base.fire_rate += gain
 	_update_ui()
-
+	
 func _on_dmg_button_pressed():
 	if currency < damage_cost or damage_level >= damage_max: return
 	currency -= damage_cost

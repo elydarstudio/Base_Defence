@@ -60,13 +60,14 @@ func _draw():
 	draw_rect(Rect2(offset, Vector2(bar_width * pct, bar_height)), fill_color)
 
 func scale_to_wave(difficulty: int):
-	var base_health = 8.0
-	var health_mult = 1.0 + (difficulty * 0.27) + (pow(difficulty, 1.4) * 0.03)
-	health = base_health * health_mult
+	var early = min(difficulty, 10)
+	var late = max(0, difficulty - 10)
+	var multiplier = 1.0 + (early * 0.08) + (late * 0.22) + (pow(max(0, difficulty - 5), 1.4) * 0.02)
+	health = 8.0 * multiplier
 	max_health = health
 	attack_damage = 7.0 * (1.0 + (difficulty * 0.11))
 	speed = min(72.0 + (difficulty * 1.1), 155.0)
-	currency_value = int(5.0 * health_mult * 1.2)
+	currency_value = 5 + (main_node.phase * 3) if main_node != null else 5
 
 func take_damage(amount: float):
 	health -= amount
