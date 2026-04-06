@@ -158,13 +158,13 @@ text = " ❤ HP"
 layout_mode = 2
 text = "MAX HP"
 
-[node name="HPMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1589441328]
-layout_mode = 2
-text = "HP MULT"
-
 [node name="RegenAmtButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1872987175]
 layout_mode = 2
 text = "REGEN AMT"
+
+[node name="HPMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1589441328]
+layout_mode = 2
+text = "HP MULT"
 
 [node name="RegenSpdButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1551357618]
 layout_mode = 2
@@ -226,14 +226,15 @@ text = "💰 UTIL"
 layout_mode = 2
 text = "GOLD/KILL"
 
+[node name="LPGainButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=1700874118]
+layout_mode = 2
+text = "LP GAIN
+
+"
+
 [node name="GoldMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=416462126]
 layout_mode = 2
 text = "GOLD MULT"
-
-[node name="LPGainButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=1700874118]
-layout_mode = 2
-text = "LP/WAVE
-"
 
 [node name="LegacyMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=247809738]
 layout_mode = 2
@@ -308,8 +309,8 @@ text = "MAIN MENU"
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/CritChanceButton" to="." method="_on_crit_chance_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/CritDmgButton" to="." method="_on_crit_dmg_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/MaxHPButton" to="." method="_on_max_hp_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/HPMultButton" to="." method="_on_hp_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/RegenAmtButton" to="." method="_on_regen_amt_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/HPMultButton" to="." method="_on_hp_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/RegenSpdButton" to="." method="_on_regen_spd_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/HealMultButton" to="." method="_on_heal_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton" to="." method="_on_shield_button_pressed"]
@@ -318,8 +319,8 @@ text = "MAIN MENU"
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldMultButton" to="." method="_on_shield_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/EvasionButton" to="." method="_on_evasion_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldPerKillButton" to="." method="_on_gold_per_kill_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldMultButton" to="." method="_on_gold_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LPGainButton" to="." method="_on_lp_gain_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldMultButton" to="." method="_on_gold_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyMultButton" to="." method="_on_legacy_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyDropButton" to="." method="_on_legacy_drop_button_pressed"]
 [connection signal="pressed" from="UI/PauseButton" to="." method="_on_pause_button_pressed"]

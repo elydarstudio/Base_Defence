@@ -115,7 +115,7 @@ var legacy_mult_max: int = 999
 
 var legacy_drop_level: int = 0
 var legacy_drop_cost: int = 30
-var legacy_drop_max: int = 999
+var legacy_drop_max: int = 50  # 50 * 0.8% = 40% cap
 
 const UNLOCK_REQUIREMENTS = {
 	# unlock_level 0

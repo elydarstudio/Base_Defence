@@ -123,15 +123,15 @@ text = "REGEN AMT"
 layout_mode = 2
 text = "HP MULT"
 
-[node name="WFloorHealMult" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=278061399]
-custom_minimum_size = Vector2(173, 0)
-layout_mode = 2
-text = "HEAL MULT"
-
 [node name="WFloorRegenSpd" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=227387477]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "REGEN SPD"
+
+[node name="WFloorHealMult" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=278061399]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "HEAL MULT"
 
 [node name="DEFColumn" type="VBoxContainer" parent="CoreContent/ColumnsContainer" unique_id=1358423566]
 layout_mode = 2
@@ -174,16 +174,16 @@ custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "GOLD/KILL"
 
-[node name="WFloorGoldMult" type="Button" parent="CoreContent/ColumnsContainer/UTILColumn" unique_id=293321102]
-custom_minimum_size = Vector2(173, 0)
-layout_mode = 2
-text = "GOLD MULT"
-
 [node name="WFloorLpGain" type="Button" parent="CoreContent/ColumnsContainer/UTILColumn" unique_id=1012840961]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "LP GAIN
 "
+
+[node name="WFloorGoldMult" type="Button" parent="CoreContent/ColumnsContainer/UTILColumn" unique_id=293321102]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "GOLD MULT"
 
 [node name="WFloorLpMult" type="Button" parent="CoreContent/ColumnsContainer/UTILColumn" unique_id=219950210]
 custom_minimum_size = Vector2(173, 0)
@@ -221,15 +221,15 @@ text = "Skill Tree unlocks at Phase 3"
 [connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorMaxHP" to="." method="_on_w_floor_max_hp_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorRegenAmt" to="." method="_on_w_floor_regen_amt_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorHPMult" to="." method="_on_button_w_floor_hp_mult_pressed"]
-[connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorHealMult" to="." method="_on_w_floor_heal_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorRegenSpd" to="." method="_on_w_floor_regen_spd_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorHealMult" to="." method="_on_w_floor_heal_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShield" to="." method="_on_w_floor_shield_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShieldRegen" to="." method="_on_w_floor_shield_rege_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShieldStrength" to="." method="_on_w_floor_shield_strength_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShieldMult" to="." method="_on_w_floor_shield_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorEvasion" to="." method="_on_w_floor_evasion_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorGoldPerKill" to="." method="_on_w_floor_gold_per_kill_pressed"]
-[connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorGoldMult" to="." method="_on_w_floor_gold_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorLpGain" to="." method="_on_w_floor_lp_per_wave_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorGoldMult" to="." method="_on_w_floor_gold_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorLpMult" to="." method="_on_w_floor_lp_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorLpDrop" to="." method="_on_w_floor_lp_drop_pressed"]

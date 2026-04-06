@@ -5,24 +5,24 @@ const LP_SCALE = 1.4
 const COSTS = {
 	"WFloorAtkSpd": 10,
 	"WFloorDmg": 10,
-	"WFloorDmgMult": 20,
-	"WFloorCritChance": 15,
-	"WFloorCritDmg": 20,
-	"WFloorShield": 12,
-	"WFloorShieldRegen": 18,
-	"WFloorShieldStrength": 15,
-	"WFloorShieldMult": 20,
-	"WFloorEvasion": 15,
-	"WFloorMaxHP": 12,
-	"WFloorRegenAmt": 15,
-	"WFloorRegenSpd": 15,
-	"WFloorHealMult": 20,
-	"WFloorHPMult": 20,
-	"WFloorGoldPerKill": 8,
-	"WFloorGoldMult": 18,
-	"WFloorLpGain": 8,
-	"WFloorLpMult": 18,
-	"WFloorLpDrop": 15,
+	"WFloorDmgMult": 10,
+	"WFloorCritChance": 10,
+	"WFloorCritDmg": 10,
+	"WFloorShield": 10,
+	"WFloorShieldRegen": 10,
+	"WFloorShieldStrength": 10,
+	"WFloorShieldMult": 10,
+	"WFloorEvasion": 10,
+	"WFloorMaxHP": 10,
+	"WFloorRegenAmt": 10,
+	"WFloorRegenSpd": 10,
+	"WFloorHealMult": 10,
+	"WFloorHPMult": 10,
+	"WFloorGoldPerKill": 10,
+	"WFloorGoldMult": 10,
+	"WFloorLpGain": 10,
+	"WFloorLpMult": 10,
+	"WFloorLpDrop": 10,
 }
 
 const BUTTON_MAP = {
@@ -115,7 +115,7 @@ func _update_ui():
 		var key = BUTTON_MAP[btn_name]
 		var level = SaveManager.data[key]
 		var base_cost = COSTS[btn_name]
-		var cost = int(base_cost * pow(LP_SCALE, level))
+		var cost = _calc_lp_cost(base_cost, level)
 		var label = STAT_LABELS[btn_name][0]
 		var per_level = STAT_LABELS[btn_name][1]
 		var btn = _find_button(btn_name)
@@ -136,7 +136,7 @@ func _purchase(btn_name: String):
 	var key = BUTTON_MAP[btn_name]
 	var level = SaveManager.data[key]
 	var base_cost = COSTS[btn_name]
-	var cost = int(base_cost * pow(LP_SCALE, level))
+	var cost = _calc_lp_cost(base_cost, level)
 	var lp = SaveManager.data["legacy_points"]
 	if lp < cost:
 		return
@@ -144,6 +144,14 @@ func _purchase(btn_name: String):
 	SaveManager.data[key] += 1
 	SaveManager.save_game()
 	_update_ui()
+
+func _calc_lp_cost(base: int, level: int) -> int:
+	if level < 5:
+		return int(base * pow(1.25, level))
+	elif level < 15:
+		return int(base * pow(1.25, 4) * pow(1.35, level - 4))
+	else:
+		return int(base * pow(1.25, 4) * pow(1.35, 10) * pow(1.5, level - 14))
 
 func _on_core_tab_pressed():
 	$CoreContent.visible = true
