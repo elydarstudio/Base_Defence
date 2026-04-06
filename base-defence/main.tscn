@@ -321,6 +321,18 @@ autowrap_mode = 2
 wait_time = 1.75
 one_shot = true
 
+[node name="SpeedButton" type="Button" parent="UI" unique_id=1781282497]
+custom_minimum_size = Vector2(80, 0)
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -280.0
+offset_top = 10.0
+offset_right = -272.0
+offset_bottom = 18.0
+grow_horizontal = 0
+text = "1x"
+
 [node name="DamageLayer" type="CanvasLayer" parent="." unique_id=1848438676]
 
 [connection signal="pressed" from="UI/GameOverScreen/RestartButton" to="." method="_on_restart_button_pressed"]
@@ -352,3 +364,4 @@ one_shot = true
 [connection signal="pressed" from="UI/PauseScreen/PauseRestartButton" to="." method="_on_button_pause_restart_button_pressed"]
 [connection signal="pressed" from="UI/PauseScreen/PauseMenuButton" to="." method="_on_pause_menu_button_pressed"]
 [connection signal="timeout" from="UI/TooltipTimer" to="." method="_on_tooltip_timer_timeout"]
+[connection signal="pressed" from="UI/SpeedButton" to="." method="_on_speed_button_pressed"]

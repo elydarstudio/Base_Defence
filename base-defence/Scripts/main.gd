@@ -7,8 +7,13 @@ var runner_scene: PackedScene
 var boss_scene: PackedScene
 var damage_number_scene: PackedScene
 
+#Game Speed
+var speed_index: int = 0
+var speed_steps: Array = [1.0, 1.5, 2.0]
+
 # Spawn
 var spawn_timer: float = 0.0
+var spawn_edge: int = 0
 var enemies_to_spawn: int = 0
 var enemies_spawned: int = 0
 var wave_complete: bool = false
@@ -369,11 +374,13 @@ func trigger_game_over():
 	if phase > SaveManager.data["best_phase"]:
 		SaveManager.data["best_phase"] = phase
 	SaveManager.save_game()
+	Engine.time_scale = 1.0
 	get_tree().paused = true
 
 func _on_restart_button_pressed():
 	get_tree().paused = false
 	get_tree().reload_current_scene()
+	Engine.time_scale = 1.0
 
 func _on_panel_handle_pressed():
 	panel_open = !panel_open
@@ -657,12 +664,14 @@ func _on_legacy_drop_button_pressed():
 	_update_ui()
 
 func _random_edge_position() -> Vector2:
-	var edge = randi() % 4
-	match edge:
-		0: return Vector2(randf_range(0, 720), -20)
-		1: return Vector2(randf_range(0, 720), 1300)
-		2: return Vector2(-20, randf_range(0, 1280))
-		3: return Vector2(740, randf_range(0, 1280))
+	spawn_edge = (spawn_edge + 1) % 6
+	match spawn_edge:
+		0: return Vector2(randf_range(0, 720), -20)          # top
+		1: return Vector2(randf_range(0, 720), 1300)         # bottom
+		2: return Vector2(-20, randf_range(0, 640))          # left top
+		3: return Vector2(-20, randf_range(640, 1280))       # left bottom
+		4: return Vector2(740, randf_range(0, 640))          # right top
+		5: return Vector2(740, randf_range(640, 1280))       # right bottom
 	return Vector2.ZERO
 
 # ── Pause ─────────────────────────────────────
@@ -678,12 +687,20 @@ func _on_pause_restart_button_pressed():
 	get_tree().paused = false
 	await get_tree().process_frame
 	get_tree().reload_current_scene()
+	Engine.time_scale = 1.0
 
 func _on_pause_menu_button_pressed():
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")
+	Engine.time_scale = 1.0
 
 # ── Game Over ─────────────────────────────────
 func _on_menu_button_pressed():
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")
+	Engine.time_scale = 1.0
+	
+func _on_speed_button_pressed():
+	speed_index = (speed_index + 1) % speed_steps.size()
+	Engine.time_scale = speed_steps[speed_index]
+	$UI/SpeedButton.text = str(speed_steps[speed_index]) + "x"
