@@ -159,7 +159,7 @@ func _ready():
 	boss_scene = preload("res://Scenes/Boss.tscn")
 	damage_number_scene = preload("res://Scenes/damage_number.tscn")
 	phase = SaveManager.data.get("start_phase", 1)
-	difficulty = (phase - 1) * 13
+	difficulty = (phase - 1) * 10
 	$Base.set_bullet_scene(bullet_scene)
 	$Base.set_main(self)
 	_apply_workshop_floors()

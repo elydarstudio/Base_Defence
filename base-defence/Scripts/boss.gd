@@ -65,8 +65,8 @@ func _draw():
 	draw_string(ThemeDB.fallback_font, Vector2(-25, -50), str(int(health)), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
 
 func scale_to_phase(p: int):
-	var multiplier = 1.0 + (p * 0.3)
-	health = 200.0 * multiplier
+	var multiplier = 1.0 + ((p - 1) * 0.3)
+	health = 350.0 * multiplier
 	max_health = health
 	attack_damage = 22.0 * multiplier
 	attack_interval = 1.5
