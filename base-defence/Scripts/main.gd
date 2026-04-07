@@ -303,6 +303,14 @@ func _process(delta):
 		_spawn_enemy()
 
 func _get_spawn_scene() -> PackedScene:
+	if phase < 2:
+		return enemy_scene
+	var brute_every: int = max(6, 10 - (phase - 2))
+	var runner_every: int = max(4, 8 - (phase - 3)) if phase >= 3 else 0
+	if runner_every > 0 and enemies_spawned % runner_every == 0:
+		return runner_scene
+	if enemies_spawned % brute_every == 0:
+		return brute_scene
 	return enemy_scene
 
 func _spawn_enemy():
