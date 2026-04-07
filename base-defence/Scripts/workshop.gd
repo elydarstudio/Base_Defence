@@ -68,7 +68,7 @@ const STAT_LABELS = {
 	"WFloorGoldMult": ["GOLD MULT", "+10%"],
 	"WFloorLpGain": ["LP GAIN", "+1 LP"],
 	"WFloorLpMult": ["LP MULT", "+10%"],
-	"WFloorLpDrop": ["LP CHANCE", "+5%"],
+	"WFloorLpDrop": ["LP CHANCE", "+0.55%"],
 }
 
 const WORKSHOP_UNLOCK_REQUIREMENTS = {
@@ -184,7 +184,7 @@ func _update_ui():
 		"WFloorGoldMult": "+" + str(levels["WFloorGoldMult"] * 10) + "%",
 		"WFloorLpGain": str(1 + levels["WFloorLpGain"]) + " LP",
 		"WFloorLpMult": "+" + str(levels["WFloorLpMult"] * 10) + "%",
-		"WFloorLpDrop": str(snappedf(5.0 + (levels["WFloorLpDrop"] * 0.35), 0.1)) + "%",
+		"WFloorLpDrop": str(snappedf(5.0 + (levels["WFloorLpDrop"] * 0.55), 0.1)) + "%",
 	}
 
 	for btn_name in levels:

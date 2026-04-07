@@ -379,19 +379,20 @@ func on_boss_killed():
 		SaveManager.save_game()
 	_update_ui()
 
-func add_currency(amount: int):
+func add_currency(amount: int, enemy_pos: Vector2 = Vector2.ZERO):
 	var total = amount + gold_per_kill_level
 	var multiplied = int(total * (1.0 + (gold_mult_level * 0.1)))
 	currency += multiplied
 	enemies_killed += 1
-	var drop_chance = 0.05 + (legacy_drop_level * 0.0035)
+	var drop_chance = 0.05 + (legacy_drop_level * 0.0055)
 	if randf() < drop_chance:
 		var drop = int((1 + lp_gain_level) * (1.0 + (legacy_mult_level * 0.1)))
 		run_lp += drop
 		SaveManager.data["legacy_points"] += drop
 		SaveManager.save_game()
+		spawn_damage_number(drop, enemy_pos + Vector2(randf_range(-20, 20), -50), "lp")
 	_update_ui()
-
+	
 func spawn_damage_number(amount: float, pos: Vector2, type: String = "normal"):
 	var dn = damage_number_scene.instantiate()
 	$DamageLayer.add_child(dn)
@@ -482,7 +483,7 @@ func _update_ui():
 		"+" + str(legacy_mult_level * 10) + "%")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyDropButton,
 		"LP CHANCE", legacy_drop_level, legacy_drop_max, legacy_drop_cost,
-		str(snappedf(5.0 + (legacy_drop_level * 0.35), 0.1)) + "%")
+		str(snappedf(5.0 + (legacy_drop_level * 0.55), 0.1)) + "%")
 
 func _update_btn(btn: Button, label: String, level: int, max_level: int, cost: int, stat: String):
 	if level >= max_level:
