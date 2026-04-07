@@ -102,6 +102,7 @@ func _try_shoot():
 		is_crit
 	)
 	bullets_targeting[target] = bullets_en_route + 1
+	if main_node: main_node.play_sfx(main_node.sfx_shoot)
 
 func notify_bullet_resolved(target: Node2D):
 	if target in bullets_targeting:
@@ -146,6 +147,7 @@ func take_damage(amount: float):
 	# HP takes damage
 	health -= hp_damage
 	health = max(0.0, health)
+	if main_node: main_node.play_sfx(main_node.sfx_take_damage)
 
 	if main_node != null:
 		_update_combat_ui()

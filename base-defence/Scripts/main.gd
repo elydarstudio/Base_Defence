@@ -145,6 +145,14 @@ const ZOOM_MIN: float = 0.4
 const ZOOM_MAX: float = 1.0
 const ZOOM_STEP: float = 0.1
 
+var sfx_shoot: AudioStreamPlayer
+var sfx_enemy_death: AudioStreamPlayer
+var sfx_boss_spawn: AudioStreamPlayer
+var sfx_wave_complete: AudioStreamPlayer
+var sfx_take_damage: AudioStreamPlayer
+var sfx_boss_death: AudioStreamPlayer
+var sfx_muted: bool = false
+
 const BASE_ENEMIES_PER_WAVE = 12
 const ENEMIES_PER_WAVE_WAVE_SCALING = 2
 const ENEMIES_PER_WAVE_PHASE_SCALING = 2
@@ -189,6 +197,7 @@ func _ready():
 	_apply_workshop_floors()
 	_apply_unlock_level()
 	enemies_to_spawn = _get_wave_enemy_count()
+	_setup_audio() 
 	_update_ui()
 	tooltip_buttons = {
 		$UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton: "atk_spd",
@@ -330,6 +339,7 @@ func on_enemy_killed():
 		var remaining = get_tree().get_nodes_in_group("enemies").size()
 		if remaining <= 1:
 			wave_complete = true
+			play_sfx(sfx_enemy_death)
 			_advance_wave()
 
 func _spawn_boss():
@@ -342,6 +352,7 @@ func _spawn_boss():
 	b.global_position = Vector2(360, -40)
 	$UI/WaveLabel.text = "⚠ BOSS WAVE ⚠ | Phase: " + str(phase)
 	_on_boss_spawn_flash()
+	play_sfx(sfx_boss_spawn)
 
 func _advance_wave():
 	wave += 1
@@ -349,7 +360,8 @@ func _advance_wave():
 	enemies_spawned = 0
 	enemies_to_spawn = _get_wave_enemy_count()
 	wave_complete = false
-	_on_wave_complete_flash()
+	if wave % 10 != 0:
+		_on_wave_complete_flash()
 	_check_unlock_progression()
 	var lp_earned = 1 + lp_gain_level
 	var lp_total = int(lp_earned * (1.0 + (legacy_mult_level * 0.1)))
@@ -505,6 +517,7 @@ func _flash_screen(color: Color, alpha: float = 0.3, duration: float = 0.4):
 	tween.tween_property(flash, "modulate:a", 0.0, duration)
 
 func _on_wave_complete_flash():
+	play_sfx(sfx_wave_complete)
 	_flash_screen(Color(0.2, 1.0, 0.3), 0.08, 0.6)
 
 func _on_boss_spawn_flash():
@@ -750,6 +763,38 @@ func _random_edge_position() -> Vector2:
 		5: return Vector2(960, randf_range(-500, 1800))           # right bottom
 	return Vector2.ZERO
 
+func _setup_audio():
+	sfx_shoot = AudioStreamPlayer.new()
+	sfx_shoot.stream = preload("res://Assets/Sounds/Shoot.wav")
+	sfx_shoot.volume_db = -15.0
+	add_child(sfx_shoot)
+	
+	sfx_enemy_death = AudioStreamPlayer.new()
+	sfx_enemy_death.stream = preload("res://Assets/Sounds/EnemyDeath.wav")
+	add_child(sfx_enemy_death)
+	
+	sfx_boss_spawn = AudioStreamPlayer.new()
+	sfx_boss_spawn.stream = preload("res://Assets/Sounds/BossSpawn.wav")
+	add_child(sfx_boss_spawn)
+	
+	sfx_wave_complete = AudioStreamPlayer.new()
+	sfx_wave_complete.stream = preload("res://Assets/Sounds/WaveComplete.wav")
+	sfx_wave_complete.volume_db = -8.0
+	add_child(sfx_wave_complete)
+	
+	sfx_take_damage = AudioStreamPlayer.new()
+	sfx_take_damage.stream = preload("res://Assets/Sounds/TakeDamage.wav")
+	sfx_take_damage.volume_db = -10
+	add_child(sfx_take_damage)
+	
+	sfx_boss_death = AudioStreamPlayer.new()
+	sfx_boss_death.stream = preload("res://Assets/Sounds/BossDeath.wav")
+	add_child(sfx_boss_death)
+
+func play_sfx(player: AudioStreamPlayer):
+	if not sfx_muted:
+		player.play()
+
 # ── Pause ─────────────────────────────────────
 func _on_pause_button_pressed():
 	get_tree().paused = true
@@ -769,6 +814,10 @@ func _on_pause_menu_button_pressed():
 	Engine.time_scale = 1.0
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")
+
+func _on_mute_button_pressed():
+	sfx_muted = !sfx_muted
+	$UI/MuteButton.text = "🔇" if sfx_muted else "🔊"
 
 # ── Game Over ─────────────────────────────────
 func _on_menu_button_pressed():

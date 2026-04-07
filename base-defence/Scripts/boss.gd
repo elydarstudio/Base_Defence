@@ -75,7 +75,7 @@ func scale_to_phase(p: int):
 func take_damage(amount: float, type: String = "normal"):
 	health -= amount
 	if main_node != null:
-		main_node.spawn_damage_number(amount, global_position + Vector2(0, -20), type)
+		main_node.spawn_damage_number(amount, global_position + Vector2(randf_range(-20, 20), -40), type)
 	if health <= 0:
 		_die()
 
@@ -91,6 +91,7 @@ func _die():
 		SaveManager.save_game()
 		main_node.spawn_damage_number(total_lp, global_position + Vector2(0, -50), "lp")
 		main_node.on_boss_killed()
+		main_node.play_sfx(main_node.sfx_boss_death)
 	queue_free()
 
 func setup(base: Node2D, main: Node):
