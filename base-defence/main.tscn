@@ -340,6 +340,10 @@ text = "1x"
 
 [node name="DamageLayer" type="CanvasLayer" parent="." unique_id=1848438676]
 
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1828493015]
+position = Vector2(360, 640)
+zoom = Vector2(0.6, 0.6)
+
 [connection signal="pressed" from="UI/GameOverScreen/RestartButton" to="." method="_on_restart_button_pressed"]
 [connection signal="pressed" from="UI/GameOverScreen/MenuButton" to="." method="_on_menu_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/PanelHandle" to="." method="_on_panel_handle_pressed"]

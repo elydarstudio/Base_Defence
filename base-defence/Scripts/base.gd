@@ -34,7 +34,7 @@ var main_node: Node = null
 var bullets_targeting: Dictionary = {}
 
 func _ready():
-	position = Vector2(360, 500)
+	position = Vector2(360, 640)
 	_draw_base()
 	_update_combat_ui()
 

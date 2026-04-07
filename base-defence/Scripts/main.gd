@@ -140,6 +140,10 @@ var legacy_drop_upgrades: int = 0
 
 var tooltip_buttons: Dictionary = {}
 var tooltip_key: String = ""
+var zoom_level: float = 0.6
+const ZOOM_MIN: float = 0.4
+const ZOOM_MAX: float = 1.0
+const ZOOM_STEP: float = 0.1
 
 const BASE_ENEMIES_PER_WAVE = 12
 const ENEMIES_PER_WAVE_WAVE_SCALING = 2
@@ -542,6 +546,16 @@ func _input(event):
 				_show_tooltip_instant(tooltip_buttons[btn])
 				return
 		_hide_tooltip()
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
+			zoom_level = clamp(zoom_level - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
+			$Camera2D.zoom = Vector2(zoom_level, zoom_level)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
+			zoom_level = clamp(zoom_level + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
+			$Camera2D.zoom = Vector2(zoom_level, zoom_level)
+	if event is InputEventMagnifyGesture:
+		zoom_level = clamp(zoom_level / event.factor, ZOOM_MIN, ZOOM_MAX)
+		$Camera2D.zoom = Vector2(zoom_level, zoom_level)
 
 # ── ATK handlers ──────────────────────────────
 func _on_atk_spd_button_pressed():
@@ -728,12 +742,12 @@ func _on_legacy_drop_button_pressed():
 func _random_edge_position() -> Vector2:
 	spawn_edge = (spawn_edge + 1) % 6
 	match spawn_edge:
-		0: return Vector2(randf_range(0, 720), -20)
-		1: return Vector2(randf_range(0, 720), 1300)
-		2: return Vector2(-20, randf_range(0, 640))
-		3: return Vector2(-20, randf_range(640, 1280))
-		4: return Vector2(740, randf_range(0, 640))
-		5: return Vector2(740, randf_range(640, 1280))
+		0: return Vector2(randf_range(-240, 960), -500)           # top
+		1: return Vector2(randf_range(-240, 960), 1800)           # bottom
+		2: return Vector2(-240, randf_range(-500, 1800))          # left top
+		3: return Vector2(-240, randf_range(-500, 1800))          # left bottom
+		4: return Vector2(960, randf_range(-500, 1800))           # right top
+		5: return Vector2(960, randf_range(-500, 1800))           # right bottom
 	return Vector2.ZERO
 
 # ── Pause ─────────────────────────────────────
