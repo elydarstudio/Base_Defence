@@ -146,11 +146,10 @@ const ZOOM_MAX: float = 1.0
 const ZOOM_STEP: float = 0.1
 
 var sfx_shoot: AudioStreamPlayer
-var sfx_enemy_death: AudioStreamPlayer
 var sfx_boss_spawn: AudioStreamPlayer
-var sfx_wave_complete: AudioStreamPlayer
 var sfx_take_damage: AudioStreamPlayer
 var sfx_boss_death: AudioStreamPlayer
+var sfx_music: AudioStreamPlayer
 var sfx_muted: bool = false
 
 const BASE_ENEMIES_PER_WAVE = 12
@@ -339,7 +338,6 @@ func on_enemy_killed():
 		var remaining = get_tree().get_nodes_in_group("enemies").size()
 		if remaining <= 1:
 			wave_complete = true
-			play_sfx(sfx_enemy_death)
 			_advance_wave()
 
 func _spawn_boss():
@@ -517,8 +515,7 @@ func _flash_screen(color: Color, alpha: float = 0.3, duration: float = 0.4):
 	tween.tween_property(flash, "modulate:a", 0.0, duration)
 
 func _on_wave_complete_flash():
-	play_sfx(sfx_wave_complete)
-	_flash_screen(Color(0.2, 1.0, 0.3), 0.08, 0.6)
+	_flash_screen(Color(0.2, 1.0, 0.3), 0.05, 0.6)
 
 func _on_boss_spawn_flash():
 	_flash_screen(Color(0.6, 0.0, 0.8), 0.5, 0.8)
@@ -766,33 +763,30 @@ func _random_edge_position() -> Vector2:
 func _setup_audio():
 	sfx_shoot = AudioStreamPlayer.new()
 	sfx_shoot.stream = preload("res://Assets/Sounds/Shoot.wav")
-	sfx_shoot.volume_db = -15.0
 	add_child(sfx_shoot)
-	
-	sfx_enemy_death = AudioStreamPlayer.new()
-	sfx_enemy_death.stream = preload("res://Assets/Sounds/EnemyDeath.wav")
-	add_child(sfx_enemy_death)
-	
+
 	sfx_boss_spawn = AudioStreamPlayer.new()
 	sfx_boss_spawn.stream = preload("res://Assets/Sounds/BossSpawn.wav")
 	add_child(sfx_boss_spawn)
 	
-	sfx_wave_complete = AudioStreamPlayer.new()
-	sfx_wave_complete.stream = preload("res://Assets/Sounds/WaveComplete.wav")
-	sfx_wave_complete.volume_db = -8.0
-	add_child(sfx_wave_complete)
-	
 	sfx_take_damage = AudioStreamPlayer.new()
 	sfx_take_damage.stream = preload("res://Assets/Sounds/TakeDamage.wav")
-	sfx_take_damage.volume_db = -10
 	add_child(sfx_take_damage)
 	
 	sfx_boss_death = AudioStreamPlayer.new()
 	sfx_boss_death.stream = preload("res://Assets/Sounds/BossDeath.wav")
 	add_child(sfx_boss_death)
+	
+	sfx_music = AudioStreamPlayer.new()
+	sfx_music.stream = preload("res://Assets/Sounds/Music.wav")
+	sfx_music.volume_db = -7.0
+	sfx_music.autoplay = true
+	sfx_music.finished.connect(func(): sfx_music.play())
+	add_child(sfx_music)
 
 func play_sfx(player: AudioStreamPlayer):
 	if not sfx_muted:
+		player.volume_db = -15.0
 		player.play()
 
 # ── Pause ─────────────────────────────────────
@@ -818,6 +812,10 @@ func _on_pause_menu_button_pressed():
 func _on_mute_button_pressed():
 	sfx_muted = !sfx_muted
 	$UI/MuteButton.text = "🔇" if sfx_muted else "🔊"
+	if sfx_muted:
+		sfx_music.stop()
+	else:
+		sfx_music.play()
 
 # ── Game Over ─────────────────────────────────
 func _on_menu_button_pressed():
