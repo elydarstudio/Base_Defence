@@ -1,28 +1,26 @@
 extends Control
 
-const LP_SCALE = 1.4
-
 const COSTS = {
-	"WFloorAtkSpd": 10,
-	"WFloorDmg": 10,
-	"WFloorDmgMult": 10,
-	"WFloorCritChance": 10,
-	"WFloorCritDmg": 10,
-	"WFloorShield": 10,
-	"WFloorShieldRegen": 10,
-	"WFloorShieldStrength": 10,
+	"WFloorAtkSpd": 8,
+	"WFloorDmg": 6,
+	"WFloorDmgMult": 12,
+	"WFloorCritChance": 14,
+	"WFloorCritDmg": 12,
+	"WFloorShield": 8,
+	"WFloorShieldRegen": 8,
+	"WFloorShieldStrength": 12,
 	"WFloorShieldMult": 10,
-	"WFloorEvasion": 10,
-	"WFloorMaxHP": 10,
-	"WFloorRegenAmt": 10,
-	"WFloorRegenSpd": 10,
-	"WFloorHealMult": 10,
+	"WFloorEvasion": 14,
+	"WFloorMaxHP": 5,
+	"WFloorRegenAmt": 5,
+	"WFloorRegenSpd": 6,
+	"WFloorHealMult": 8,
 	"WFloorHPMult": 10,
-	"WFloorGoldPerKill": 10,
-	"WFloorGoldMult": 10,
-	"WFloorLpGain": 10,
-	"WFloorLpMult": 10,
-	"WFloorLpDrop": 10,
+	"WFloorGoldPerKill": 6,
+	"WFloorGoldMult": 14,
+	"WFloorLpGain": 6,
+	"WFloorLpMult": 14,
+	"WFloorLpDrop": 8,
 }
 
 const BUTTON_MAP = {
@@ -55,13 +53,13 @@ const STAT_LABELS = {
 	"WFloorCritChance": ["CRIT %", "+0.8%"],
 	"WFloorCritDmg": ["CRIT DMG", "+10%"],
 	"WFloorShield": ["SHIELD", "+50"],
-	"WFloorShieldRegen": ["SHLD RGN", "-0.005s interval"],
+	"WFloorShieldRegen": ["SHLD RGN", "-0.045s interval"],
 	"WFloorShieldStrength": ["SHLD STR", "+0.4%"],
 	"WFloorShieldMult": ["SHLD MULT", "+10%"],
 	"WFloorEvasion": ["EVASION", "+0.2%"],
 	"WFloorMaxHP": ["MAX HP", "+10"],
 	"WFloorRegenAmt": ["REGEN AMT", "+1hp"],
-	"WFloorRegenSpd": ["REGEN SPD", "-0.1s"],
+	"WFloorRegenSpd": ["REGEN SPD", "-0.045s"],
 	"WFloorHealMult": ["HEAL MULT", "+10%"],
 	"WFloorHPMult": ["HP MULT", "+10%"],
 	"WFloorGoldPerKill": ["GOLD/KILL", "+1g"],
@@ -95,6 +93,7 @@ const WORKSHOP_UNLOCK_REQUIREMENTS = {
 }
 
 var tooltip_buttons: Dictionary = {}
+var tooltip_key: String = ""
 
 func _ready():
 	_apply_unlock_level()
@@ -125,7 +124,7 @@ func _ready():
 		var key = tooltip_buttons[btn]
 		btn.mouse_entered.connect(func(): _show_tooltip(key))
 		btn.mouse_exited.connect(func(): _hide_tooltip())
-		
+
 func _apply_unlock_level():
 	var unlock = SaveManager.data["unlock_level"]
 	var columns = ["ATKColumn", "DEFColumn", "HPColumn", "UTILColumn"]
@@ -228,8 +227,6 @@ func _calc_lp_cost(base: int, level: int) -> int:
 		return int(base * pow(1.25, 4) * pow(1.35, level - 4))
 	else:
 		return int(base * pow(1.25, 4) * pow(1.35, 10) * pow(1.5, level - 14))
-		
-var tooltip_key: String = ""
 
 func _show_tooltip(key: String):
 	tooltip_key = key
@@ -249,7 +246,7 @@ func _on_tooltip_timer_timeout():
 			x = mouse.x - panel_width - 10
 		$TooltipPanel.position = Vector2(x, mouse.y - 60)
 		$TooltipPanel.visible = true
-		
+
 func _show_tooltip_instant(key: String):
 	$TooltipPanel/TooltipLabel.text = TooltipData.TIPS[key]
 	var mouse = get_viewport().get_mouse_position()
@@ -338,3 +335,6 @@ func _on_w_floor_lp_mult_pressed():
 
 func _on_w_floor_lp_drop_pressed():
 	_purchase("WFloorLpDrop")
+
+func _on_button_w_floor_hp_mult_pressed():
+	_purchase("WFloorHPMult")

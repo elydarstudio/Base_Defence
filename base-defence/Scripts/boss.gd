@@ -66,7 +66,7 @@ func _draw():
 
 func scale_to_phase(p: int):
 	var multiplier = 1.0 + ((p - 1) * 0.3)
-	health = 350.0 * multiplier
+	health = 400 * multiplier
 	max_health = health
 	attack_damage = 22.0 * multiplier
 	attack_interval = 1.5
