@@ -79,10 +79,7 @@ func take_damage(amount: float, type: String = "normal"):
 func _die():
 	if main_node != null:
 		var base_gold = 5 + ((main_node.phase - 1) * 3)
-		var total = base_gold + main_node.gold_per_kill_level
-		var multiplied = int(total * (1.0 + (main_node.gold_mult_level * 0.1)))
 		main_node.add_currency(base_gold, global_position)
-		main_node.spawn_damage_number(multiplied, global_position + Vector2(0, -35), "gold")
 		main_node.on_enemy_killed()
 	queue_free()
 	

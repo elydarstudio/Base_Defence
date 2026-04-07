@@ -160,7 +160,6 @@ func take_damage(amount: float):
 			main_node.trigger_game_over()
 
 func add_shield(amount: float):
-	print("add_shield called: ", amount, " shield now: ", shield)
 	max_shield += amount
 	shield += amount
 	_update_combat_ui()

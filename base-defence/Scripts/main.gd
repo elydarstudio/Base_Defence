@@ -283,7 +283,7 @@ func _check_unlock_progression():
 func _apply_workshop_floors():
 	var d = SaveManager.data
 	attack_speed_level = d["floor_attack_speed"]
-	$Base.fire_rate += attack_speed_level * 0.125
+	$Base.fire_rate = _calc_atk_spd(attack_speed_level)
 	damage_level = d["floor_damage"]
 	$Base.bullet_damage += damage_level * 1.0
 	dmg_mult_level = d["floor_dmg_mult"]
@@ -417,6 +417,7 @@ func add_currency(amount: int, enemy_pos: Vector2 = Vector2.ZERO):
 	var multiplied = int(total * (1.0 + (gold_mult_level * 0.1)))
 	currency += multiplied
 	enemies_killed += 1
+	spawn_damage_number(multiplied, enemy_pos + Vector2(randf_range(-10, 10), -35), "gold")
 	var drop_chance = 0.05 + (legacy_drop_level * 0.0055)
 	if randf() < drop_chance:
 		var drop = int((1 + lp_gain_level) * (1.0 + (legacy_mult_level * 0.1)))
@@ -568,6 +569,12 @@ func _show_tooltip_instant(key: String):
 	$UI/TooltipPanel.position = Vector2(x, mouse.y - 60)
 	$UI/TooltipPanel.visible = true
 
+func _calc_atk_spd(level: int) -> float:
+	var rate = 1.0
+	for i in range(level):
+		rate += 0.115 / (1.0 + i * 0.02)
+	return rate
+	
 func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		for btn in tooltip_buttons:
@@ -593,8 +600,7 @@ func _on_atk_spd_button_pressed():
 	attack_speed_level += 1
 	attack_speed_upgrades += 1
 	attack_speed_cost = _calc_cost(45, attack_speed_upgrades, true)
-	var gain = 0.12 / (1.0 + attack_speed_upgrades * 0.02)
-	$Base.fire_rate += gain
+	$Base.fire_rate = _calc_atk_spd(attack_speed_level)
 	_update_ui()
 
 func _on_dmg_button_pressed():
