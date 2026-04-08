@@ -32,6 +32,16 @@ func _process(delta):
 	if dist > attack_range:
 		var dir = global_position.direction_to(base_node.global_position)
 		global_position += dir * speed * delta
+		# Separation — prevent stacking
+		var separation = Vector2.ZERO
+		for other in get_tree().get_nodes_in_group("enemies"):
+			if other == self:
+				continue
+			var d = global_position.distance_to(other.global_position)
+			if d < 20.0 and d > 0:
+				separation += global_position.direction_to(other.global_position) * -1
+		if separation.length() > 0:
+			global_position += separation.normalized() * 0.5 * delta
 	else:
 		attack_timer += delta
 		if attack_timer >= attack_interval:
@@ -46,9 +56,7 @@ func _draw():
 	var bar_height: float = 4.0
 	var offset: Vector2 = Vector2(-15, -25)
 	var pct: float = health / max_health
-
 	draw_rect(Rect2(offset, Vector2(bar_width, bar_height)), Color(0.2, 0.2, 0.2))
-
 	var fill_color: Color
 	if pct > 0.5:
 		fill_color = Color(0.2, 0.9, 0.2)
@@ -56,16 +64,16 @@ func _draw():
 		fill_color = Color(0.9, 0.9, 0.2)
 	else:
 		fill_color = Color(0.9, 0.2, 0.2)
-
 	draw_rect(Rect2(offset, Vector2(bar_width * pct, bar_height)), fill_color)
 
 func scale_to_wave(difficulty: int):
 	var early = min(difficulty, 10)
 	var late = max(0, difficulty - 10)
-	var multiplier = 1.0 + (early * 0.08) + (late * 0.22) + (pow(max(0, difficulty - 5), 1.4) * 0.02)
+	var very_late = max(0, difficulty - 30)
+	var multiplier = 1.0 + (early * 0.08) + (late * 0.26) + (pow(max(0, difficulty - 5), 1.4) * 0.02) + (very_late * 0.4)
 	health = 8.0 * multiplier
 	max_health = health
-	attack_damage = 7.0 * (1.0 + (difficulty * 0.11))
+	attack_damage = 7.0 * (1.0 + (difficulty * 0.13))
 	speed = 72.0
 	currency_value = 5 + (main_node.phase * 3) if main_node != null else 5
 
@@ -82,7 +90,7 @@ func _die():
 		main_node.add_currency(base_gold, global_position)
 		main_node.on_enemy_killed()
 	queue_free()
-	
+
 func setup(base: Node2D, main: Node):
 	base_node = base
 	main_node = main

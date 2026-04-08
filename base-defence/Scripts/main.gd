@@ -52,7 +52,7 @@ var sfx_muted: bool = false
 
 # ── Wave Constants ────────────────────────────
 const BASE_ENEMIES_PER_WAVE = 12
-const ENEMIES_PER_WAVE_WAVE_SCALING: float = 1.5
+const ENEMIES_PER_WAVE_WAVE_SCALING: float = 1.35
 const ENEMIES_PER_WAVE_PHASE_SCALING = 2
 
 # ── ATK Stats ─────────────────────────────────
@@ -408,7 +408,7 @@ func on_boss_killed():
 	boss_wave = false
 	wave += 1
 	phase += 1
-	difficulty += 3
+	difficulty += int(pow(phase, 1.8) * 3)
 	enemies_spawned = 0
 	enemies_to_spawn = _get_wave_enemy_count()
 	wave_complete = false

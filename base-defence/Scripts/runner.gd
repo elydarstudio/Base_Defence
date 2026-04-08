@@ -6,9 +6,8 @@ var max_health: float = 4.0
 var base_node: Node2D = null
 var main_node: Node = null
 var currency_value: int = 5
+var has_exploded: bool = false
 
-var attack_timer: float = 1.4
-var attack_interval: float = 1.5
 var attack_damage: float = 3.0
 var attack_range: float = 35.0
 
@@ -32,13 +31,23 @@ func _process(delta):
 	if dist > attack_range:
 		var dir = global_position.direction_to(base_node.global_position)
 		global_position += dir * speed * delta
+		# Separation — prevent stacking
+		var separation = Vector2.ZERO
+		for other in get_tree().get_nodes_in_group("enemies"):
+			if other == self:
+				continue
+			var d = global_position.distance_to(other.global_position)
+			if d < 15.0 and d > 0:
+				separation += global_position.direction_to(other.global_position) * -1
+		if separation.length() > 0:
+			global_position += separation.normalized() * 0.5 * delta
 	else:
-		attack_timer += delta
-		if attack_timer >= attack_interval:
-			attack_timer = 0.0
+		if not has_exploded:
+			has_exploded = true
 			base_node.take_damage(attack_damage)
 			if main_node != null:
 				base_node._update_combat_ui()
+			_die()
 	queue_redraw()
 
 func _draw():
@@ -59,11 +68,12 @@ func _draw():
 func scale_to_wave(difficulty: int):
 	var early = min(difficulty, 10)
 	var late = max(0, difficulty - 10)
-	var multiplier = 1.0 + (early * 0.08) + (late * 0.22) + (pow(max(0, difficulty - 5), 1.4) * 0.02)
+	var very_late = max(0, difficulty - 30)
+	var multiplier = 1.0 + (early * 0.08) + (late * 0.26) + (pow(max(0, difficulty - 5), 1.4) * 0.02) + (very_late * 0.4)
 	health = 4.0 * multiplier
 	max_health = health
-	attack_damage = 5.25 * (1.0 + (difficulty * 0.11))
-	speed = 170.0
+	attack_damage = 80.0 * (1.0 + (difficulty * 0.15))
+	speed = 230.0
 	currency_value = 5 + ((main_node.phase - 1) * 3) if main_node != null else 5
 
 func take_damage(amount: float, type: String = "normal"):

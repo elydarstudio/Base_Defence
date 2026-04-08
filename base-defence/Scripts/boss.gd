@@ -10,6 +10,8 @@ var attack_timer: float = 1.4
 var attack_interval: float = 2.0
 var attack_damage: float = 18.0
 var attack_range: float = 45.0
+var crit_chance: float = 0.0
+var crit_multiplier: float = 2.0
 
 func _ready():
 	add_to_group("enemies")
@@ -36,7 +38,10 @@ func _process(delta):
 		attack_timer += delta
 		if attack_timer >= attack_interval:
 			attack_timer = 0.0
-			base_node.take_damage(attack_damage)
+			var final_damage = attack_damage
+			if randf() < crit_chance:
+				final_damage *= crit_multiplier
+			base_node.take_damage(final_damage)
 			if main_node != null:
 				base_node._update_combat_ui()
 	queue_redraw()
@@ -46,11 +51,7 @@ func _draw():
 	var bar_height: float = 6.0
 	var offset: Vector2 = Vector2(-30, -45)
 	var pct: float = health / max_health
-
-	# Background
 	draw_rect(Rect2(offset, Vector2(bar_width, bar_height)), Color(0.2, 0.2, 0.2))
-
-	# Fill
 	var fill_color: Color
 	if pct > 0.5:
 		fill_color = Color(0.8, 0.0, 0.8)
@@ -58,20 +59,20 @@ func _draw():
 		fill_color = Color(0.9, 0.5, 0.0)
 	else:
 		fill_color = Color(0.9, 0.1, 0.1)
-
 	draw_rect(Rect2(offset, Vector2(bar_width * pct, bar_height)), fill_color)
-
-	# HP text above bar
 	draw_string(ThemeDB.fallback_font, Vector2(-25, -50), str(int(health)), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.WHITE)
 
 func scale_to_phase(p: int):
-	var multiplier = 1.0 + ((p - 1) * 0.3)
-	health = 400 * multiplier
+	var hp_mult = pow(5.0, p - 1)
+	var dmg_mult = pow(4.6, p - 1)
+	health = 400.0 * hp_mult
 	max_health = health
-	attack_damage = 22.0 * multiplier
+	attack_damage = 22.0 * dmg_mult
 	attack_interval = 1.5
 	speed = min(50.0 + (p * 2.0), 110.0)
-	
+	crit_chance = 0.3
+	crit_multiplier = 2.0
+
 func take_damage(amount: float, type: String = "normal"):
 	health -= amount
 	if main_node != null:

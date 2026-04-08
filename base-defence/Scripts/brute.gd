@@ -1,8 +1,8 @@
 extends Area2D
 
 var speed: float = 40.0
-var health: float = 24.0
-var max_health: float = 24.0
+var health: float = 40.0
+var max_health: float = 40.0
 var base_node: Node2D = null
 var main_node: Node = null
 var currency_value: int = 10
@@ -32,6 +32,16 @@ func _process(delta):
 	if dist > attack_range:
 		var dir = global_position.direction_to(base_node.global_position)
 		global_position += dir * speed * delta
+		# Separation — prevent stacking
+		var separation = Vector2.ZERO
+		for other in get_tree().get_nodes_in_group("enemies"):
+			if other == self:
+				continue
+			var d = global_position.distance_to(other.global_position)
+			if d < 30.0 and d > 0:
+				separation += global_position.direction_to(other.global_position) * -1
+		if separation.length() > 0:
+			global_position += separation.normalized() * 0.5 * delta
 	else:
 		attack_timer += delta
 		if attack_timer >= attack_interval:
@@ -59,10 +69,11 @@ func _draw():
 func scale_to_wave(difficulty: int):
 	var early = min(difficulty, 10)
 	var late = max(0, difficulty - 10)
-	var multiplier = 1.0 + (early * 0.08) + (late * 0.22) + (pow(max(0, difficulty - 5), 1.4) * 0.02)
-	health = 24.0 * multiplier
+	var very_late = max(0, difficulty - 30)
+	var multiplier = 1.0 + (early * 0.08) + (late * 0.26) + (pow(max(0, difficulty - 5), 1.4) * 0.02) + (very_late * 0.4)
+	health = 40.0 * multiplier
 	max_health = health
-	attack_damage = 10.5 * (1.0 + (difficulty * 0.11))
+	attack_damage = 10.5 * (1.0 + (difficulty * 0.13))
 	speed = 45.0
 	currency_value = (5 + ((main_node.phase - 1) * 3)) * 2 if main_node != null else 10
 
