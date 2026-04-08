@@ -212,7 +212,8 @@ func _ready():
 	difficulty = (phase - 1) * 10
 	$Base.set_bullet_scene(bullet_scene)
 	$Base.set_main(self)
-	_apply_workshop_floors()
+	$UpgradeManager.setup(self, $Base)
+	$UpgradeManager.apply_workshop_floors()
 	_apply_unlock_level()
 	enemies_to_spawn = _get_wave_enemy_count()
 	
@@ -244,26 +245,6 @@ func _ready():
 		btn.mouse_entered.connect(func(): _show_tooltip(key))
 		btn.mouse_exited.connect(func(): _hide_tooltip())
 
-# ── Cost Calculators ──────────────────────────
-func _calc_cost(base: int, level: int, is_capped: bool) -> int:
-	if is_capped:
-		var scale = 1.23 if level < 50 else 1.4
-		return int(base * pow(scale, level))
-	else:
-		return int(base * pow(1.2, level))
-
-func _calc_cost_flat(base: int, level: int) -> int:
-	return int(base * pow(1.15, level))
-
-func _calc_cost_mult(base: int, level: int) -> int:
-	return int(base * pow(1.25, level))
-
-func _calc_atk_spd(level: int) -> float:
-	var rate = 1.0
-	for i in range(level):
-		rate += 0.115 / (1.0 + i * 0.02)
-	return rate
-
 # ── Unlock System ─────────────────────────────
 func _apply_unlock_level():
 	var unlock = SaveManager.data["unlock_level"]
@@ -290,48 +271,6 @@ func _check_unlock_progression():
 		SaveManager.data["unlock_level"] = 4
 		SaveManager.save_game()
 		_apply_unlock_level()
-
-# ── Workshop Floors ───────────────────────────
-func _apply_workshop_floors():
-	var d = SaveManager.data
-	attack_speed_level = d["floor_attack_speed"]
-	$Base.fire_rate = _calc_atk_spd(attack_speed_level)
-	damage_level = d["floor_damage"]
-	$Base.bullet_damage += damage_level * 1.0
-	dmg_mult_level = d["floor_dmg_mult"]
-	$Base.damage_multiplier += dmg_mult_level * 0.1
-	crit_chance_level = d["floor_crit_chance"]
-	$Base.crit_chance += crit_chance_level * 0.0125
-	crit_dmg_level = d["floor_crit_dmg"]
-	$Base.crit_damage += crit_dmg_level * 0.10
-	shield_level = d["floor_shield"]
-	$Base.max_shield += shield_level * 50.0
-	$Base.shield += shield_level * 50.0
-	shield_regen_level = d["floor_shield_regen"]
-	$Base.shield_regen_interval = max(0.5, 5.0 - (shield_regen_level * 0.045))
-	shield_strength_level = d["floor_shield_strength"]
-	$Base.shield_strength += shield_strength_level * 0.004
-	shield_mult_level = d["floor_shield_mult"]
-	$Base.shield_multiplier += shield_mult_level * 0.1
-	evasion_level = d["floor_evasion"]
-	$Base.evasion += evasion_level * 0.002
-	max_hp_level = d["floor_max_hp"]
-	$Base.increase_max_health(max_hp_level * 10.0)
-	regen_amt_level = d["floor_regen_amt"]
-	$Base.hp_regen += regen_amt_level * 1.0
-	regen_spd_level = d["floor_regen_spd"]
-	$Base.regen_interval = max(0.5, 5.0 - (regen_spd_level * 0.045))
-	heal_mult_level = d["floor_heal_mult"]
-	$Base.heal_multiplier += heal_mult_level * 0.1
-	hp_mult_level = d["floor_hp_mult"]
-	$Base.hp_multiplier += hp_mult_level * 0.1
-	$Base.health = $Base.get_effective_max_hp()
-	$Base._update_combat_ui()
-	gold_per_kill_level = d["floor_gold_per_kill"]
-	gold_mult_level = d["floor_gold_mult"]
-	lp_gain_level = d["floor_lp_gain"]
-	legacy_mult_level = d["floor_legacy_mult"]
-	legacy_drop_level = d["floor_legacy_drop"]
 
 # ── Process ───────────────────────────────────
 func _process(delta):
@@ -661,203 +600,64 @@ func _on_buy_amount_button_pressed():
 
 # ── ATK Handlers ──────────────────────────────
 func _on_atk_spd_button_pressed():
-	for i in buy_amount:
-		if currency < attack_speed_cost or attack_speed_level >= attack_speed_max: break
-		currency -= attack_speed_cost
-		attack_speed_level += 1
-		attack_speed_upgrades += 1
-		attack_speed_cost = _calc_cost(45, attack_speed_upgrades, true)
-		$Base.fire_rate = _calc_atk_spd(attack_speed_level)
-	_update_ui()
+	$UpgradeManager.on_atk_spd(buy_amount)
 
 func _on_dmg_button_pressed():
-	for i in buy_amount:
-		if currency < damage_cost or damage_level >= damage_max: break
-		currency -= damage_cost
-		damage_level += 1
-		damage_upgrades += 1
-		damage_cost = _calc_cost_flat(30, damage_upgrades)
-		$Base.bullet_damage += 1.0
-	_update_ui()
+	$UpgradeManager.on_dmg(buy_amount)
 
 func _on_dmg_mult_button_pressed():
-	for i in buy_amount:
-		if currency < dmg_mult_cost or dmg_mult_level >= dmg_mult_max: break
-		currency -= dmg_mult_cost
-		dmg_mult_level += 1
-		dmg_mult_upgrades += 1
-		dmg_mult_cost = _calc_cost_mult(45, dmg_mult_upgrades)
-		$Base.damage_multiplier += 0.1
-	_update_ui()
+	$UpgradeManager.on_dmg_mult(buy_amount)
 
 func _on_crit_chance_button_pressed():
-	for i in buy_amount:
-		if currency < crit_chance_cost or crit_chance_level >= crit_chance_max: break
-		currency -= crit_chance_cost
-		crit_chance_level += 1
-		crit_chance_upgrades += 1
-		crit_chance_cost = _calc_cost(50, crit_chance_upgrades, true)
-		$Base.crit_chance += 0.008
-	_update_ui()
+	$UpgradeManager.on_crit_chance(buy_amount)
 
 func _on_crit_dmg_button_pressed():
-	for i in buy_amount:
-		if currency < crit_dmg_cost or crit_dmg_level >= crit_dmg_max: break
-		currency -= crit_dmg_cost
-		crit_dmg_level += 1
-		crit_dmg_upgrades += 1
-		crit_dmg_cost = _calc_cost_mult(40, crit_dmg_upgrades)
-		$Base.crit_damage += 0.10
-	_update_ui()
+	$UpgradeManager.on_crit_dmg(buy_amount)
 
 # ── DEF Handlers ──────────────────────────────
 func _on_shield_button_pressed():
-	for i in buy_amount:
-		if currency < shield_cost or shield_level >= shield_max: break
-		currency -= shield_cost
-		shield_level += 1
-		shield_upgrades += 1
-		shield_cost = _calc_cost(28, shield_upgrades, false)
-		$Base.max_shield += 50.0
-		$Base.shield += 50.0
-	$Base._update_combat_ui()
-	_update_ui()
+	$UpgradeManager.on_shield(buy_amount)
 
 func _on_shield_regen_button_pressed():
-	for i in buy_amount:
-		if currency < shield_regen_cost or shield_regen_level >= shield_regen_max: break
-		currency -= shield_regen_cost
-		shield_regen_level += 1
-		shield_regen_upgrades += 1
-		shield_regen_cost = _calc_cost(35, shield_regen_upgrades, true)
-		$Base.shield_regen_interval = max(0.5, 5.0 - (shield_regen_level * 0.045))
-	_update_ui()
+	$UpgradeManager.on_shield_regen(buy_amount)
 
 func _on_shield_strength_button_pressed():
-	for i in buy_amount:
-		if currency < shield_strength_cost or shield_strength_level >= shield_strength_max: break
-		currency -= shield_strength_cost
-		shield_strength_level += 1
-		shield_strength_upgrades += 1
-		shield_strength_cost = _calc_cost(45, shield_strength_upgrades, true)
-		$Base.shield_strength += 0.004
-	_update_ui()
+	$UpgradeManager.on_shield_strength(buy_amount)
 
 func _on_shield_mult_button_pressed():
-	for i in buy_amount:
-		if currency < shield_mult_cost or shield_mult_level >= shield_mult_max: break
-		currency -= shield_mult_cost
-		shield_mult_level += 1
-		shield_mult_upgrades += 1
-		shield_mult_cost = _calc_cost(35, shield_mult_upgrades, false)
-		$Base.shield_multiplier += 0.1
-	_update_ui()
+	$UpgradeManager.on_shield_mult(buy_amount)
 
 func _on_evasion_button_pressed():
-	for i in buy_amount:
-		if currency < evasion_cost or evasion_level >= evasion_max: break
-		currency -= evasion_cost
-		evasion_level += 1
-		evasion_upgrades += 1
-		evasion_cost = _calc_cost(50, evasion_upgrades, true)
-		$Base.evasion += 0.002
-	_update_ui()
+	$UpgradeManager.on_evasion(buy_amount)
 
 # ── HP Handlers ───────────────────────────────
 func _on_max_hp_button_pressed():
-	for i in buy_amount:
-		if currency < max_hp_cost or max_hp_level >= max_hp_max: break
-		currency -= max_hp_cost
-		max_hp_level += 1
-		max_hp_upgrades += 1
-		max_hp_cost = _calc_cost_flat(22, max_hp_upgrades)
-		$Base.increase_max_health(10.0)
-	_update_ui()
+	$UpgradeManager.on_max_hp(buy_amount)
 
 func _on_regen_amt_button_pressed():
-	for i in buy_amount:
-		if currency < regen_amt_cost or regen_amt_level >= regen_amt_max: break
-		currency -= regen_amt_cost
-		regen_amt_level += 1
-		regen_amt_upgrades += 1
-		regen_amt_cost = _calc_cost_flat(18, regen_amt_upgrades)
-		$Base.hp_regen += 1.0
-	_update_ui()
+	$UpgradeManager.on_regen_amt(buy_amount)
 
 func _on_regen_spd_button_pressed():
-	for i in buy_amount:
-		if currency < regen_spd_cost or regen_spd_level >= regen_spd_max: break
-		currency -= regen_spd_cost
-		regen_spd_level += 1
-		regen_spd_upgrades += 1
-		regen_spd_cost = _calc_cost(25, regen_spd_upgrades, true)
-		$Base.regen_interval = max(0.5, 5.0 - (regen_spd_level * 0.045))
-	_update_ui()
+	$UpgradeManager.on_regen_spd(buy_amount)
 
 func _on_hp_mult_button_pressed():
-	for i in buy_amount:
-		if currency < hp_mult_cost or hp_mult_level >= hp_mult_max: break
-		currency -= hp_mult_cost
-		hp_mult_level += 1
-		hp_mult_upgrades += 1
-		hp_mult_cost = _calc_cost(35, hp_mult_upgrades, false)
-		$Base.hp_multiplier += 0.1
-		$Base.health = min($Base.health, $Base.get_effective_max_hp())
-	$Base._update_combat_ui()
-	_update_ui()
+	$UpgradeManager.on_hp_mult(buy_amount)
 
 func _on_heal_mult_button_pressed():
-	for i in buy_amount:
-		if currency < heal_mult_cost or heal_mult_level >= heal_mult_max: break
-		currency -= heal_mult_cost
-		heal_mult_level += 1
-		heal_mult_upgrades += 1
-		heal_mult_cost = _calc_cost(30, heal_mult_upgrades, false)
-		$Base.heal_multiplier += 0.1
-	_update_ui()
+	$UpgradeManager.on_heal_mult(buy_amount)
 
 # ── UTIL Handlers ─────────────────────────────
 func _on_gold_per_kill_button_pressed():
-	for i in buy_amount:
-		if currency < gold_per_kill_cost or gold_per_kill_level >= gold_per_kill_max: break
-		currency -= gold_per_kill_cost
-		gold_per_kill_level += 1
-		gold_per_kill_upgrades += 1
-		gold_per_kill_cost = _calc_cost_flat(22, gold_per_kill_upgrades)
-	_update_ui()
+	$UpgradeManager.on_gold_per_kill(buy_amount)
 
 func _on_gold_mult_button_pressed():
-	for i in buy_amount:
-		if currency < gold_mult_cost or gold_mult_level >= gold_mult_max: break
-		currency -= gold_mult_cost
-		gold_mult_level += 1
-		gold_mult_upgrades += 1
-		gold_mult_cost = _calc_cost_mult(50, gold_mult_upgrades)
-	_update_ui()
+	$UpgradeManager.on_gold_mult(buy_amount)
 
 func _on_lp_gain_button_pressed():
-	for i in buy_amount:
-		if currency < lp_gain_cost or lp_gain_level >= lp_gain_max: break
-		currency -= lp_gain_cost
-		lp_gain_level += 1
-		lp_gain_upgrades += 1
-		lp_gain_cost = _calc_cost_flat(22, lp_gain_upgrades)
-	_update_ui()
+	$UpgradeManager.on_lp_gain(buy_amount)
 
 func _on_legacy_mult_button_pressed():
-	for i in buy_amount:
-		if currency < legacy_mult_cost or legacy_mult_level >= legacy_mult_max: break
-		currency -= legacy_mult_cost
-		legacy_mult_level += 1
-		legacy_mult_upgrades += 1
-		legacy_mult_cost = _calc_cost_mult(50, legacy_mult_upgrades)
-	_update_ui()
+	$UpgradeManager.on_legacy_mult(buy_amount)
 
 func _on_legacy_drop_button_pressed():
-	for i in buy_amount:
-		if currency < legacy_drop_cost or legacy_drop_level >= legacy_drop_max: break
-		currency -= legacy_drop_cost
-		legacy_drop_level += 1
-		legacy_drop_upgrades += 1
-		legacy_drop_cost = _calc_cost(35, legacy_drop_upgrades, true)
-	_update_ui()
+	$UpgradeManager.on_legacy_drop(buy_amount)

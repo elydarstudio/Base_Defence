@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://blpnr16efpibp" path="res://Scripts/main.gd" id="1_0xm2m"]
 [ext_resource type="Script" uid="uid://f5lx5xlcx85p" path="res://Scripts/base.gd" id="1_ig7tw"]
 [ext_resource type="Script" uid="uid://yp36w3gewaxo" path="res://Scripts/economymanager.gd" id="3_h2yge"]
+[ext_resource type="Script" uid="uid://bmj1kkl342pan" path="res://Scripts/upgrademanager.gd" id="4_1bvp3"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_0xm2m"]
 radius = 30.0
@@ -361,6 +362,9 @@ zoom = Vector2(0.6, 0.6)
 
 [node name="EconomyManager" type="Node" parent="." unique_id=583068456]
 script = ExtResource("3_h2yge")
+
+[node name="UpgradeManager" type="Node" parent="." unique_id=1729157634]
+script = ExtResource("4_1bvp3")
 
 [connection signal="pressed" from="UI/GameOverScreen/RestartButton" to="." method="_on_restart_button_pressed"]
 [connection signal="pressed" from="UI/GameOverScreen/MenuButton" to="." method="_on_menu_button_pressed"]
