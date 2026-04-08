@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://blpnr16efpibp" path="res://Scripts/main.gd" id="1_0xm2m"]
 [ext_resource type="Script" uid="uid://f5lx5xlcx85p" path="res://Scripts/base.gd" id="1_ig7tw"]
+[ext_resource type="Script" uid="uid://yp36w3gewaxo" path="res://Scripts/economymanager.gd" id="3_h2yge"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_0xm2m"]
 radius = 30.0
@@ -357,6 +358,9 @@ text = " 🔊"
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1828493015]
 position = Vector2(360, 640)
 zoom = Vector2(0.6, 0.6)
+
+[node name="EconomyManager" type="Node" parent="." unique_id=583068456]
+script = ExtResource("3_h2yge")
 
 [connection signal="pressed" from="UI/GameOverScreen/RestartButton" to="." method="_on_restart_button_pressed"]
 [connection signal="pressed" from="UI/GameOverScreen/MenuButton" to="." method="_on_menu_button_pressed"]

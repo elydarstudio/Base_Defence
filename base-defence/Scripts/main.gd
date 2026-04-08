@@ -202,13 +202,13 @@ func debug_check():
 
 # ── Ready ─────────────────────────────────────
 func _ready():
-	print("Workshop data:", SaveManager.data)
 	var enemy_scene = preload("res://Scenes/enemy.tscn")
 	var brute_scene = preload("res://Scenes/brute.tscn")
 	var runner_scene = preload("res://Scenes/runner.tscn")
 	var boss_scene = preload("res://Scenes/boss.tscn")
 	damage_number_scene = preload("res://Scenes/damage_number.tscn")
 	phase = SaveManager.data.get("start_phase", 1)
+	$EconomyManager.setup(self)
 	difficulty = (phase - 1) * 10
 	$Base.set_bullet_scene(bullet_scene)
 	$Base.set_main(self)
@@ -407,8 +407,7 @@ func _advance_wave():
 	if wave % 10 != 0:
 		_on_wave_complete_flash()
 	_check_unlock_progression()
-	var lp_earned = 1 + lp_gain_level
-	var lp_total = int(lp_earned * (1.0 + (legacy_mult_level * 0.1)))
+	var lp_total = $EconomyManager.calc_wave_lp(lp_gain_level, legacy_mult_level)
 	run_lp += lp_total
 	SaveManager.data["legacy_points"] += lp_total
 	SaveManager.save_game()
@@ -441,14 +440,12 @@ func on_boss_killed():
 
 # ── Economy ───────────────────────────────────
 func add_currency(amount: int, enemy_pos: Vector2 = Vector2.ZERO):
-	var total = amount + gold_per_kill_level
-	var multiplied = int(total * (1.0 + (gold_mult_level * 0.1)))
+	var multiplied = $EconomyManager.calc_gold(amount, gold_per_kill_level, gold_mult_level)
 	currency += multiplied
 	enemies_killed += 1
 	spawn_damage_number(multiplied, enemy_pos + Vector2(randf_range(-10, 10), -35), "gold")
-	var drop_chance = 0.05 + (legacy_drop_level * 0.0055)
-	if randf() < drop_chance:
-		var drop = int((1 + lp_gain_level) * (1.0 + (legacy_mult_level * 0.1)))
+	if randf() < $EconomyManager.calc_drop_chance(legacy_drop_level):
+		var drop = $EconomyManager.calc_lp_drop(lp_gain_level, legacy_mult_level)
 		run_lp += drop
 		SaveManager.data["legacy_points"] += drop
 		SaveManager.save_game()
