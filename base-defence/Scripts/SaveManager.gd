@@ -44,6 +44,7 @@ func save_game():
 func load_game():
 	var config = ConfigFile.new()
 	if config.load(SAVE_PATH) != OK:
+		save_game()
 		return
 	for key in data:
 		if config.has_section_key("save", key):

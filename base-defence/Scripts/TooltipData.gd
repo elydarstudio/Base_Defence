@@ -8,7 +8,7 @@ const TIPS = {
 	"crit_dmg": "Multiplier applied on a crit hit. Base is 1.5x.",
 	"shield": "Absorbs incoming hits. While shield is active, 10% of damage is absorbed and only 90% reaches your HP. Regens 10% of max shield per tick automatically.",
 	"shield_regen": "How fast shield recharges. Regens 10% of max shield per tick.",
-	"shield_strength": "Reduces HP damage on shielded hits. Base 10%, caps at 40%.",
+	"shield_strength": "Reduces HP damage on shielded hits. Base 20%, caps at 60%.",
 	"shield_mult": "Multiplies your effective max shield ceiling.",
 	"evasion": "% chance to completely dodge an incoming hit. Caps at 20%.",
 	"max_hp": "Increases your maximum HP pool.",

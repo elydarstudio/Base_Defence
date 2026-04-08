@@ -313,6 +313,8 @@ func _apply_workshop_floors():
 	$Base.heal_multiplier += heal_mult_level * 0.1
 	hp_mult_level = d["floor_hp_mult"]
 	$Base.hp_multiplier += hp_mult_level * 0.1
+	$Base.health = $Base.get_effective_max_hp()
+	$Base._update_combat_ui()
 	gold_per_kill_level = d["floor_gold_per_kill"]
 	gold_mult_level = d["floor_gold_mult"]
 	lp_gain_level = d["floor_lp_gain"]
@@ -481,7 +483,7 @@ func _update_ui():
 		str(snappedf(max(0.5, 5.0 - (shield_regen_level * 0.045)), 0.01)) + "s")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldStrengthButton,
 		"SHLD STR", shield_strength_level, shield_strength_max, shield_strength_cost,
-		str(snappedf(10.0 + (shield_strength_level * 0.3), 0.1)) + "%")
+		str(snappedf(20.0 + (shield_strength_level * 0.4), 0.1)) + "%")
 	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldMultButton,
 		"SHLD MULT", shield_mult_level, shield_mult_max, shield_mult_cost,
 		"+" + str(shield_mult_level * 10) + "%")
@@ -666,7 +668,7 @@ func _on_shield_strength_button_pressed():
 	shield_strength_level += 1
 	shield_strength_upgrades += 1
 	shield_strength_cost = _calc_cost(45, shield_strength_upgrades, true)
-	$Base.shield_strength += 0.003
+	$Base.shield_strength += 0.004
 	_update_ui()
 
 func _on_shield_mult_button_pressed():
@@ -731,6 +733,8 @@ func _on_hp_mult_button_pressed():
 	hp_mult_upgrades += 1
 	hp_mult_cost = _calc_cost(35, hp_mult_upgrades, false)
 	$Base.hp_multiplier += 0.1
+	$Base.health = min($Base.health, $Base.get_effective_max_hp())
+	$Base._update_combat_ui()
 	_update_ui()
 
 # ── UTIL handlers ─────────────────────────────

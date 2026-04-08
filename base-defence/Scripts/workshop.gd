@@ -171,7 +171,7 @@ func _update_ui():
 		"WFloorCritDmg": str(snappedf(1.5 + (levels["WFloorCritDmg"] * 0.1), 0.01)) + "x",
 		"WFloorShield": str(levels["WFloorShield"] * 50),
 		"WFloorShieldRegen": str(snappedf(max(0.5, 5.0 - (levels["WFloorShieldRegen"] * 0.045)), 0.01)) + "s",
-		"WFloorShieldStrength": str(snappedf(10.0 + (levels["WFloorShieldStrength"] * 0.3), 0.1)) + "%",
+		"WFloorShieldStrength": str(snappedf(20.0 + (levels["WFloorShieldStrength"] * 0.4), 0.1)) + "%",
 		"WFloorShieldMult": "+" + str(levels["WFloorShieldMult"] * 10) + "%",
 		"WFloorEvasion": str(snappedf(levels["WFloorEvasion"] * 0.2, 0.1)) + "%",
 		"WFloorMaxHP": str(100 + (levels["WFloorMaxHP"] * 10)),

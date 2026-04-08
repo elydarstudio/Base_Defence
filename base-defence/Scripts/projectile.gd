@@ -42,5 +42,6 @@ func _on_area_entered(area):
 		queue_free()
 
 func _resolve():
-	if is_instance_valid(base):
+	if is_instance_valid(base) and is_instance_valid(target):
 		base.notify_bullet_resolved(target)
+		

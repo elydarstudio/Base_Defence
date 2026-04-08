@@ -24,7 +24,7 @@ var max_shield: float = 0.0
 var shield: float = 0.0
 var shield_regen_interval: float = 5.0
 var shield_regen_timer: float = 0.0
-var shield_strength: float = 0.1
+var shield_strength: float = 0.2
 var shield_multiplier: float = 1.0
 var evasion: float = 0.0
 
@@ -48,7 +48,7 @@ func _draw_base():
 	poly.color = Color(0.2, 0.6, 1.0)
 
 func _update_combat_ui():
-	$HPLabel.text = "HP: " + str(max(0, int(health)))
+	$HPLabel.text = "HP: " + str(max(0, int(health))) + "/" + str(int(get_effective_max_hp()))
 	$ShieldLabel.text = "SH: " + str(int(shield))
 
 func _process(delta):
@@ -58,12 +58,12 @@ func _process(delta):
 		_try_shoot()
 
 	# HP regen
-	if hp_regen > 0 and health < max_health:
+	if hp_regen > 0 and health < get_effective_max_hp():
 		hp_regen_timer += delta
 		if hp_regen_timer >= regen_interval:
 			hp_regen_timer = 0.0
 			var heal_amount = hp_regen * heal_multiplier
-			health = min(health + heal_amount, max_health)
+			health = min(health + heal_amount, get_effective_max_hp())
 			if main_node != null:
 				_update_combat_ui()
 
@@ -77,6 +77,9 @@ func _process(delta):
 			shield = min(shield + regen_amount, effective_max_shield)
 			if main_node != null:
 				_update_combat_ui()
+
+func get_effective_max_hp() -> float:
+	return max_health * hp_multiplier
 
 func _try_shoot():
 	var target = _get_best_target()
@@ -105,6 +108,9 @@ func _try_shoot():
 	if main_node: main_node.play_sfx(main_node.sfx_shoot)
 
 func notify_bullet_resolved(target: Node2D):
+	if not is_instance_valid(target):
+		bullets_targeting.erase(target)
+		return
 	if target in bullets_targeting:
 		bullets_targeting[target] -= 1
 		if bullets_targeting[target] <= 0:
@@ -167,6 +173,7 @@ func add_shield(amount: float):
 func increase_max_health(amount: float):
 	max_health += amount
 	health += amount
+	health = min(health, get_effective_max_hp())
 	if main_node != null:
 		_update_combat_ui()
 
