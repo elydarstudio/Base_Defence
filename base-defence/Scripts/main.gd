@@ -349,13 +349,25 @@ func on_boss_killed():
 		SaveManager.data["unlock_level"] = 3
 		SaveManager.save_game()
 	$UIManager.apply_unlock_level()	
+	SkillManager.on_boss_killed(phase)
 	_update_ui()
 
 # ── Economy ───────────────────────────────────
 func add_currency(amount: int, enemy_pos: Vector2 = Vector2.ZERO):
+	print("add_currency called")
 	var multiplied = $EconomyManager.calc_gold(amount, gold_per_kill_level, gold_mult_level)
 	currency += multiplied
 	enemies_killed += 1
+	SkillManager.on_enemy_killed()
+	spawn_damage_number(multiplied, enemy_pos + Vector2(randf_range(-10, 10), -35), "gold")
+	if randf() < $EconomyManager.calc_drop_chance(legacy_drop_level):
+		var drop = $EconomyManager.calc_lp_drop(lp_gain_level, legacy_mult_level)
+		run_lp += drop
+		SaveManager.data["legacy_points"] += drop
+		SaveManager.save_game()
+		spawn_damage_number(drop, enemy_pos + Vector2(randf_range(-20, 20), -50), "lp")
+	_update_ui()
+
 	spawn_damage_number(multiplied, enemy_pos + Vector2(randf_range(-10, 10), -35), "gold")
 	if randf() < $EconomyManager.calc_drop_chance(legacy_drop_level):
 		var drop = $EconomyManager.calc_lp_drop(lp_gain_level, legacy_mult_level)

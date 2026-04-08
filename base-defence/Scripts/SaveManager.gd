@@ -30,7 +30,28 @@ var data = {
 	# Phase start
 	"max_start_phase": 1,
 	"start_phase": 1,
+	# Skill currencies
+"phase_tokens": 0,
+"phase_tokens_earned": 0,
+"phase_shards": 0,
+"phase_shards_earned": 0,
+"lifetime_kills": 0,
+
+# Unlocked skills (which slot indices are unlocked, 0-based)
+"skill_barrage_unlocked": [],
+"skill_bulwark_unlocked": [],
+"skill_siphon_unlocked": [],
+
+# Skill levels (level per slot, index matches unlocked array)
+"skill_barrage_levels": [],
+"skill_bulwark_levels": [],
+"skill_siphon_levels": [],
+
+# Active keystone
+"active_keystone": "",
 }
+
+
 
 func _ready():
 	load_game()

@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 SaveManager="*uid://fp6mm7orsoog"
 AudioManager="*uid://bm6jry8oato4v"
 TooltipData="*uid://dq4cdowwcg7y6"
+SkillManager="*uid://ikddp0tlsnki"
 
 [display]
 
