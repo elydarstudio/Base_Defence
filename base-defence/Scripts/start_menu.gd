@@ -33,7 +33,7 @@ func _on_play_button_pressed():
 	get_tree().change_scene_to_file("res://main.tscn")
 
 func _on_workshop_button_pressed():
-	get_tree().change_scene_to_file("res://Scenes/Workshop.tscn")
+	get_tree().change_scene_to_file("res://Scenes/workshop.tscn")
 
 func _on_phase_select_button_pressed():
 	var current = SaveManager.data.get("start_phase", 1)
@@ -47,7 +47,7 @@ func _on_phase_select_button_pressed():
 
 
 func _on_work_shop_button_pressed() -> void:
-	get_tree().change_scene_to_file("res://Scenes/Workshop.tscn")
+	get_tree().change_scene_to_file("res://Scenes/workshop.tscn")
 
 
 func _on_debug_reset_button_pressed():

@@ -1,12 +1,12 @@
 extends Node2D
 
 # ── Scenes ────────────────────────────────────
-var bullet_scene: PackedScene
-var enemy_scene: PackedScene
-var brute_scene: PackedScene
-var runner_scene: PackedScene
-var boss_scene: PackedScene
-var damage_number_scene: PackedScene
+var bullet_scene = preload("res://Scenes/projectile.tscn")
+var enemy_scene = preload("res://Scenes/enemy.tscn")
+var brute_scene = preload("res://Scenes/brute.tscn")
+var runner_scene = preload("res://Scenes/runner.tscn")
+var boss_scene = preload("res://Scenes/boss.tscn")
+var damage_number_scene = preload("res://Scenes/damage_number.tscn")
 
 # ── Game Speed ────────────────────────────────
 var speed_index: int = 0
@@ -169,7 +169,7 @@ const UNLOCK_REQUIREMENTS = {
 	"ShieldRegenButton": 2,
 	"GoldPerKillButton": 2,
 	"LPGainButton": 2,
-	"DmgMultButton": 3,
+	"DmgMultButton": 1,
 	"HPMultButton": 3,
 	"ShieldStrengthButton": 3,
 	"GoldMultButton": 3,
@@ -186,13 +186,35 @@ const UNLOCK_REQUIREMENTS = {
 	"UTILLocked": 999,
 }
 
+
+func debug_check():
+	print("=== DEBUG CHECK START ===")
+
+	var base = get_node_or_null("Base")
+	print("Base exists:", base != null)
+
+	var ui = get_node_or_null("UI")
+	print("UI exists:", ui != null)
+
+	var panel = get_node_or_null("UI/UpgradePanel")
+	print("UpgradePanel exists:", panel != null)
+
+	var atk_btn = get_node_or_null("UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton")
+	print("ATKSpdButton exists:", atk_btn != null)
+
+	var tooltip = get_node_or_null("UI/TooltipPanel")
+	print("TooltipPanel exists:", tooltip != null)
+
+	print("=== DEBUG CHECK END ===")
+
+
 # ── Ready ─────────────────────────────────────
 func _ready():
-	bullet_scene = preload("res://Scenes/Projectile.tscn")
-	enemy_scene = preload("res://Scenes/Enemy.tscn")
-	brute_scene = preload("res://Scenes/Brute.tscn")
-	runner_scene = preload("res://Scenes/Runner.tscn")
-	boss_scene = preload("res://Scenes/Boss.tscn")
+	print("Workshop data:", SaveManager.data)
+	var enemy_scene = preload("res://Scenes/enemy.tscn")
+	var brute_scene = preload("res://Scenes/brute.tscn")
+	var runner_scene = preload("res://Scenes/runner.tscn")
+	var boss_scene = preload("res://Scenes/boss.tscn")
 	damage_number_scene = preload("res://Scenes/damage_number.tscn")
 	phase = SaveManager.data.get("start_phase", 1)
 	difficulty = (phase - 1) * 10
@@ -637,7 +659,7 @@ func _on_pause_restart_button_pressed():
 func _on_pause_menu_button_pressed():
 	Engine.time_scale = 1.0
 	get_tree().paused = false
-	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")
+	get_tree().change_scene_to_file("res://Scenes/startmenu.tscn")
 
 func _on_mute_button_pressed():
 	sfx_muted = !sfx_muted
@@ -654,7 +676,7 @@ func _on_speed_button_pressed():
 
 func _on_panel_handle_pressed():
 	panel_open = !panel_open
-	var target_y = 1280 - 400 if panel_open else 1280
+	var target_y = 1280 - 440 if panel_open else 1280
 	var panel = $UI/UpgradePanel
 	var tween = create_tween()
 	tween.tween_property(panel, "position:y", target_y, 0.2)
@@ -668,7 +690,7 @@ func _on_restart_button_pressed():
 func _on_menu_button_pressed():
 	Engine.time_scale = 1.0
 	get_tree().paused = false
-	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")
+	get_tree().change_scene_to_file("res://Scenes/startmenu.tscn")
 
 func _on_buy_amount_button_pressed():
 	match buy_amount:

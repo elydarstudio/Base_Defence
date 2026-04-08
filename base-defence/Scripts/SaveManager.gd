@@ -43,9 +43,12 @@ func save_game():
 
 func load_game():
 	var config = ConfigFile.new()
+	
 	if config.load(SAVE_PATH) != OK:
+		print("No save found, creating new one")
 		save_game()
-		return
+		# DO NOT RETURN — let the game continue with defaults
+	
 	for key in data:
 		if config.has_section_key("save", key):
 			data[key] = config.get_value("save", key)

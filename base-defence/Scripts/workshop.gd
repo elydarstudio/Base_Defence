@@ -78,7 +78,7 @@ const WORKSHOP_UNLOCK_REQUIREMENTS = {
 	"WFloorShieldRegen": 2,
 	"WFloorGoldPerKill": 2,
 	"WFloorLpGain": 2,
-	"WFloorDmgMult": 3,
+	"WFloorDmgMult": 1,
 	"WFloorHPMult": 3,
 	"WFloorShieldStrength": 3,
 	"WFloorGoldMult": 3,
@@ -274,7 +274,7 @@ func _on_skill_tab_pressed():
 	$SkillContent.visible = true
 
 func _on_back_button_pressed():
-	get_tree().change_scene_to_file("res://Scenes/StartMenu.tscn")
+	get_tree().change_scene_to_file("res://Scenes/startmenu.tscn")
 
 func _on_w_floor_atk_spd_pressed():
 	_purchase("WFloorAtkSpd")
