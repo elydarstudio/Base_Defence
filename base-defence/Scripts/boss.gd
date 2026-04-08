@@ -92,7 +92,7 @@ func _die():
 		SaveManager.save_game()
 		main_node.spawn_damage_number(total_lp, global_position + Vector2(0, -50), "lp")
 		main_node.on_boss_killed()
-		main_node.play_sfx(main_node.sfx_boss_death)
+		AudioManager.play(AudioManager.sfx_boss_death)
 	queue_free()
 
 func setup(base: Node2D, main: Node):

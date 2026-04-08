@@ -202,22 +202,21 @@ func debug_check():
 
 # ── Ready ─────────────────────────────────────
 func _ready():
-	var enemy_scene = preload("res://Scenes/enemy.tscn")
-	var brute_scene = preload("res://Scenes/brute.tscn")
-	var runner_scene = preload("res://Scenes/runner.tscn")
-	var boss_scene = preload("res://Scenes/boss.tscn")
+	enemy_scene = preload("res://Scenes/enemy.tscn")
+	brute_scene = preload("res://Scenes/brute.tscn")
+	runner_scene = preload("res://Scenes/runner.tscn")
+	boss_scene = preload("res://Scenes/boss.tscn")
 	damage_number_scene = preload("res://Scenes/damage_number.tscn")
 	phase = SaveManager.data.get("start_phase", 1)
-	$EconomyManager.setup(self)
 	difficulty = (phase - 1) * 10
 	$Base.set_bullet_scene(bullet_scene)
 	$Base.set_main(self)
+	$EconomyManager.setup(self)
 	$UpgradeManager.setup(self, $Base)
 	$UpgradeManager.apply_workshop_floors()
-	_apply_unlock_level()
+	$UIManager.setup(self, $Base)
+	$UIManager.apply_unlock_level()
 	enemies_to_spawn = _get_wave_enemy_count()
-	
-	_update_ui()
 	tooltip_buttons = {
 		$UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton: "atk_spd",
 		$UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgButton: "damage",
@@ -242,35 +241,9 @@ func _ready():
 	}
 	for btn in tooltip_buttons:
 		var key = tooltip_buttons[btn]
-		btn.mouse_entered.connect(func(): _show_tooltip(key))
-		btn.mouse_exited.connect(func(): _hide_tooltip())
-
-# ── Unlock System ─────────────────────────────
-func _apply_unlock_level():
-	var unlock = SaveManager.data["unlock_level"]
-	var columns = ["ATKColumn", "DEFColumn", "HPColumn", "UTILColumn"]
-	for col in columns:
-		var col_node = $UI/UpgradePanel/ColumnsContainer.get_node(col)
-		for child in col_node.get_children():
-			if child is Button:
-				var required = UNLOCK_REQUIREMENTS.get(child.name, 3)
-				child.visible = unlock >= required
-	var def_locked = $UI/UpgradePanel/ColumnsContainer/DEFColumn/DEFLocked
-	var hp_locked = $UI/UpgradePanel/ColumnsContainer/HPColumn/HPLocked
-	var util_locked = $UI/UpgradePanel/ColumnsContainer/UTILColumn/UTILLocked
-	def_locked.visible = unlock < 1
-	hp_locked.visible = unlock < 2
-	util_locked.visible = unlock < 2
-
-func _check_unlock_progression():
-	var unlock = SaveManager.data["unlock_level"]
-	if unlock == 0 and wave % 10 == 0:
-		SaveManager.data["unlock_level"] = 1
-		SaveManager.save_game()
-	if unlock < 4 and phase >= 3:
-		SaveManager.data["unlock_level"] = 4
-		SaveManager.save_game()
-		_apply_unlock_level()
+		btn.mouse_entered.connect(func(): $UIManager.show_tooltip(key))
+		btn.mouse_exited.connect(func(): $UIManager.hide_tooltip())
+	_update_ui()
 
 # ── Process ───────────────────────────────────
 func _process(delta):
@@ -326,7 +299,7 @@ func _spawn_boss():
 	b.scale_to_phase(phase)
 	b.global_position = Vector2(360, -40)
 	$UI/WaveLabel.text = "⚠ BOSS WAVE ⚠ | Phase: " + str(phase)
-	_on_boss_spawn_flash()
+	$UIManager.boss_spawn_flash()
 	AudioManager.play(AudioManager.sfx_boss_spawn)
 
 # ── Wave Progression ──────────────────────────
@@ -344,7 +317,7 @@ func _advance_wave():
 	enemies_to_spawn = _get_wave_enemy_count()
 	wave_complete = false
 	if wave % 10 != 0:
-		_on_wave_complete_flash()
+		$UIManager.wave_complete_flash()
 	_check_unlock_progression()
 	var lp_total = $EconomyManager.calc_wave_lp(lp_gain_level, legacy_mult_level)
 	run_lp += lp_total
@@ -375,6 +348,7 @@ func on_boss_killed():
 	elif phase == 3 and unlock < 3:
 		SaveManager.data["unlock_level"] = 3
 		SaveManager.save_game()
+	$UIManager.apply_unlock_level()	
 	_update_ui()
 
 # ── Economy ───────────────────────────────────
@@ -407,131 +381,20 @@ func trigger_game_over():
 	Engine.time_scale = 1.0
 	get_tree().paused = true
 
-# ── UI ────────────────────────────────────────
 func _update_ui():
-	$UI/CurrencyLabel.text = "💰 " + str(currency) + "  |  ⭐ " + str(run_lp)
-	$UI/WaveLabel.text = "Wave: " + str(wave) + " | Phase: " + str(phase)
-	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton,
-		"ATK SPD", attack_speed_level, attack_speed_max, attack_speed_cost,
-		str(snappedf($Base.fire_rate, 0.01)) + "/s")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgButton,
-		"DMG", damage_level, damage_max, damage_cost,
-		str(10 + damage_level))
-	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgMultButton,
-		"DMG MULT", dmg_mult_level, dmg_mult_max, dmg_mult_cost,
-		"+" + str(dmg_mult_level * 10) + "%")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/CritChanceButton,
-		"CRIT %", crit_chance_level, crit_chance_max, crit_chance_cost,
-		str(snappedf(crit_chance_level * 0.8, 0.1)) + "%")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/ATKColumn/CritDmgButton,
-		"CRIT DMG", crit_dmg_level, crit_dmg_max, crit_dmg_cost,
-		"+" + str(crit_dmg_level * 10) + "%")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton,
-		"SHIELD", shield_level, shield_max, shield_cost,
-		str(shield_level * 50))
-	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldRegenButton,
-		"SHLD RGN", shield_regen_level, shield_regen_max, shield_regen_cost,
-		str(snappedf(max(0.5, 5.0 - (shield_regen_level * 0.045)), 0.01)) + "s")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldStrengthButton,
-		"SHLD STR", shield_strength_level, shield_strength_max, shield_strength_cost,
-		str(snappedf(20.0 + (shield_strength_level * 0.4), 0.1)) + "%")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldMultButton,
-		"SHLD MULT", shield_mult_level, shield_mult_max, shield_mult_cost,
-		"+" + str(shield_mult_level * 10) + "%")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/DEFColumn/EvasionButton,
-		"EVASION", evasion_level, evasion_max, evasion_cost,
-		str(snappedf(evasion_level * 0.2, 0.1)) + "%")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/MaxHPButton,
-		"MAX HP", max_hp_level, max_hp_max, max_hp_cost,
-		str(100 + (max_hp_level * 10)))
-	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/RegenAmtButton,
-		"REGEN AMT", regen_amt_level, regen_amt_max, regen_amt_cost,
-		str(regen_amt_level) + " hp")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/RegenSpdButton,
-		"REGEN SPD", regen_spd_level, regen_spd_max, regen_spd_cost,
-		str(snappedf(max(0.5, 5.0 - (regen_spd_level * 0.045)), 0.01)) + "s")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/HPMultButton,
-		"HP MULT", hp_mult_level, hp_mult_max, hp_mult_cost,
-		"+" + str(hp_mult_level * 10) + "%")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/HPColumn/HealMultButton,
-		"HEAL MULT", heal_mult_level, heal_mult_max, heal_mult_cost,
-		"+" + str(heal_mult_level * 10) + "%")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldPerKillButton,
-		"GOLD/KILL", gold_per_kill_level, gold_per_kill_max, gold_per_kill_cost,
-		"+" + str(gold_per_kill_level) + "g")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/GoldMultButton,
-		"GOLD MULT", gold_mult_level, gold_mult_max, gold_mult_cost,
-		"+" + str(gold_mult_level * 10) + "%")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/LPGainButton,
-		"LP GAIN", lp_gain_level, lp_gain_max, lp_gain_cost,
-		"+" + str(lp_gain_level) + " LP")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyMultButton,
-		"LP MULT", legacy_mult_level, legacy_mult_max, legacy_mult_cost,
-		"+" + str(legacy_mult_level * 10) + "%")
-	_update_btn($UI/UpgradePanel/ColumnsContainer/UTILColumn/LegacyDropButton,
-		"LP CHANCE", legacy_drop_level, legacy_drop_max, legacy_drop_cost,
-		str(snappedf(5.0 + (legacy_drop_level * 0.55), 0.1)) + "%")
+	$UIManager.update_ui()
 
-func _update_btn(btn: Button, label: String, level: int, max_level: int, cost: int, stat: String):
-	if level >= max_level:
-		btn.text = label + "\nMAX (" + stat + ")"
-		btn.disabled = true
-	else:
-		btn.text = label + "\nLv" + str(level + 1) + " - " + str(cost) + "g\n" + stat
-		btn.disabled = currency < cost
-
-# ── Screen Flash ──────────────────────────────
-func _flash_screen(color: Color, alpha: float = 0.3, duration: float = 0.4):
-	var flash = $UI/ScreenFlash
-	flash.color = color
-	flash.modulate.a = alpha
-	var tween = create_tween()
-	tween.tween_property(flash, "modulate:a", 0.0, duration)
-
-func _on_wave_complete_flash():
-	_flash_screen(Color(0.2, 1.0, 0.3), 0.05, 0.6)
-
-func _on_boss_spawn_flash():
-	_flash_screen(Color(0.6, 0.0, 0.8), 0.5, 0.8)
-
-# ── Tooltip ───────────────────────────────────
-func _show_tooltip(key: String):
-	tooltip_key = key
-	$UI/TooltipTimer.start()
-
-func _hide_tooltip():
-	$UI/TooltipTimer.stop()
-	$UI/TooltipPanel.visible = false
 
 func _on_tooltip_timer_timeout():
-	if tooltip_key != "":
-		$UI/TooltipPanel/TooltipLabel.text = TooltipData.TIPS[tooltip_key]
-		var mouse = get_viewport().get_mouse_position()
-		var panel_width = 400
-		var x = mouse.x + 10
-		if x + panel_width > get_viewport().get_visible_rect().size.x:
-			x = mouse.x - panel_width - 10
-		$UI/TooltipPanel.position = Vector2(x, mouse.y - 60)
-		$UI/TooltipPanel.visible = true
+	$UIManager.on_tooltip_timer_timeout()
 
-func _show_tooltip_instant(key: String):
-	$UI/TooltipPanel/TooltipLabel.text = TooltipData.TIPS[key]
-	var mouse = get_viewport().get_mouse_position()
-	var panel_width = 400
-	var x = mouse.x + 10
-	if x + panel_width > get_viewport().get_visible_rect().size.x:
-		x = mouse.x - panel_width - 10
-	$UI/TooltipPanel.position = Vector2(x, mouse.y - 60)
-	$UI/TooltipPanel.visible = true
-
-# ── Input ─────────────────────────────────────
 func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		for btn in tooltip_buttons:
 			if btn.get_global_rect().has_point(event.position):
-				_show_tooltip_instant(tooltip_buttons[btn])
+				$UIManager.show_tooltip_instant(tooltip_buttons[btn])
 				return
-		_hide_tooltip()
+		$UIManager.hide_tooltip()
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
 			zoom_level = clamp(zoom_level - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
@@ -542,6 +405,16 @@ func _input(event):
 	if event is InputEventMagnifyGesture:
 		zoom_level = clamp(zoom_level / event.factor, ZOOM_MIN, ZOOM_MAX)
 		$Camera2D.zoom = Vector2(zoom_level, zoom_level)
+
+func _check_unlock_progression():
+	var unlock = SaveManager.data["unlock_level"]
+	if unlock == 0 and wave % 10 == 0:
+		SaveManager.data["unlock_level"] = 1
+		SaveManager.save_game()
+	if unlock < 4 and phase >= 3:
+		SaveManager.data["unlock_level"] = 4
+		SaveManager.save_game()
+		$UIManager.apply_unlock_level()
 
 
 # ── Pause ─────────────────────────────────────
