@@ -42,14 +42,6 @@ const ZOOM_MIN: float = 0.4
 const ZOOM_MAX: float = 1.0
 const ZOOM_STEP: float = 0.1
 
-# ── Audio ─────────────────────────────────────
-var sfx_shoot: AudioStreamPlayer
-var sfx_boss_spawn: AudioStreamPlayer
-var sfx_take_damage: AudioStreamPlayer
-var sfx_boss_death: AudioStreamPlayer
-var sfx_music: AudioStreamPlayer
-var sfx_muted: bool = false
-
 # ── Wave Constants ────────────────────────────
 const BASE_ENEMIES_PER_WAVE = 12
 const ENEMIES_PER_WAVE_WAVE_SCALING: float = 1.35
@@ -223,7 +215,7 @@ func _ready():
 	_apply_workshop_floors()
 	_apply_unlock_level()
 	enemies_to_spawn = _get_wave_enemy_count()
-	_setup_audio()
+	
 	_update_ui()
 	tooltip_buttons = {
 		$UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton: "atk_spd",
@@ -396,7 +388,7 @@ func _spawn_boss():
 	b.global_position = Vector2(360, -40)
 	$UI/WaveLabel.text = "⚠ BOSS WAVE ⚠ | Phase: " + str(phase)
 	_on_boss_spawn_flash()
-	play_sfx(sfx_boss_spawn)
+	AudioManager.play(AudioManager.sfx_boss_spawn)
 
 # ── Wave Progression ──────────────────────────
 func on_enemy_killed():
@@ -615,31 +607,6 @@ func _input(event):
 		zoom_level = clamp(zoom_level / event.factor, ZOOM_MIN, ZOOM_MAX)
 		$Camera2D.zoom = Vector2(zoom_level, zoom_level)
 
-# ── Audio ─────────────────────────────────────
-func _setup_audio():
-	sfx_shoot = AudioStreamPlayer.new()
-	sfx_shoot.stream = preload("res://Assets/Sounds/Shoot.wav")
-	add_child(sfx_shoot)
-	sfx_boss_spawn = AudioStreamPlayer.new()
-	sfx_boss_spawn.stream = preload("res://Assets/Sounds/BossSpawn.wav")
-	add_child(sfx_boss_spawn)
-	sfx_take_damage = AudioStreamPlayer.new()
-	sfx_take_damage.stream = preload("res://Assets/Sounds/TakeDamage.wav")
-	add_child(sfx_take_damage)
-	sfx_boss_death = AudioStreamPlayer.new()
-	sfx_boss_death.stream = preload("res://Assets/Sounds/BossDeath.wav")
-	add_child(sfx_boss_death)
-	sfx_music = AudioStreamPlayer.new()
-	sfx_music.stream = preload("res://Assets/Sounds/Music.wav")
-	sfx_music.volume_db = -7.0
-	sfx_music.autoplay = true
-	sfx_music.finished.connect(func(): sfx_music.play())
-	add_child(sfx_music)
-
-func play_sfx(player: AudioStreamPlayer):
-	if not sfx_muted:
-		player.volume_db = -15.0
-		player.play()
 
 # ── Pause ─────────────────────────────────────
 func _on_pause_button_pressed():
@@ -662,12 +629,8 @@ func _on_pause_menu_button_pressed():
 	get_tree().change_scene_to_file("res://Scenes/startmenu.tscn")
 
 func _on_mute_button_pressed():
-	sfx_muted = !sfx_muted
-	$UI/MuteButton.text = "🔇" if sfx_muted else "🔊"
-	if sfx_muted:
-		sfx_music.stop()
-	else:
-		sfx_music.play()
+	var muted = AudioManager.toggle_mute()
+	$UI/MuteButton.text = "🔇" if muted else "🔊"
 
 func _on_speed_button_pressed():
 	speed_index = (speed_index + 1) % speed_steps.size()
