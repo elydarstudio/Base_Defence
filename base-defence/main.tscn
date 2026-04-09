@@ -5,6 +5,7 @@
 [ext_resource type="Script" uid="uid://yp36w3gewaxo" path="res://Scripts/economymanager.gd" id="3_h2yge"]
 [ext_resource type="Script" uid="uid://bmj1kkl342pan" path="res://Scripts/upgrademanager.gd" id="4_1bvp3"]
 [ext_resource type="Script" uid="uid://dh4td6q8fm1ca" path="res://Scripts/uimanager.gd" id="5_lquwl"]
+[ext_resource type="Script" uid="uid://clkxh22l8v5xt" path="res://Scripts/spawnmanager.gd" id="6_7mycd"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_0xm2m"]
 radius = 30.0
@@ -369,6 +370,9 @@ script = ExtResource("4_1bvp3")
 
 [node name="UIManager" type="Node" parent="." unique_id=1976316324]
 script = ExtResource("5_lquwl")
+
+[node name="SpawnManager" type="Node" parent="." unique_id=69405714]
+script = ExtResource("6_7mycd")
 
 [connection signal="pressed" from="UI/GameOverScreen/RestartButton" to="." method="_on_restart_button_pressed"]
 [connection signal="pressed" from="UI/GameOverScreen/MenuButton" to="." method="_on_menu_button_pressed"]

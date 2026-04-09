@@ -2,10 +2,6 @@ extends Node2D
 
 # ── Scenes ────────────────────────────────────
 var bullet_scene = preload("res://Scenes/projectile.tscn")
-var enemy_scene = preload("res://Scenes/enemy.tscn")
-var brute_scene = preload("res://Scenes/brute.tscn")
-var runner_scene = preload("res://Scenes/runner.tscn")
-var boss_scene = preload("res://Scenes/boss.tscn")
 var damage_number_scene = preload("res://Scenes/damage_number.tscn")
 
 # ── Game Speed ────────────────────────────────
@@ -13,8 +9,6 @@ var speed_index: int = 0
 var speed_steps: Array = [1.0, 1.5, 2.0]
 
 # ── Spawn ─────────────────────────────────────
-var spawn_timer: float = 0.0
-var spawn_edge: int = 0
 var enemies_to_spawn: int = 0
 var enemies_spawned: int = 0
 var wave_complete: bool = false
@@ -178,35 +172,8 @@ const UNLOCK_REQUIREMENTS = {
 	"UTILLocked": 999,
 }
 
-
-func debug_check():
-	print("=== DEBUG CHECK START ===")
-
-	var base = get_node_or_null("Base")
-	print("Base exists:", base != null)
-
-	var ui = get_node_or_null("UI")
-	print("UI exists:", ui != null)
-
-	var panel = get_node_or_null("UI/UpgradePanel")
-	print("UpgradePanel exists:", panel != null)
-
-	var atk_btn = get_node_or_null("UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton")
-	print("ATKSpdButton exists:", atk_btn != null)
-
-	var tooltip = get_node_or_null("UI/TooltipPanel")
-	print("TooltipPanel exists:", tooltip != null)
-
-	print("=== DEBUG CHECK END ===")
-
-
 # ── Ready ─────────────────────────────────────
 func _ready():
-	enemy_scene = preload("res://Scenes/enemy.tscn")
-	brute_scene = preload("res://Scenes/brute.tscn")
-	runner_scene = preload("res://Scenes/runner.tscn")
-	boss_scene = preload("res://Scenes/boss.tscn")
-	damage_number_scene = preload("res://Scenes/damage_number.tscn")
 	phase = SaveManager.data.get("start_phase", 1)
 	difficulty = (phase - 1) * 10
 	$Base.set_bullet_scene(bullet_scene)
@@ -216,7 +183,8 @@ func _ready():
 	$UpgradeManager.apply_workshop_floors()
 	$UIManager.setup(self, $Base)
 	$UIManager.apply_unlock_level()
-	enemies_to_spawn = _get_wave_enemy_count()
+	$SpawnManager.setup(self)
+	enemies_to_spawn = $SpawnManager.get_wave_enemy_count()
 	tooltip_buttons = {
 		$UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton: "atk_spd",
 		$UI/UpgradePanel/ColumnsContainer/ATKColumn/DmgButton: "damage",
@@ -249,58 +217,7 @@ func _ready():
 func _process(delta):
 	if game_over or boss_wave or wave_complete:
 		return
-	spawn_timer += delta
-	var current_spawn_interval = (0.8 / (1.0 + (difficulty * 0.09))) * randf_range(0.8, 1.2)
-	if spawn_timer >= current_spawn_interval and enemies_spawned < enemies_to_spawn:
-		spawn_timer = 0.0
-		enemies_spawned += 1
-		_spawn_enemy()
-
-# ── Spawning ──────────────────────────────────
-func _get_wave_enemy_count() -> int:
-	return int(BASE_ENEMIES_PER_WAVE + (wave * ENEMIES_PER_WAVE_WAVE_SCALING) + (phase * ENEMIES_PER_WAVE_PHASE_SCALING))
-
-func _get_spawn_scene() -> PackedScene:
-	if phase < 2:
-		return enemy_scene
-	var brute_every: int = max(6, 10 - (phase - 2))
-	var runner_every: int = max(4, 8 - (phase - 3)) if phase >= 3 else 0
-	if runner_every > 0 and enemies_spawned % runner_every == 0:
-		return runner_scene
-	if enemies_spawned % brute_every == 0:
-		return brute_scene
-	return enemy_scene
-
-func _spawn_enemy():
-	var scene = _get_spawn_scene()
-	var e = scene.instantiate()
-	add_child(e)
-	e.setup($Base, self)
-	e.scale_to_wave(difficulty)
-	e.global_position = _random_edge_position()
-
-func _random_edge_position() -> Vector2:
-	spawn_edge = (spawn_edge + 1) % 6
-	match spawn_edge:
-		0: return Vector2(randf_range(-240, 960), -500)
-		1: return Vector2(randf_range(-240, 960), 1800)
-		2: return Vector2(-240, randf_range(-500, 1800))
-		3: return Vector2(-240, randf_range(-500, 1800))
-		4: return Vector2(960, randf_range(-500, 1800))
-		5: return Vector2(960, randf_range(-500, 1800))
-	return Vector2.ZERO
-
-func _spawn_boss():
-	boss_wave = true
-	boss_alive = true
-	var b = boss_scene.instantiate()
-	add_child.call_deferred(b)
-	b.setup($Base, self)
-	b.scale_to_phase(phase)
-	b.global_position = Vector2(360, -40)
-	$UI/WaveLabel.text = "⚠ BOSS WAVE ⚠ | Phase: " + str(phase)
-	$UIManager.boss_spawn_flash()
-	AudioManager.play(AudioManager.sfx_boss_spawn)
+	$SpawnManager.tick(delta)
 
 # ── Wave Progression ──────────────────────────
 func on_enemy_killed():
@@ -314,7 +231,7 @@ func _advance_wave():
 	wave += 1
 	difficulty += 1
 	enemies_spawned = 0
-	enemies_to_spawn = _get_wave_enemy_count()
+	enemies_to_spawn = $SpawnManager.get_wave_enemy_count()
 	wave_complete = false
 	if wave % 10 != 0:
 		$UIManager.wave_complete_flash()
@@ -324,7 +241,7 @@ func _advance_wave():
 	SaveManager.data["legacy_points"] += lp_total
 	SaveManager.save_game()
 	if wave % 10 == 0:
-		_spawn_boss()
+		$SpawnManager.spawn_boss()
 	else:
 		_update_ui()
 
@@ -335,7 +252,7 @@ func on_boss_killed():
 	phase += 1
 	difficulty += int(pow(phase, 1.8) * 3)
 	enemies_spawned = 0
-	enemies_to_spawn = _get_wave_enemy_count()
+	enemies_to_spawn = $SpawnManager.get_wave_enemy_count()
 	wave_complete = false
 	enemies_killed = 0
 	if phase > SaveManager.data["max_start_phase"]:
@@ -348,7 +265,7 @@ func on_boss_killed():
 	elif phase == 3 and unlock < 3:
 		SaveManager.data["unlock_level"] = 3
 		SaveManager.save_game()
-	$UIManager.apply_unlock_level()	
+	$UIManager.apply_unlock_level()
 	SkillManager.on_boss_killed(phase)
 	_update_ui()
 
@@ -386,7 +303,6 @@ func trigger_game_over():
 func _update_ui():
 	$UIManager.update_ui()
 
-
 func _on_tooltip_timer_timeout():
 	$UIManager.on_tooltip_timer_timeout()
 
@@ -417,7 +333,6 @@ func _check_unlock_progression():
 		SaveManager.data["unlock_level"] = 4
 		SaveManager.save_game()
 		$UIManager.apply_unlock_level()
-
 
 # ── Pause ─────────────────────────────────────
 func _on_pause_button_pressed():
