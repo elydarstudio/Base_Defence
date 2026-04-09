@@ -33,6 +33,12 @@ var bullet_scene: PackedScene
 var main_node: Node = null
 var bullets_targeting: Dictionary = {}
 
+# ── Attack counter (attack-type agnostic — used by all fire modes) ────────────
+# Rapidfire triggers on every 3rd attack regardless of bullet/beam/pulse type.
+# When new attack types are added, increment this counter at their fire point
+# and the skill applies automatically.
+var _attack_counter: int = 0
+
 func _ready():
 	position = Vector2(360, 640)
 	_draw_base()
@@ -81,6 +87,17 @@ func _process(delta):
 func get_effective_max_hp() -> float:
 	return max_health * hp_multiplier
 
+# ── Unified attack tick ────────────────────────────────────────────────────────
+# Call _tick_attack_counter() at the fire point of every attack type.
+# Returns true if this attack is a Rapidfire proc (every 3rd attack).
+# When Drain Beam / Pulse are added, call this at their tick point — done.
+func _tick_attack_counter() -> bool:
+	_attack_counter += 1
+	if _attack_counter >= 3:
+		_attack_counter = 0
+		return true
+	return false
+
 func _try_shoot():
 	var target = _get_best_target()
 	if target == null or bullet_scene == null:
@@ -92,17 +109,25 @@ func _try_shoot():
 	var b = bullet_scene.instantiate()
 	get_parent().add_child(b)
 	b.global_position = global_position
+
 	var is_crit = randf() < crit_chance
 	var final_damage = bullet_damage * damage_multiplier
 	if is_crit:
 		final_damage *= crit_damage
+
+	# Rapidfire — applies after crit so it scales with full resolved damage
+	var is_rapidfire = _tick_attack_counter() and SkillManager.barrage_rapidfire_bonus() > 0.0
+	if is_rapidfire:
+		final_damage += final_damage * SkillManager.barrage_rapidfire_bonus()
+
 	b.setup(
 		global_position.direction_to(target.global_position),
 		bullet_speed,
 		final_damage,
 		target,
 		self,
-		is_crit
+		is_crit,
+		is_rapidfire
 	)
 	bullets_targeting[target] = bullets_en_route + 1
 	if main_node: AudioManager.play(AudioManager.sfx_shoot)

@@ -354,7 +354,6 @@ func on_boss_killed():
 
 # ── Economy ───────────────────────────────────
 func add_currency(amount: int, enemy_pos: Vector2 = Vector2.ZERO):
-	print("add_currency called")
 	var multiplied = $EconomyManager.calc_gold(amount, gold_per_kill_level, gold_mult_level)
 	currency += multiplied
 	enemies_killed += 1

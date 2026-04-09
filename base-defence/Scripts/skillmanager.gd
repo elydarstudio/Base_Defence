@@ -3,7 +3,7 @@ extends Node
 # ── Constants ─────────────────────────────────
 const KILLS_PER_SHARD_BASE: int = 1000
 const MAX_TOKENS: int = 15
-const SKILLS_PER_TREE: int = 9  # slots 0-8, slot 4 = keystone, slot 8 = capstone
+const SKILLS_PER_TREE: int = 9
 
 const TREE_BARRAGE: String = "barrage"
 const TREE_BULWARK: String = "bulwark"
@@ -11,7 +11,7 @@ const TREE_SIPHON: String = "siphon"
 
 const SKILL_DATA = {
 	"barrage": [
-		{"name": "Rapidfire", "desc": "Every 3rd bullet deals bonus damage. Scales with DMG."},
+		{"name": "Rapidfire", "desc": "Every 3rd attack deals bonus damage. Base +20%, +5% per shard level."},
 		{"name": "Bleed", "desc": "Critical hits leave a DoT on the target. Scales with Crit Chance."},
 		{"name": "Focus", "desc": "Consecutive hits on the same target increase damage. Resets on kill."},
 		{"name": "Range", "desc": "Increases bullet detection radius."},
@@ -47,9 +47,13 @@ func get_lifetime_kills() -> int:
 	return SaveManager.data["lifetime_kills"]
 
 func get_skill_level(tree: String, slot: int) -> int:
+	var unlocked = SaveManager.data["skill_" + tree + "_unlocked"]
+	var idx = unlocked.find(slot)
+	if idx == -1:
+		return 0
 	var levels = SaveManager.data["skill_" + tree + "_levels"]
-	if slot < levels.size():
-		return levels[slot]
+	if idx < levels.size():
+		return levels[idx]
 	return 0
 
 func is_skill_unlocked(tree: String, slot: int) -> bool:
@@ -65,9 +69,6 @@ func has_keystone() -> bool:
 func get_tree_skill_count(tree: String) -> int:
 	return SaveManager.data["skill_" + tree + "_unlocked"].size()
 
-# ── Visual tier helper (for tower visuals later) ──
-# Returns 0-4 based on how many skills unlocked in tree
-# 0 = none, 1 = tier1 (2 skills), 2 = tier2 (4), 3 = keystone (6), 4 = capstone (10)
 func get_visual_tier(tree: String) -> int:
 	var count = get_tree_skill_count(tree)
 	if count >= 10: return 4
@@ -77,8 +78,6 @@ func get_visual_tier(tree: String) -> int:
 	return 0
 
 # ── Token earning ──────────────────────────────
-# Call this from main.gd on_boss_killed()
-# Phase Tokens earned from phase 3 boss onward
 func on_boss_killed(phase: int):
 	if phase < 3:
 		return
@@ -89,8 +88,6 @@ func on_boss_killed(phase: int):
 	SaveManager.save_game()
 
 # ── Shard earning ──────────────────────────────
-# Call this from main.gd add_currency() on every kill
-# Returns how many shards were earned this kill (0 or more)
 func on_enemy_killed() -> int:
 	SaveManager.data["lifetime_kills"] += 1
 	_kills_since_last_shard += 1
@@ -105,8 +102,6 @@ func on_enemy_killed() -> int:
 		SaveManager.save_game()
 	return shards_earned
 
-# Shard threshold scales up over time
-# Base 1000, +100 per shard already earned (soft scaling)
 func _get_shard_threshold() -> int:
 	var shards_earned = SaveManager.data["phase_shards_earned"]
 	return KILLS_PER_SHARD_BASE + (shards_earned * 100)
@@ -119,27 +114,25 @@ func unlock_skill(tree: String, slot: int) -> bool:
 		return false
 	if is_skill_unlocked(tree, slot):
 		return false
-	# Slot-specific prerequisite check
 	match slot:
 		0:
-			pass # always available
+			pass
 		1:
 			if not is_skill_unlocked(tree, 0): return false
 		2:
 			if not is_skill_unlocked(tree, 1): return false
 		3:
 			if not is_skill_unlocked(tree, 1): return false
-		4: # Keystone
+		4:
 			if not is_skill_unlocked(tree, 2): return false
 			if not is_skill_unlocked(tree, 3): return false
 			if has_keystone(): return false
-		5, 6, 7: # Skills 7-9
+		5, 6, 7:
 			if not is_skill_unlocked(tree, 4): return false
-		8: # Capstone
+		8:
 			if not is_skill_unlocked(tree, 5): return false
 			if not is_skill_unlocked(tree, 6): return false
 			if not is_skill_unlocked(tree, 7): return false
-	# All checks passed
 	SaveManager.data["skill_" + tree + "_unlocked"].append(slot)
 	SaveManager.data["skill_" + tree + "_levels"].append(0)
 	SaveManager.data["phase_tokens"] -= 1
@@ -154,7 +147,6 @@ func level_skill(tree: String, slot: int) -> bool:
 		return false
 	if not is_skill_unlocked(tree, slot):
 		return false
-	# Find the index in the levels array
 	var unlocked = SaveManager.data["skill_" + tree + "_unlocked"]
 	var idx = unlocked.find(slot)
 	if idx == -1:
@@ -164,8 +156,7 @@ func level_skill(tree: String, slot: int) -> bool:
 	SaveManager.save_game()
 	return true
 
-# ── Respec — reallocate all tokens ────────────
-# Cost TBD — for now just resets, LP cost will be added later
+# ── Respec ────────────────────────────────────
 func respec(tree: String):
 	var unlocked = SaveManager.data["skill_" + tree + "_unlocked"]
 	var refund = unlocked.size()
@@ -176,114 +167,119 @@ func respec(tree: String):
 		SaveManager.data["active_keystone"] = ""
 	SaveManager.save_game()
 
-# ── Skill effect queries ───────────────────────
-# These are what game systems read to apply skill effects.
-# Returns 0.0 if skill not unlocked or level 0.
+# ══════════════════════════════════════════════
+# SKILL EFFECT QUERIES
+# Gate on is_skill_unlocked only — level 0 is valid (base effect).
+# level == 0 means unlocked but no shards spent, still gives base bonus.
+# ══════════════════════════════════════════════
 
-# BARRAGE
+# ── BARRAGE ───────────────────────────────────
+
+# Slot 0 — Rapidfire
+# Every 3rd attack deals bonus damage. Base 20%, +5% per shard level.
 func barrage_rapidfire_bonus() -> float:
-	# Every 3rd bullet deals X% bonus — X scales with shard level
-	# Base 20%, +5% per shard level
+	if not is_skill_unlocked(TREE_BARRAGE, 0): return 0.0
 	var level = get_skill_level(TREE_BARRAGE, 0)
-	if level == 0 or not is_skill_unlocked(TREE_BARRAGE, 0): return 0.0
 	return 0.20 + (level * 0.05)
 
+# Slot 1 — Bleed
+# Crit hits apply a DoT. Base 5 dmg/tick, +2 per shard level.
 func barrage_bleed_dot() -> float:
-	# DoT damage per tick — scales with shard level
-	# Base 5 damage, +2 per level
+	if not is_skill_unlocked(TREE_BARRAGE, 1): return 0.0
 	var level = get_skill_level(TREE_BARRAGE, 1)
-	if level == 0 or not is_skill_unlocked(TREE_BARRAGE, 1): return 0.0
 	return 5.0 + (level * 2.0)
 
+# Slot 2 — Focus
+# Consecutive hits on same target ramp damage. Base 3% per hit, +1% per shard level.
 func barrage_focus_bonus_per_hit() -> float:
-	# Consecutive hit damage ramp — % per hit
-	# Base 3%, +1% per level
+	if not is_skill_unlocked(TREE_BARRAGE, 2): return 0.0
 	var level = get_skill_level(TREE_BARRAGE, 2)
-	if level == 0 or not is_skill_unlocked(TREE_BARRAGE, 2): return 0.0
 	return 0.03 + (level * 0.01)
 
+# Slot 3 — Range
+# Bonus detection radius. Base 50px, +25 per shard level.
 func barrage_range_bonus() -> float:
-	# Bonus detection radius — flat pixels
-	# Base 50px, +25 per level
+	if not is_skill_unlocked(TREE_BARRAGE, 3): return 0.0
 	var level = get_skill_level(TREE_BARRAGE, 3)
-	if level == 0 or not is_skill_unlocked(TREE_BARRAGE, 3): return 0.0
 	return 50.0 + (level * 25.0)
 
-func barrage_momentum_bonus_per_pixel() -> float:
-	# Bonus damage % per pixel traveled
-	# Base 0.05%, +0.02% per level
+# Slot 4 — Keystone: Multishot
+# Side shot damage as % of main shot. Base 20%, +10% per shard level.
+func barrage_multishot_side_damage() -> float:
+	if not is_skill_unlocked(TREE_BARRAGE, 4): return 0.0
 	var level = get_skill_level(TREE_BARRAGE, 4)
-	if level == 0 or not is_skill_unlocked(TREE_BARRAGE, 4): return 0.0
-	return 0.0005 + (level * 0.0002)
+	return 0.20 + (level * 0.10)
 
-# BULWARK
+# ── BULWARK ───────────────────────────────────
+
+# Slot 0 — Fortify
+# Bonus damage per 100 max shield. Base 2, +1 per shard level.
 func bulwark_fortify_damage_per_100_shield() -> float:
-	# Bonus damage per 100 max shield
-	# Base 2, +1 per level
+	if not is_skill_unlocked(TREE_BULWARK, 0): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 0)
-	if level == 0 or not is_skill_unlocked(TREE_BULWARK, 0): return 0.0
 	return 2.0 + (level * 1.0)
 
+# Slot 1 — Ironclad
+# Max bonus damage % at full shield. Base 15%, +5% per shard level.
 func bulwark_ironclad_max_bonus() -> float:
-	# Max bonus damage % at full shield
-	# Base 15%, +5% per level
+	if not is_skill_unlocked(TREE_BULWARK, 1): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 1)
-	if level == 0 or not is_skill_unlocked(TREE_BULWARK, 1): return 0.0
 	return 0.15 + (level * 0.05)
 
+# Slot 2 — Zap
+# Damage per zap on shield regen tick. Base 8, +3 per shard level.
 func bulwark_zap_damage() -> float:
-	# Damage per zap on shield regen tick
-	# Base 8, +3 per level
+	if not is_skill_unlocked(TREE_BULWARK, 2): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 2)
-	if level == 0 or not is_skill_unlocked(TREE_BULWARK, 2): return 0.0
 	return 8.0 + (level * 3.0)
 
+# Slot 3 — Rampart
+# Shield restored per kill. Base 3, +1 per shard level.
 func bulwark_rampart_shield_per_kill() -> float:
-	# Shield restored per kill
-	# Base 3, +1 per level
+	if not is_skill_unlocked(TREE_BULWARK, 3): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 3)
-	if level == 0 or not is_skill_unlocked(TREE_BULWARK, 3): return 0.0
 	return 3.0 + (level * 1.0)
 
+# Slot 4 — Keystone: Pulse
+# Knockback force in pixels. Base 80, +20 per shard level.
 func bulwark_knockback_force() -> float:
-	# Knockback force in pixels
-	# Base 80, +20 per level
+	if not is_skill_unlocked(TREE_BULWARK, 4): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 4)
-	if level == 0 or not is_skill_unlocked(TREE_BULWARK, 4): return 0.0
 	return 80.0 + (level * 20.0)
 
-# SIPHON
+# ── SIPHON ────────────────────────────────────
+
+# Slot 0 — Vampiric
+# Bonus damage per 1 HP regen amount. Base 1.0, +0.5 per shard level.
 func siphon_vampiric_damage_per_regen() -> float:
-	# Bonus damage per 1 HP regen amount
-	# Base 1.0, +0.5 per level
+	if not is_skill_unlocked(TREE_SIPHON, 0): return 0.0
 	var level = get_skill_level(TREE_SIPHON, 0)
-	if level == 0 or not is_skill_unlocked(TREE_SIPHON, 0): return 0.0
 	return 1.0 + (level * 0.5)
 
+# Slot 1 — Chill
+# Slow % applied on regen tick. Base 10%, +3% per shard level, soft cap 60%.
 func siphon_chill_slow() -> float:
-	# Slow % applied on regen tick
-	# Base 10%, +3% per level, soft cap at 60%
+	if not is_skill_unlocked(TREE_SIPHON, 1): return 0.0
 	var level = get_skill_level(TREE_SIPHON, 1)
-	if level == 0 or not is_skill_unlocked(TREE_SIPHON, 1): return 0.0
 	return min(0.60, 0.10 + (level * 0.03))
 
+# Slot 2 — Overheal
+# Overheal buffer as % of max HP. Base 10%, +3% per shard level.
 func siphon_overheal_buffer() -> float:
-	# Overheal buffer as % of max HP
-	# Base 10%, +3% per level
+	if not is_skill_unlocked(TREE_SIPHON, 2): return 0.0
 	var level = get_skill_level(TREE_SIPHON, 2)
-	if level == 0 or not is_skill_unlocked(TREE_SIPHON, 2): return 0.0
 	return 0.10 + (level * 0.03)
 
+# Slot 3 — Surge
+# Damage bonus % while in overheal. Base 15%, +5% per shard level.
 func siphon_surge_bonus() -> float:
-	# Damage bonus % while in overheal
-	# Base 15%, +5% per level
+	if not is_skill_unlocked(TREE_SIPHON, 3): return 0.0
 	var level = get_skill_level(TREE_SIPHON, 3)
-	if level == 0 or not is_skill_unlocked(TREE_SIPHON, 3): return 0.0
 	return 0.15 + (level * 0.05)
 
+# Slot 4 — Keystone: Drain Beam
+# HP restored per drain tick. Base 2, +1 per shard level.
 func siphon_vitality_hp_per_kill() -> float:
-	# HP restored per kill
-	# Base 2, +1 per level
+	if not is_skill_unlocked(TREE_SIPHON, 4): return 0.0
 	var level = get_skill_level(TREE_SIPHON, 4)
-	if level == 0 or not is_skill_unlocked(TREE_SIPHON, 4): return 0.0
 	return 2.0 + (level * 1.0)
