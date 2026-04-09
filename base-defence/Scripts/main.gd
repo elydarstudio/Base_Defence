@@ -358,22 +358,13 @@ func add_currency(amount: int, enemy_pos: Vector2 = Vector2.ZERO):
 	currency += multiplied
 	enemies_killed += 1
 	SkillManager.on_enemy_killed()
-	spawn_damage_number(multiplied, enemy_pos + Vector2(randf_range(-10, 10), -35), "gold")
+	spawn_damage_number(multiplied, enemy_pos + Vector2(25, 0), "gold")
 	if randf() < $EconomyManager.calc_drop_chance(legacy_drop_level):
 		var drop = $EconomyManager.calc_lp_drop(lp_gain_level, legacy_mult_level)
 		run_lp += drop
 		SaveManager.data["legacy_points"] += drop
 		SaveManager.save_game()
-		spawn_damage_number(drop, enemy_pos + Vector2(randf_range(-20, 20), -50), "lp")
-	_update_ui()
-
-	spawn_damage_number(multiplied, enemy_pos + Vector2(randf_range(-10, 10), -35), "gold")
-	if randf() < $EconomyManager.calc_drop_chance(legacy_drop_level):
-		var drop = $EconomyManager.calc_lp_drop(lp_gain_level, legacy_mult_level)
-		run_lp += drop
-		SaveManager.data["legacy_points"] += drop
-		SaveManager.save_game()
-		spawn_damage_number(drop, enemy_pos + Vector2(randf_range(-20, 20), -50), "lp")
+		spawn_damage_number(drop, enemy_pos + Vector2(0, 20), "lp")
 	_update_ui()
 
 func spawn_damage_number(amount: float, pos: Vector2, type: String = "normal"):

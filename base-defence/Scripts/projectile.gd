@@ -8,11 +8,12 @@ var target: Node2D = null
 var base: Node2D = null
 var is_crit: bool = false
 var is_rapidfire: bool = false
+var bleed_damage: float = 0.0
 
 func _ready():
 	area_entered.connect(_on_area_entered)
 
-func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D, crit: bool = false, rapidfire: bool = false):
+func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D, crit: bool = false, rapidfire: bool = false, bleed: float = 0.0):
 	direction = dir
 	speed = spd
 	damage = dmg
@@ -20,6 +21,7 @@ func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D, crit: b
 	base = b
 	is_crit = crit
 	is_rapidfire = rapidfire
+	bleed_damage = bleed
 
 	var poly = $Visual
 	if is_crit:
@@ -52,9 +54,10 @@ func _process(delta):
 
 func _on_area_entered(area):
 	if area == target:
-		# Damage type: rapidfire crit gets its own label, otherwise normal crit/normal rules apply
 		var type = "crit" if is_crit else "normal"
 		area.take_damage(damage, type)
+		if bleed_damage > 0.0:
+			area.apply_bleed(bleed_damage, is_crit)
 		_resolve()
 		queue_free()
 

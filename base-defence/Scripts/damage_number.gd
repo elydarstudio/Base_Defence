@@ -25,6 +25,9 @@ func setup(amount: float, pos: Vector2, type: String = "normal"):
 			$Label.add_theme_color_override("font_color", Color(0.85, 0.4, 1.0))
 			$Label.add_theme_font_size_override("font_size", 18)
 			$Label.text = "★" + $Label.text
+		"bleed":
+			$Label.add_theme_color_override("font_color", Color(0.9, 0.0, 0.0))
+			$Label.text = "🩸" + $Label.text
 
 func _process(delta):
 	elapsed += delta

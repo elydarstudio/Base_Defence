@@ -115,10 +115,11 @@ func _try_shoot():
 	if is_crit:
 		final_damage *= crit_damage
 
-	# Rapidfire — applies after crit so it scales with full resolved damage
 	var is_rapidfire = _tick_attack_counter() and SkillManager.barrage_rapidfire_bonus() > 0.0
 	if is_rapidfire:
 		final_damage += final_damage * SkillManager.barrage_rapidfire_bonus()
+
+	var bleed = SkillManager.barrage_bleed_dot()
 
 	b.setup(
 		global_position.direction_to(target.global_position),
@@ -127,7 +128,8 @@ func _try_shoot():
 		target,
 		self,
 		is_crit,
-		is_rapidfire
+		is_rapidfire,
+		bleed
 	)
 	bullets_targeting[target] = bullets_en_route + 1
 	if main_node: AudioManager.play(AudioManager.sfx_shoot)
