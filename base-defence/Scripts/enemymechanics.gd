@@ -17,14 +17,14 @@ func tick(enemy: Node, delta: float) -> void:
 	_tick_bleed(enemy, delta)
 	enemy.queue_redraw()
 
-# ── Boss tick — no separation, no attack range loop, has crit ─────────────────
+# ── Boss tick ─────────────────────────────────────────────────────────────────
 func tick_boss(enemy: Node, delta: float) -> void:
 	_tick_boss_movement(enemy, delta)
 	_tick_boss_attack(enemy, delta)
 	_tick_bleed(enemy, delta)
 	enemy.queue_redraw()
 
-# ── Runner tick — explode on contact, no attack timer ─────────────────────────
+# ── Runner tick ───────────────────────────────────────────────────────────────
 func tick_runner(enemy: Node, delta: float) -> void:
 	_tick_runner_movement(enemy, delta)
 	_tick_bleed(enemy, delta)
@@ -64,7 +64,7 @@ func _tick_runner_movement(enemy: Node, delta: float) -> void:
 				enemy.base_node._update_combat_ui()
 			enemy._die()
 
-# ── Separation — prevent enemy stacking ───────────────────────────────────────
+# ── Separation ────────────────────────────────────────────────────────────────
 func _apply_separation(enemy: Node, delta: float) -> void:
 	var separation = Vector2.ZERO
 	for other in enemy.get_tree().get_nodes_in_group("enemies"):
@@ -151,6 +151,7 @@ func apply_bleed(enemy: Node, damage: float, was_crit: bool) -> void:
 		if enemy.health <= 0:
 			enemy._die()
 			return
+
 	enemy.bleed_damage = damage
 	enemy.bleed_ticks_remaining = enemy.bleed_ticks - 1
 	enemy.bleed_timer = 0.0

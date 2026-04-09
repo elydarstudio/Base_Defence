@@ -194,7 +194,7 @@ func barrage_bleed_dot() -> float:
 func barrage_focus_bonus_per_hit() -> float:
 	if not is_skill_unlocked(TREE_BARRAGE, 2): return 0.0
 	var level = get_skill_level(TREE_BARRAGE, 2)
-	return 0.03 + (level * 0.01)
+	return 0.10 + (level * 0.01)
 
 # Slot 3 — Range
 # Bonus detection radius. Base 50px, +25 per shard level.

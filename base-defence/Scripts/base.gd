@@ -33,10 +33,7 @@ var bullet_scene: PackedScene
 var main_node: Node = null
 var bullets_targeting: Dictionary = {}
 
-# ── Attack counter (attack-type agnostic — used by all fire modes) ────────────
-# Rapidfire triggers on every 3rd attack regardless of bullet/beam/pulse type.
-# When new attack types are added, increment this counter at their fire point
-# and the skill applies automatically.
+# ── Attack counter ────────────────────────────
 var _attack_counter: int = 0
 
 func _ready():
@@ -73,7 +70,7 @@ func _process(delta):
 			if main_node != null:
 				_update_combat_ui()
 
-	# Shield regen — 10% of max shield per tick, interval upgrades reduce tick rate
+	# Shield regen
 	var effective_max_shield = max_shield * shield_multiplier
 	if effective_max_shield > 0 and shield < effective_max_shield:
 		shield_regen_timer += delta
@@ -86,11 +83,18 @@ func _process(delta):
 
 func get_effective_max_hp() -> float:
 	return max_health * hp_multiplier
+	
+func _get_bleed_tick_count() -> int:
+	var crit_pct = crit_chance * 100.0
+	if crit_pct <= 20.0:
+		return 2
+	elif crit_pct <= 40.0:
+		return 3
+	elif crit_pct <= 60.0:
+		return 4
+	else:
+		return 5
 
-# ── Unified attack tick ────────────────────────────────────────────────────────
-# Call _tick_attack_counter() at the fire point of every attack type.
-# Returns true if this attack is a Rapidfire proc (every 3rd attack).
-# When Drain Beam / Pulse are added, call this at their tick point — done.
 func _tick_attack_counter() -> bool:
 	_attack_counter += 1
 	if _attack_counter >= 3:
@@ -103,7 +107,10 @@ func _try_shoot():
 	if target == null or bullet_scene == null:
 		return
 	var bullets_en_route = bullets_targeting.get(target, 0)
-	var hits_needed = ceil(target.health / (bullet_damage * damage_multiplier))
+	var bleed = SkillManager.barrage_bleed_dot()
+	var total_bleed = bleed * _get_bleed_tick_count()
+	var effective_damage = (bullet_damage * damage_multiplier) + total_bleed
+	var hits_needed = ceil(target.health / effective_damage)
 	if bullets_en_route >= hits_needed:
 		return
 	var b = bullet_scene.instantiate()
@@ -119,7 +126,10 @@ func _try_shoot():
 	if is_rapidfire:
 		final_damage += final_damage * SkillManager.barrage_rapidfire_bonus()
 
-	var bleed = SkillManager.barrage_bleed_dot()
+	var focus_bonus = MechanicsManager.get_focus_bonus(target)
+	if focus_bonus > 0.0:
+		final_damage += final_damage * focus_bonus
+	MechanicsManager.register_hit(target)
 
 	b.setup(
 		global_position.direction_to(target.global_position),
@@ -134,21 +144,15 @@ func _try_shoot():
 	bullets_targeting[target] = bullets_en_route + 1
 	if main_node: AudioManager.play(AudioManager.sfx_shoot)
 
-func notify_bullet_resolved(target: Node2D):
-	if not is_instance_valid(target):
-		bullets_targeting.erase(target)
-		return
-	if target in bullets_targeting:
-		bullets_targeting[target] -= 1
-		if bullets_targeting[target] <= 0:
-			bullets_targeting.erase(target)
-
 func _get_best_target() -> Node2D:
 	for existing_target in bullets_targeting.keys():
 		if not is_instance_valid(existing_target):
 			bullets_targeting.erase(existing_target)
 			continue
-		var hits_needed = ceil(existing_target.health / (bullet_damage * damage_multiplier))
+		var bleed = SkillManager.barrage_bleed_dot()
+		var total_bleed = bleed * _get_bleed_tick_count()
+		var effective_damage = (bullet_damage * damage_multiplier) + total_bleed
+		var hits_needed = ceil(existing_target.health / effective_damage)
 		var en_route = bullets_targeting.get(existing_target, 0)
 		if en_route < hits_needed:
 			return existing_target
@@ -162,22 +166,20 @@ func _get_best_target() -> Node2D:
 			closest = e
 	return closest
 
+
 func take_damage(amount: float):
-	# Evasion check
 	if randf() < evasion:
 		return
 
 	var hp_damage = amount
 	var shield_absorbed = 0.0
 
-	# Shield absorption
 	if shield > 0:
 		var absorbed = min(shield, amount)
 		shield_absorbed = absorbed
 		shield -= absorbed
 		hp_damage = amount * (1.0 - shield_strength)
 
-	# HP takes damage
 	health -= hp_damage
 	health = max(0.0, health)
 	AudioManager.play(AudioManager.sfx_take_damage)
@@ -203,6 +205,15 @@ func increase_max_health(amount: float):
 	health = min(health, get_effective_max_hp())
 	if main_node != null:
 		_update_combat_ui()
+
+func notify_bullet_resolved(target: Node2D):
+	if not is_instance_valid(target):
+		bullets_targeting.erase(target)
+		return
+	if target in bullets_targeting:
+		bullets_targeting[target] -= 1
+		if bullets_targeting[target] <= 0:
+			bullets_targeting.erase(target)
 
 func set_bullet_scene(scene: PackedScene):
 	bullet_scene = scene

@@ -57,7 +57,7 @@ func get_ironclad_bonus(shield: float, max_shield: float) -> float:
 # ── Zap — Bulwark Slot 2 ──────────────────────
 # Called from base.gd on every shield regen tick.
 # Fires damage at nearest enemy.
-func trigger_zap(main_node: Node, base_node: Node) -> void:
+func trigger_zap(_main_node: Node, base_node: Node) -> void:
 	var zap_dmg = SkillManager.bulwark_zap_damage()
 	if zap_dmg == 0.0:
 		return
