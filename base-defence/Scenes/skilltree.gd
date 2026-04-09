@@ -339,15 +339,15 @@ func _can_unlock(tree_key: String, slot: int) -> bool:
 
 func _on_unlock_pressed(tree_key: String, slot: int):
 	SkillManager.unlock_skill(tree_key, slot)
-	_refresh_tree_view(tree_key)
+	_refresh_tree_view()
 	_update_currency_label()
 
 func _on_level_pressed(tree_key: String, slot: int):
 	SkillManager.level_skill(tree_key, slot)
-	_refresh_tree_view(tree_key)
+	_refresh_tree_view()
 	_update_currency_label()
 
-func _refresh_tree_view(tree_key: String):
+func _refresh_tree_view():
 	for child in tree_container.get_children():
 		child.queue_free()
 	_build_tree_view(current_view)

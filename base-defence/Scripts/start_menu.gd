@@ -59,11 +59,12 @@ func _on_debug_reset_button_pressed():
 
 func _on_debug_unlock_button_pressed():
 	SaveManager.data["unlock_level"] = 4
-	SaveManager.data["legacy_points"] = 99999999
+	SaveManager.data["legacy_points"] = 999999999
 	SaveManager.data["max_start_phase"] = 20
+	SaveManager.data["phase_tokens"] = 15
+	SaveManager.data["phase_tokens_earned"] = 15
 	SaveManager.save_game()
 	_update_ui()
-
 
 func _on_phase_down_button_pressed():
 	var current = SaveManager.data.get("start_phase", 1)
@@ -83,3 +84,8 @@ func _on_phase_up_button_pressed():
 	SaveManager.data["start_phase"] = current
 	SaveManager.save_game()
 	$PhaseSelectButton.text = "START FROM PHASE " + str(current)
+
+
+func _on_mute_button_pressed():
+	var muted = AudioManager.toggle_mute()
+	$MuteButton.text = "🔇" if muted else "🔊"

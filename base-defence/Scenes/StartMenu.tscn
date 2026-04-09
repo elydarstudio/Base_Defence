@@ -114,6 +114,14 @@ offset_right = 485.0
 offset_bottom = 910.0
 text = "[DEBUG] UNLOCK ALL"
 
+[node name="MuteButton" type="Button" parent="." unique_id=1569539809]
+layout_mode = 0
+offset_left = 340.0
+offset_top = 10.0
+offset_right = 375.0
+offset_bottom = 41.0
+text = "🔊"
+
 [connection signal="pressed" from="PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="WorkshopButton" to="." method="_on_work_shop_button_pressed"]
 [connection signal="pressed" from="SkillTreeButton" to="." method="_on_skill_tree_button_pressed"]
@@ -122,3 +130,4 @@ text = "[DEBUG] UNLOCK ALL"
 [connection signal="pressed" from="PhaseUpButton" to="." method="_on_phase_up_button_pressed"]
 [connection signal="pressed" from="DebugResetButton" to="." method="_on_debug_reset_button_pressed"]
 [connection signal="pressed" from="DebugUnlockButton" to="." method="_on_debug_unlock_button_pressed"]
+[connection signal="pressed" from="MuteButton" to="." method="_on_mute_button_pressed"]
