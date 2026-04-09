@@ -123,12 +123,14 @@ func take_damage(enemy: Node, amount: float, type: String = "normal") -> void:
 		return
 	enemy.health -= amount
 	if enemy.main_node != null:
-		enemy.main_node.spawn_damage_number(amount, enemy.global_position + Vector2(randf_range(-15, 15), -40), type)
+		enemy.main_node.spawn_damage_number(amount, enemy.global_position + Vector2(randf_range(-10, 10), -20), type)
 	if enemy.health <= 0:
 		enemy._die()
 
 # ── Bleed ─────────────────────────────────────────────────────────────────────
 func apply_bleed(enemy: Node, damage: float, was_crit: bool) -> void:
+	if not is_instance_valid(enemy):
+		return
 	var crit_pct = 0.0
 	if enemy.main_node != null:
 		crit_pct = enemy.main_node.get_node("Base").crit_chance * 100.0
@@ -142,15 +144,13 @@ func apply_bleed(enemy: Node, damage: float, was_crit: bool) -> void:
 		enemy.bleed_ticks = 5
 
 	var first_tick = damage * 2.0 if was_crit else damage
-	if enemy.health <= 0:
-		return
-	enemy.health -= first_tick
 	if enemy.main_node != null:
 		enemy.main_node.spawn_damage_number(first_tick, enemy.global_position + Vector2(-25, 0), "bleed")
-	if enemy.health <= 0:
-		enemy._die()
-		return
-
+	if enemy.health > 0:
+		enemy.health -= first_tick
+		if enemy.health <= 0:
+			enemy._die()
+			return
 	enemy.bleed_damage = damage
 	enemy.bleed_ticks_remaining = enemy.bleed_ticks - 1
 	enemy.bleed_timer = 0.0

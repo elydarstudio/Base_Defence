@@ -56,11 +56,12 @@ func _on_area_entered(area):
 	if area == target:
 		var type = "crit" if is_crit else "normal"
 		area.take_damage(damage, type)
+		print("bleed_damage value: ", bleed_damage)
 		if bleed_damage > 0.0:
 			area.apply_bleed(bleed_damage, is_crit)
 		_resolve()
 		queue_free()
-
+		
 func _resolve():
 	if is_instance_valid(base) and is_instance_valid(target):
 		base.notify_bullet_resolved(target)
