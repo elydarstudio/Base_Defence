@@ -21,6 +21,8 @@ SaveManager="*uid://fp6mm7orsoog"
 AudioManager="*uid://bm6jry8oato4v"
 TooltipData="*uid://dq4cdowwcg7y6"
 SkillManager="*uid://ikddp0tlsnki"
+EnemyMechanics="*uid://bjyeyy360gqln"
+MechanicsManager="*uid://bxodfr03d7imi"
 
 [display]
 

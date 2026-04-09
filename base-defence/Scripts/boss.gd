@@ -13,12 +13,11 @@ var attack_range: float = 45.0
 var crit_chance: float = 0.0
 var crit_multiplier: float = 2.0
 
-# ── Bleed ─────────────────────────────────────
+# ── Bleed state ───────────────────────────────
 var bleed_damage: float = 0.0
 var bleed_ticks: int = 0
 var bleed_ticks_remaining: int = 0
 var bleed_timer: float = 0.0
-const BLEED_INTERVAL: float = 0.5
 
 func _ready():
 	add_to_group("enemies")
@@ -35,35 +34,7 @@ func _draw_boss():
 	poly.color = Color(0.8, 0.0, 0.8)
 
 func _process(delta):
-	if base_node == null:
-		return
-	var dist = global_position.distance_to(base_node.global_position)
-	if dist > attack_range:
-		var dir = global_position.direction_to(base_node.global_position)
-		global_position += dir * speed * delta
-	else:
-		attack_timer += delta
-		if attack_timer >= attack_interval:
-			attack_timer = 0.0
-			var final_damage = attack_damage
-			if randf() < crit_chance:
-				final_damage *= crit_multiplier
-			base_node.take_damage(final_damage)
-			if main_node != null:
-				base_node._update_combat_ui()
- 
-	if bleed_ticks_remaining > 0:
-		bleed_timer += delta
-		if bleed_timer >= BLEED_INTERVAL:
-			bleed_timer = 0.0
-			bleed_ticks_remaining -= 1
-			health -= bleed_damage
-			if main_node != null:
-				main_node.spawn_damage_number(bleed_damage, global_position + Vector2(-25, 0), "bleed")
-			if health <= 0:
-				_die()
- 
-	queue_redraw()
+	EnemyMechanics.tick_boss(self, delta)
 
 func _draw():
 	var bar_width: float = 60.0
@@ -92,38 +63,14 @@ func scale_to_phase(p: int):
 	crit_chance = 0.3
 	crit_multiplier = 2.0
 
-func apply_bleed(damage: float, was_crit: bool):
-	var crit_pct = 0.0
-	if main_node != null:
-		crit_pct = main_node.get_node("Base").crit_chance * 100.0
-	if crit_pct <= 20.0:
-		bleed_ticks = 2
-	elif crit_pct <= 40.0:
-		bleed_ticks = 3
-	elif crit_pct <= 60.0:
-		bleed_ticks = 4
-	else:
-		bleed_ticks = 5
- 
-	var first_tick = damage * 2.0 if was_crit else damage
-	health -= first_tick
-	if main_node != null:
-		main_node.spawn_damage_number(first_tick, global_position + Vector2(-25, 0), "bleed")
-	if health <= 0:
-		_die()
- 
-	bleed_damage = damage
-	bleed_ticks_remaining = bleed_ticks - 1
-	bleed_timer = 0.0
-
 func take_damage(amount: float, type: String = "normal"):
-	health -= amount
-	if main_node != null:
-		main_node.spawn_damage_number(amount, global_position + Vector2(randf_range(-15, 15), -40), type)
-	if health <= 0:
-		_die()
+	EnemyMechanics.take_damage(self, amount, type)
+
+func apply_bleed(damage: float, was_crit: bool):
+	EnemyMechanics.apply_bleed(self, damage, was_crit)
 
 func _die():
+	MechanicsManager.cleanup_focus(self)
 	if main_node != null:
 		main_node.add_currency(100 + ((main_node.phase - 1) * 20))
 		var lp_drop = 10 + ((main_node.phase - 1) * 3)
