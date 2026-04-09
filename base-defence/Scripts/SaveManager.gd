@@ -73,6 +73,27 @@ func load_game():
 	for key in data:
 		if config.has_section_key("save", key):
 			data[key] = config.get_value("save", key)
+	
+	# Migrate old saves — fix any keys that should be arrays but aren't
+	var array_keys = ["skill_barrage_unlocked", "skill_bulwark_unlocked", "skill_siphon_unlocked",
+					  "skill_barrage_levels", "skill_bulwark_levels", "skill_siphon_levels"]
+	for key in array_keys:
+		if typeof(data[key]) != TYPE_ARRAY:
+			data[key] = []
+	if typeof(data["active_keystone"]) != TYPE_STRING:
+		data["active_keystone"] = ""
+	
+	# Migrate missing keys added in updates
+	if not data.has("phase_tokens"):
+		data["phase_tokens"] = 0
+	if not data.has("phase_tokens_earned"):
+		data["phase_tokens_earned"] = 0
+	if not data.has("phase_shards"):
+		data["phase_shards"] = 0
+	if not data.has("phase_shards_earned"):
+		data["phase_shards_earned"] = 0
+	if not data.has("lifetime_kills"):
+		data["lifetime_kills"] = 0
 
 func reset_save():
 	for key in data:
@@ -80,4 +101,11 @@ func reset_save():
 	data["max_start_phase"] = 1
 	data["start_phase"] = 1
 	data["best_phase"] = 1
+	data["active_keystone"] = ""
+	data["skill_barrage_unlocked"] = []
+	data["skill_bulwark_unlocked"] = []
+	data["skill_siphon_unlocked"] = []
+	data["skill_barrage_levels"] = []
+	data["skill_bulwark_levels"] = []
+	data["skill_siphon_levels"] = []
 	save_game()

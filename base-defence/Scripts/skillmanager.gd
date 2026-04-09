@@ -3,11 +3,35 @@ extends Node
 # ── Constants ─────────────────────────────────
 const KILLS_PER_SHARD_BASE: int = 1000
 const MAX_TOKENS: int = 15
-const SKILLS_PER_TREE: int = 6  # slots 0-5, slot 5 = keystone
+const SKILLS_PER_TREE: int = 9  # slots 0-8, slot 4 = keystone, slot 8 = capstone
 
 const TREE_BARRAGE: String = "barrage"
 const TREE_BULWARK: String = "bulwark"
 const TREE_SIPHON: String = "siphon"
+
+const SKILL_DATA = {
+	"barrage": [
+		{"name": "Rapidfire", "desc": "Every 3rd bullet deals bonus damage. Scales with DMG."},
+		{"name": "Bleed", "desc": "Critical hits leave a DoT on the target. Scales with Crit Chance."},
+		{"name": "Focus", "desc": "Consecutive hits on the same target increase damage. Resets on kill."},
+		{"name": "Range", "desc": "Increases bullet detection radius."},
+		{"name": "Keystone: Multishot", "desc": "Fires 3 bullets simultaneously. Side shots scale with shard level."},
+	],
+	"bulwark": [
+		{"name": "Fortify", "desc": "Every 100 Max Shield adds bonus damage to attacks."},
+		{"name": "Ironclad", "desc": "Current shield % adds bonus damage. More shield uptime = harder hits."},
+		{"name": "Zap", "desc": "Every shield regen tick fires a damage instance at nearest enemy."},
+		{"name": "Rampart", "desc": "Killing an enemy permanently restores flat shield."},
+		{"name": "Keystone: Pulse", "desc": "Replaces bullets with AOE pulse. Damages all enemies in radius on ATK SPD interval."},
+	],
+	"siphon": [
+		{"name": "Vampiric", "desc": "HP Regen Amount adds bonus damage to all attacks."},
+		{"name": "Chill", "desc": "Every HP regen tick slows the nearest enemy."},
+		{"name": "Overheal", "desc": "Introduces an overheal buffer above max HP based on Max HP investment."},
+		{"name": "Surge", "desc": "While in overheal state, deal bonus damage."},
+		{"name": "Keystone: Drain Beam", "desc": "Replaces bullets with a continuous beam. Damages and heals simultaneously."},
+	],
+}
 
 # ── Kill tracking for shard generation ────────
 var _kills_since_last_shard: int = 0
@@ -89,31 +113,37 @@ func _get_shard_threshold() -> int:
 
 # ── Token spending — unlock a skill ───────────
 func unlock_skill(tree: String, slot: int) -> bool:
-	# Must have tokens
 	if get_tokens() <= 0:
 		return false
-	# Must not exceed token cap
 	if SaveManager.data["phase_tokens_earned"] > MAX_TOKENS:
 		return false
-	# Must not already be unlocked
 	if is_skill_unlocked(tree, slot):
 		return false
-	# Sequential lock — slot N requires slot N-1 unlocked (except slot 0)
-	if slot > 0 and not is_skill_unlocked(tree, slot - 1):
-		return false
-	# Keystone (slot 5) requires all 5 prior skills unlocked
-	if slot == 5:
-		for i in range(5):
-			if not is_skill_unlocked(tree, i):
-				return false
-		# Can't unlock keystone if another keystone is active
-		if has_keystone():
-			return false
-	# All checks passed — unlock it
+	# Slot-specific prerequisite check
+	match slot:
+		0:
+			pass # always available
+		1:
+			if not is_skill_unlocked(tree, 0): return false
+		2:
+			if not is_skill_unlocked(tree, 1): return false
+		3:
+			if not is_skill_unlocked(tree, 1): return false
+		4: # Keystone
+			if not is_skill_unlocked(tree, 2): return false
+			if not is_skill_unlocked(tree, 3): return false
+			if has_keystone(): return false
+		5, 6, 7: # Skills 7-9
+			if not is_skill_unlocked(tree, 4): return false
+		8: # Capstone
+			if not is_skill_unlocked(tree, 5): return false
+			if not is_skill_unlocked(tree, 6): return false
+			if not is_skill_unlocked(tree, 7): return false
+	# All checks passed
 	SaveManager.data["skill_" + tree + "_unlocked"].append(slot)
 	SaveManager.data["skill_" + tree + "_levels"].append(0)
 	SaveManager.data["phase_tokens"] -= 1
-	if slot == 5:
+	if slot == 4:
 		SaveManager.data["active_keystone"] = tree
 	SaveManager.save_game()
 	return true

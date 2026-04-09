@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://dbm73biummgjb"]
+
+[ext_resource type="Script" uid="uid://bpvm6kvuywty7" path="res://Scenes/skilltree.gd" id="1_82aen"]
+
+[node name="SkillTree" type="Control" unique_id=422046938]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_82aen")

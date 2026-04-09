@@ -138,6 +138,9 @@ func _apply_unlock_level():
 func _update_ui():
 	var lp = SaveManager.data["legacy_points"]
 	$LPLabel.text = "Legacy Points: " + str(lp)
+	$StatContent/TokenLabel.text = "🔷 Phase Tokens: " + str(SaveManager.data["phase_tokens"]) + " / " + str(SkillManager.MAX_TOKENS)
+	$StatContent/ShardLabel.text = "⚡ Phase Shards: " + str(SaveManager.data["phase_shards"])
+	$StatContent/KillLabel.text = "☠ Lifetime Kills: " + str(SaveManager.data["lifetime_kills"])
 	var d = SaveManager.data
 
 	var levels = {

@@ -34,6 +34,9 @@ func _on_play_button_pressed():
 
 func _on_workshop_button_pressed():
 	get_tree().change_scene_to_file("res://Scenes/workshop.tscn")
+	
+func _on_skill_tree_button_pressed():
+	get_tree().change_scene_to_file("res://Scenes/skilltree.tscn")
 
 func _on_phase_select_button_pressed():
 	var current = SaveManager.data.get("start_phase", 1)
