@@ -54,6 +54,7 @@ var data = {
 
 
 func _ready():
+	print(OS.get_user_data_dir())
 	load_game()
 
 func save_game():

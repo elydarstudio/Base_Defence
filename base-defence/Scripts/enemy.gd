@@ -45,7 +45,8 @@ func scale_to_wave(difficulty: int):
 	var multiplier = 1.0 + (early * 0.08) + (late * 0.26) + (pow(max(0, difficulty - 5), 1.4) * 0.02) + (very_late * 0.4)
 	health = 8.0 * multiplier
 	max_health = health
-	attack_damage = 7.0 * (1.0 + (difficulty * 0.13))
+	var phase_scale = 1.0 if main_node == null or main_node.phase <= 1 else 0.85
+	attack_damage = 7.0 * (1.0 + (difficulty * 0.13)) * phase_scale
 	speed = 72.0
 	currency_value = 5 + (main_node.phase * 3) if main_node != null else 5
 

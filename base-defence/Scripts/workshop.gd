@@ -52,7 +52,7 @@ const STAT_LABELS = {
 	"WFloorDmgMult": ["DMG MULT", "+10%"],
 	"WFloorCritChance": ["CRIT %", "+0.8%"],
 	"WFloorCritDmg": ["CRIT DMG", "+10%"],
-	"WFloorShield": ["SHIELD", "+50"],
+	"WFloorShield": ["SHIELD", "+20"],
 	"WFloorShieldRegen": ["SHLD RGN", "-0.045s interval"],
 	"WFloorShieldStrength": ["SHLD STR", "+0.4%"],
 	"WFloorShieldMult": ["SHLD MULT", "+10%"],
@@ -83,9 +83,9 @@ const WORKSHOP_UNLOCK_REQUIREMENTS = {
 	"WFloorShieldStrength": 3,
 	"WFloorGoldMult": 3,
 	"WFloorLpMult": 3,
-	"WFloorCritChance": 4,
+	"WFloorCritChance": 3,
 	"WFloorCritDmg": 4,
-	"WFloorRegenSpd": 4,
+	"WFloorRegenSpd": 3,
 	"WFloorHealMult": 4,
 	"WFloorShieldMult": 4,
 	"WFloorEvasion": 4,
@@ -172,14 +172,14 @@ func _update_ui():
 		"WFloorDmgMult": "+" + str(levels["WFloorDmgMult"] * 10) + "%",
 		"WFloorCritChance": str(snappedf(levels["WFloorCritChance"] * 0.8, 0.1)) + "%",
 		"WFloorCritDmg": str(snappedf(1.5 + (levels["WFloorCritDmg"] * 0.1), 0.01)) + "x",
-		"WFloorShield": str(levels["WFloorShield"] * 50),
-		"WFloorShieldRegen": str(snappedf(max(0.5, 5.0 - (levels["WFloorShieldRegen"] * 0.045)), 0.01)) + "s",
-		"WFloorShieldStrength": str(snappedf(20.0 + (levels["WFloorShieldStrength"] * 0.4), 0.1)) + "%",
+		"WFloorShield": str(levels["WFloorShield"] * 20),
+		"WFloorShieldRegen": str(snappedf(calc_regen_spd(levels["WFloorShieldRegen"]), 0.01)) + "s",
+		"WFloorShieldStrength": str(snappedf(50.0 + (levels["WFloorShieldStrength"] * 0.3), 0.1)) + "%",
 		"WFloorShieldMult": "+" + str(levels["WFloorShieldMult"] * 10) + "%",
 		"WFloorEvasion": str(snappedf(levels["WFloorEvasion"] * 0.2, 0.1)) + "%",
 		"WFloorMaxHP": str(100 + (levels["WFloorMaxHP"] * 10)),
 		"WFloorRegenAmt": str(levels["WFloorRegenAmt"]) + " hp",
-		"WFloorRegenSpd": str(snappedf(max(0.5, 5.0 - (levels["WFloorRegenSpd"] * 0.045)), 0.01)) + "s",
+		"WFloorRegenSpd": str(snappedf(calc_regen_spd(levels["WFloorRegenSpd"]), 0.01)) + "s",
 		"WFloorHealMult": "+" + str(levels["WFloorHealMult"] * 10) + "%",
 		"WFloorHPMult": "+" + str(levels["WFloorHPMult"] * 10) + "%",
 		"WFloorGoldPerKill": "+" + str(levels["WFloorGoldPerKill"]) + "g",
@@ -267,6 +267,12 @@ func _input(event):
 				_show_tooltip_instant(tooltip_buttons[btn])
 				return
 		_hide_tooltip()
+
+func calc_regen_spd(level: int) -> float:
+	var interval = 5.0
+	for i in range(level):
+		interval -= 0.25 / (1.0 + i * 0.05)
+	return max(0.5, interval)
 
 func _on_core_tab_pressed():
 	$CoreContent.visible = true

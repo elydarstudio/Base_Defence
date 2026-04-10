@@ -28,13 +28,13 @@ func update_ui():
 		"+" + str(main.crit_dmg_level * 10) + "%")
 	_update_btn(main.get_node("UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton"),
 		"SHIELD", main.shield_level, main.shield_max, main.shield_cost,
-		str(main.shield_level * 50))
+		str(main.shield_level * 20))
 	_update_btn(main.get_node("UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldRegenButton"),
 		"SHLD RGN", main.shield_regen_level, main.shield_regen_max, main.shield_regen_cost,
-		str(snappedf(max(0.5, 5.0 - (main.shield_regen_level * 0.045)), 0.01)) + "s")
+		str(snappedf($UpgradeManager.calc_regen_spd(main.regen_spd_level), 0.01)) + "s")
 	_update_btn(main.get_node("UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldStrengthButton"),
 		"SHLD STR", main.shield_strength_level, main.shield_strength_max, main.shield_strength_cost,
-		str(snappedf(20.0 + (main.shield_strength_level * 0.4), 0.1)) + "%")
+		str(snappedf(50.0 + (main.shield_strength_level * 0.3), 0.1)) + "%")
 	_update_btn(main.get_node("UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldMultButton"),
 		"SHLD MULT", main.shield_mult_level, main.shield_mult_max, main.shield_mult_cost,
 		"+" + str(main.shield_mult_level * 10) + "%")
@@ -49,7 +49,7 @@ func update_ui():
 		str(main.regen_amt_level) + " hp")
 	_update_btn(main.get_node("UI/UpgradePanel/ColumnsContainer/HPColumn/RegenSpdButton"),
 		"REGEN SPD", main.regen_spd_level, main.regen_spd_max, main.regen_spd_cost,
-		str(snappedf(max(0.5, 5.0 - (main.regen_spd_level * 0.045)), 0.01)) + "s")
+		str(snappedf($UpgradeManager.calc_regen_spd(main.regen_spd_level), 0.01)) + "s")
 	_update_btn(main.get_node("UI/UpgradePanel/ColumnsContainer/HPColumn/HPMultButton"),
 		"HP MULT", main.hp_mult_level, main.hp_mult_max, main.hp_mult_cost,
 		"+" + str(main.hp_mult_level * 10) + "%")

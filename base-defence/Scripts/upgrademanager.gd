@@ -26,6 +26,12 @@ func calc_atk_spd(level: int) -> float:
 	for i in range(level):
 		rate += 0.115 / (1.0 + i * 0.02)
 	return rate
+	
+func calc_regen_spd(level: int) -> float:
+	var interval = 5.0
+	for i in range(level):
+		interval -= 0.25 / (1.0 + i * 0.05)
+	return max(0.5, interval)
 
 # ── ATK Handlers ──────────────────────────────
 func on_atk_spd(buy_amount: int):
@@ -86,8 +92,8 @@ func on_shield(buy_amount: int):
 		main.shield_level += 1
 		main.shield_upgrades += 1
 		main.shield_cost = calc_cost(28, main.shield_upgrades, false)
-		base.max_shield += 50.0
-		base.shield += 50.0
+		base.max_shield += 20.0
+		base.shield += 20.0
 	base._update_combat_ui()
 	main._update_ui()
 
@@ -98,7 +104,7 @@ func on_shield_regen(buy_amount: int):
 		main.shield_regen_level += 1
 		main.shield_regen_upgrades += 1
 		main.shield_regen_cost = calc_cost(35, main.shield_regen_upgrades, true)
-		base.shield_regen_interval = max(0.5, 5.0 - (main.shield_regen_level * 0.045))
+		base.shield_regen_interval = calc_regen_spd(main.shield_regen_level)
 	main._update_ui()
 
 func on_shield_strength(buy_amount: int):
@@ -159,7 +165,7 @@ func on_regen_spd(buy_amount: int):
 		main.regen_spd_level += 1
 		main.regen_spd_upgrades += 1
 		main.regen_spd_cost = calc_cost(25, main.regen_spd_upgrades, true)
-		base.regen_interval = max(0.5, 5.0 - (main.regen_spd_level * 0.045))
+		base.regen_interval = calc_regen_spd(main.regen_spd_level)
 	main._update_ui()
 
 func on_hp_mult(buy_amount: int):
@@ -244,12 +250,12 @@ func apply_workshop_floors():
 	main.crit_dmg_level = d["floor_crit_dmg"]
 	base.crit_damage += main.crit_dmg_level * 0.10
 	main.shield_level = d["floor_shield"]
-	base.max_shield += main.shield_level * 50.0
-	base.shield += main.shield_level * 50.0
+	base.max_shield += main.shield_level * 20.0
+	base.shield += main.shield_level * 20.0
 	main.shield_regen_level = d["floor_shield_regen"]
-	base.shield_regen_interval = max(0.5, 5.0 - (main.shield_regen_level * 0.045))
+	base.shield_regen_interval = str(snappedf(calc_regen_spd(main.shield_regen_level), 0.01)) + "s"
 	main.shield_strength_level = d["floor_shield_strength"]
-	base.shield_strength += main.shield_strength_level * 0.004
+	base.shield_strength += main.shield_strength_level * 0.003
 	main.shield_mult_level = d["floor_shield_mult"]
 	base.shield_multiplier += main.shield_mult_level * 0.1
 	main.evasion_level = d["floor_evasion"]
@@ -259,7 +265,7 @@ func apply_workshop_floors():
 	main.regen_amt_level = d["floor_regen_amt"]
 	base.hp_regen += main.regen_amt_level * 1.0
 	main.regen_spd_level = d["floor_regen_spd"]
-	base.regen_interval = max(0.5, 5.0 - (main.regen_spd_level * 0.045))
+	base.regen_interval = str(snappedf(calc_regen_spd(main.regen_spd_level), 0.01)) + "s"
 	main.heal_mult_level = d["floor_heal_mult"]
 	base.heal_multiplier += main.heal_mult_level * 0.1
 	main.hp_mult_level = d["floor_hp_mult"]

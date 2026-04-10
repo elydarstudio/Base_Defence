@@ -54,10 +54,10 @@ func _draw():
 
 func scale_to_phase(p: int):
 	var hp_mult = pow(5.0, p - 1)
-	var dmg_mult = pow(4.6, p - 1)
 	health = 400.0 * hp_mult
 	max_health = health
-	attack_damage = 22.0 * dmg_mult
+	var phase_scale = 1.0 if p <= 1 else 0.85
+	attack_damage = 22.0 * pow(2.25, p - 1) * phase_scale
 	attack_interval = 1.5
 	speed = min(50.0 + (p * 2.0), 110.0)
 	crit_chance = 0.3

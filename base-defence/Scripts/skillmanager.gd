@@ -30,7 +30,7 @@ const SKILL_DATA = {
 		# slot 4 — right continues
 		{"name": "Momentum",           "desc": "Bullets deal more damage the further they travel. Base 0.05% per pixel, +0.02% per shard level. Synergizes with Range."},
 		# slot 5 — keystone
-		{"name": "Keystone: Multishot","desc": "Fires 3 bullets simultaneously. Side shots start at 20% damage, +10% per shard level. Requires Range + Momentum."},
+		{"name": "Keystone: Chain","desc": "Bullets chain to nearby enemies on hit. 2 jumps base, +1 per 5 shard levels. Damage falls off per jump, scaling with shard level. Requires Range + Momentum."},
 	],
 	"bulwark": [
 		# slot 0

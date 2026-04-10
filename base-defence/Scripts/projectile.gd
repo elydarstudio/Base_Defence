@@ -31,17 +31,15 @@ func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D, crit: b
 
 	var poly = $Visual
 	if is_keystone:
-		# Railgun — thin rectangle oriented to travel direction
 		poly.polygon = PackedVector2Array([
-			Vector2(-10, -1.5), Vector2(10, -1.5),
-			Vector2(10, 1.5), Vector2(-10, 1.5)
+			Vector2(-14, -2), Vector2(14, -2),
+			Vector2(14, 2), Vector2(-14, 2)
 		])
-		
 		poly.color = Color(0.6, 0.95, 1.0)
 	elif is_crit:
 		poly.polygon = PackedVector2Array([
-			Vector2(-6, -1.5), Vector2(6, -1.5),
-			Vector2(6, 1.5), Vector2(-6, 1.5)
+			Vector2(-4, -4), Vector2(4, -4),
+			Vector2(4, 4), Vector2(-4, 4)
 		])
 		poly.color = Color(1.0, 0.4, 0.0)
 	elif is_rapidfire:
@@ -103,8 +101,8 @@ func setup_chain(dir: Vector2, spd: float, dmg: float, tgt: Node2D, mn: Node):
 	# Chain hop visual — same style as railgun, slightly smaller
 	var poly = $Visual
 	poly.polygon = PackedVector2Array([
-		Vector2(-4, -1), Vector2(4, -1),
-		Vector2(4, 1), Vector2(-4, 1)
+		Vector2(-8, -2), Vector2(8, -2),
+		Vector2(8, 2), Vector2(-8, 2)
 	])
 	poly.color = Color(0.6, 0.95, 1.0)
 
