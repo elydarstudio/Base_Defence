@@ -20,5 +20,5 @@ const TIPS = {
 	"gold_mult": "Multiplies all gold earned from kills.",
 	"lp_gain": "Flat LP added to every LP source — waves and drops.",
 	"lp_mult": "Multiplies all LP earned from waves and drops.",
-	"lp_drop": "% chance an enemy drop includes a Legacy Point. Caps at 40%.",
+	"lp_drop": "% chance an enemy drop includes a Legacy Point. Base 10%, caps at 60%. Early levels give bigger gains.",
 }

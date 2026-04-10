@@ -63,9 +63,9 @@ const STAT_LABELS = {
 	"WFloorHealMult": ["HEAL MULT", "+10%"],
 	"WFloorHPMult": ["HP MULT", "+10%"],
 	"WFloorGoldPerKill": ["GOLD/KILL", "+1g"],
-	"WFloorGoldMult": ["GOLD MULT", "+10%"],
+	"WFloorGoldMult": ["GOLD MULT", "+5%"],
 	"WFloorLpGain": ["LP GAIN", "+1 LP"],
-	"WFloorLpMult": ["LP MULT", "+10%"],
+	"WFloorLpMult": ["LP MULT", "+5%"],
 	"WFloorLpDrop": ["LP CHANCE", "+0.55%"],
 }
 
@@ -183,10 +183,10 @@ func _update_ui():
 		"WFloorHealMult": "+" + str(levels["WFloorHealMult"] * 10) + "%",
 		"WFloorHPMult": "+" + str(levels["WFloorHPMult"] * 10) + "%",
 		"WFloorGoldPerKill": "+" + str(levels["WFloorGoldPerKill"]) + "g",
-		"WFloorGoldMult": "+" + str(levels["WFloorGoldMult"] * 10) + "%",
+		"WFloorGoldMult": "+" + str(levels["WFloorGoldMult"] * 5) + "%",
 		"WFloorLpGain": str(1 + levels["WFloorLpGain"]) + " LP",
-		"WFloorLpMult": "+" + str(levels["WFloorLpMult"] * 10) + "%",
-		"WFloorLpDrop": str(snappedf(5.0 + (levels["WFloorLpDrop"] * 0.55), 0.1)) + "%",
+		"WFloorLpMult": "+" + str(levels["WFloorLpMult"] * 5) + "%",
+		"WFloorLpDrop": str(snappedf(calc_drop_chance(levels["WFloorLpDrop"]) * 100, 0.1)) + "%",
 	}
 
 	for btn_name in levels:
@@ -273,6 +273,12 @@ func calc_regen_spd(level: int) -> float:
 	for i in range(level):
 		interval -= 0.25 / (1.0 + i * 0.05)
 	return max(0.5, interval)
+	
+func calc_drop_chance(level: int) -> float:
+	var chance = 0.10
+	for i in range(level):
+		chance += 0.008 / (1.0 + i * 0.03)
+	return min(0.60, chance)
 
 func _on_core_tab_pressed():
 	$CoreContent.visible = true
