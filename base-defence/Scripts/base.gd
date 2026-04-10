@@ -32,6 +32,7 @@ var fire_timer: float = 0.0
 var bullet_scene: PackedScene
 var main_node: Node = null
 var bullets_targeting: Dictionary = {}
+var _hovered: bool = false
 
 # ── Attack counter ────────────────────────────
 var _attack_counter: int = 0
@@ -49,6 +50,19 @@ func _draw_base():
 		points.append(Vector2(cos(angle), sin(angle)) * 30)
 	poly.polygon = points
 	poly.color = Color(0.2, 0.6, 1.0)
+
+func _draw():
+	if _hovered:
+		var r = detection_radius + MechanicsManager.get_range_bonus()
+		draw_arc(Vector2.ZERO, r, 0, TAU, 64, Color(1.0, 1.0, 1.0, 0.15), 1.5)
+
+func _input(event):
+	if event is InputEventMouseMotion:
+		var local_pos = to_local(get_global_mouse_position())
+		var was_hovered = _hovered
+		_hovered = local_pos.length() < 30.0
+		if _hovered != was_hovered:
+			queue_redraw()		
 
 func _update_combat_ui():
 	$HPLabel.text = "HP: " + str(max(0, int(health))) + "/" + str(int(get_effective_max_hp()))
@@ -80,6 +94,7 @@ func _process(delta):
 			shield = min(shield + regen_amount, effective_max_shield)
 			if main_node != null:
 				_update_combat_ui()
+				queue_redraw()
 
 func get_effective_max_hp() -> float:
 	return max_health * hp_multiplier
@@ -158,14 +173,13 @@ func _get_best_target() -> Node2D:
 			return existing_target
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var closest = null
-	var closest_dist = detection_radius
+	var closest_dist = detection_radius + MechanicsManager.get_range_bonus() 
 	for e in enemies:
 		var d = global_position.distance_to(e.global_position)
 		if d < closest_dist:
 			closest_dist = d
 			closest = e
 	return closest
-
 
 func take_damage(amount: float):
 	if randf() < evasion:

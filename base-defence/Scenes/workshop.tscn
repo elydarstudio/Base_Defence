@@ -69,14 +69,6 @@ offset_right = 340.0
 offset_bottom = 190.0
 text = "CORE UPGRADES"
 
-[node name="SkillTab" type="Button" parent="." unique_id=275156841]
-layout_mode = 0
-offset_left = 380.0
-offset_top = 140.0
-offset_right = 660.0
-offset_bottom = 190.0
-text = "SKILL TREE"
-
 [node name="CoreContent" type="Control" parent="." unique_id=293469516]
 anchors_preset = 0
 offset_top = 200.0
@@ -257,7 +249,6 @@ one_shot = true
 
 [connection signal="pressed" from="BackButton" to="." method="_on_back_button_pressed"]
 [connection signal="pressed" from="CoreTab" to="." method="_on_core_tab_pressed"]
-[connection signal="pressed" from="SkillTab" to="." method="_on_skill_tab_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorAtkSpd" to="." method="_on_w_floor_atk_spd_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorDmg" to="." method="_on_w_floor_dmg_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorDmgMult" to="." method="_on_w_floor_dmg_mult_pressed"]
