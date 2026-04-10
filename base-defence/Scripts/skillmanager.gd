@@ -238,7 +238,7 @@ func barrage_focus_bonus_per_hit() -> float:
 func barrage_range_bonus() -> float:
 	if not is_skill_unlocked(TREE_BARRAGE, 3): return 0.0
 	var level = get_skill_level(TREE_BARRAGE, 3)
-	return 100.0 + (level * 15.0)
+	return 50.0 + (level * 25.0)
 
 # Slot 4 — Momentum
 # Bonus damage % per pixel traveled. Base 0.05%, +0.02% per shard level.
@@ -247,12 +247,19 @@ func barrage_momentum_bonus_per_pixel() -> float:
 	var level = get_skill_level(TREE_BARRAGE, 4)
 	return 0.0005 + (level * 0.0002)
 
-# Slot 5 — Keystone: Multishot
-# Side shot damage as % of main shot. Base 20%, +10% per shard level.
-func barrage_multishot_side_damage() -> float:
+# Slot 5 — Keystone: Chain
+# Number of chain jumps after initial hit. Base 2, +1 per 5 shard levels.
+func barrage_chain_jump_count() -> int:
+	if not is_skill_unlocked(TREE_BARRAGE, 5): return 0
+	var level = get_skill_level(TREE_BARRAGE, 5)
+	return 2 + int(level / 5)
+
+# Slot 5 — Keystone: Chain
+# Damage falloff per jump. Base 60%, +2% per shard level, no cap.
+func barrage_chain_falloff() -> float:
 	if not is_skill_unlocked(TREE_BARRAGE, 5): return 0.0
 	var level = get_skill_level(TREE_BARRAGE, 5)
-	return 0.20 + (level * 0.10)
+	return 0.60 + (level * 0.02)
 
 # ── BULWARK ───────────────────────────────────
 

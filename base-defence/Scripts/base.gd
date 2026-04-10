@@ -32,7 +32,6 @@ var fire_timer: float = 0.0
 var bullet_scene: PackedScene
 var main_node: Node = null
 var bullets_targeting: Dictionary = {}
-var _hovered: bool = false
 
 # ── Attack counter ────────────────────────────
 var _attack_counter: int = 0
@@ -50,19 +49,6 @@ func _draw_base():
 		points.append(Vector2(cos(angle), sin(angle)) * 30)
 	poly.polygon = points
 	poly.color = Color(0.2, 0.6, 1.0)
-
-func _draw():
-	if _hovered:
-		var r = (detection_radius + MechanicsManager.get_range_bonus()) * 0.95
-		draw_arc(Vector2.ZERO, r, 0, TAU, 64, Color(1.0, 1.0, 1.0, 0.15), 1.5)
-
-func _input(event):
-	if event is InputEventMouseMotion:
-		var local_pos = to_local(get_global_mouse_position())
-		var was_hovered = _hovered
-		_hovered = local_pos.length() < 30.0
-		if _hovered != was_hovered:
-			queue_redraw()		
 
 func _update_combat_ui():
 	$HPLabel.text = "HP: " + str(max(0, int(health))) + "/" + str(int(get_effective_max_hp()))
@@ -123,9 +109,7 @@ func _try_shoot():
 	var bullets_en_route = bullets_targeting.get(target, 0)
 	var bleed = SkillManager.barrage_bleed_dot()
 	var total_bleed = bleed * _get_bleed_tick_count()
-	var estimated_travel = global_position.distance_to(target.global_position)
-	var momentum_bonus = MechanicsManager.get_momentum_bonus(estimated_travel)
-	var effective_damage = ((bullet_damage * damage_multiplier) + total_bleed) * (1.0 + momentum_bonus)
+	var effective_damage = (bullet_damage * damage_multiplier) + total_bleed
 	var hits_needed = ceil(target.health / effective_damage)
 	if bullets_en_route >= hits_needed:
 		return
@@ -147,15 +131,21 @@ func _try_shoot():
 		final_damage += final_damage * focus_bonus
 	MechanicsManager.register_hit(target)
 
+	# Barrage keystone — double speed, pass keystone flag and main node
+	var is_barrage_keystone = SkillManager.get_active_keystone() == SkillManager.TREE_BARRAGE
+	var shoot_speed = bullet_speed * 2.0 if is_barrage_keystone else bullet_speed
+
 	b.setup(
 		global_position.direction_to(target.global_position),
-		bullet_speed,
+		shoot_speed,
 		final_damage,
 		target,
 		self,
 		is_crit,
 		is_rapidfire,
-		bleed
+		bleed,
+		is_barrage_keystone,
+		main_node
 	)
 	bullets_targeting[target] = bullets_en_route + 1
 	if main_node: AudioManager.play(AudioManager.sfx_shoot)
@@ -167,22 +157,21 @@ func _get_best_target() -> Node2D:
 			continue
 		var bleed = SkillManager.barrage_bleed_dot()
 		var total_bleed = bleed * _get_bleed_tick_count()
-		var estimated_travel = global_position.distance_to(existing_target.global_position)
-		var momentum_bonus = MechanicsManager.get_momentum_bonus(estimated_travel)
-		var effective_damage = ((bullet_damage * damage_multiplier) + total_bleed) * (1.0 + momentum_bonus)
+		var effective_damage = (bullet_damage * damage_multiplier) + total_bleed
 		var hits_needed = ceil(existing_target.health / effective_damage)
 		var en_route = bullets_targeting.get(existing_target, 0)
 		if en_route < hits_needed:
 			return existing_target
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var closest = null
-	var closest_dist = detection_radius + MechanicsManager.get_range_bonus()
+	var closest_dist = detection_radius
 	for e in enemies:
 		var d = global_position.distance_to(e.global_position)
-		if d <= closest_dist:
+		if d < closest_dist:
 			closest_dist = d
 			closest = e
 	return closest
+
 
 func take_damage(amount: float):
 	if randf() < evasion:

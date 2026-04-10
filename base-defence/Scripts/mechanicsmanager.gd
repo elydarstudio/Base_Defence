@@ -136,8 +136,6 @@ func get_damage_bonuses(base_node: Node) -> Array:
 	var flat: float = 0.0
 	var pct: float = 0.0
 
-
-
 	# Fortify — flat per 100 max shield
 	flat += get_fortify_bonus(base_node.max_shield * base_node.shield_multiplier)
 
@@ -152,8 +150,61 @@ func get_damage_bonuses(base_node: Node) -> Array:
 
 	return [flat, pct]
 
+# ── Momentum — Barrage Slot 4 ─────────────────
+# Returns bonus damage multiplier based on distance traveled.
 func get_momentum_bonus(distance: float) -> float:
 	var bonus_per_pixel = SkillManager.barrage_momentum_bonus_per_pixel()
 	if bonus_per_pixel == 0.0:
 		return 0.0
 	return distance * bonus_per_pixel
+
+# ── Chain — Barrage Keystone ──────────────────
+# Called from projectile.gd on hit when barrage keystone active.
+# Sequentially hops to nearby enemies, spawning a visual projectile
+# and dealing falloff damage with a damage number on each hop.
+const CHAIN_HOP_RADIUS: float = 250.0
+const CHAIN_HOP_SPEED: float = 800.0
+
+func trigger_chain(hit_enemy: Node, damage: float, main_node: Node, chain_scene: PackedScene) -> void:
+	var jump_count = SkillManager.barrage_chain_jump_count()
+	var falloff    = SkillManager.barrage_chain_falloff()
+	if jump_count <= 0:
+		return
+	var hit_enemies: Array = [hit_enemy]
+	var current_enemy = hit_enemy
+	var current_damage = damage * falloff
+	for i in range(jump_count):
+		if not is_instance_valid(current_enemy):
+			break
+		var next = _find_chain_target(current_enemy, hit_enemies, main_node)
+		if next == null:
+			break
+		hit_enemies.append(next)
+		# Spawn visual chain projectile
+		var proj = chain_scene.instantiate()
+		main_node.add_child(proj)
+		proj.global_position = current_enemy.global_position
+		proj.setup_chain(
+			current_enemy.global_position.direction_to(next.global_position),
+			CHAIN_HOP_SPEED,
+			current_damage,
+			next,
+			main_node
+		)
+		current_enemy  = next
+		current_damage = current_damage * falloff
+
+func _find_chain_target(from_enemy: Node, already_hit: Array, main_node: Node) -> Node:
+	var enemies  = main_node.get_tree().get_nodes_in_group("enemies")
+	var closest  = null
+	var closest_dist = CHAIN_HOP_RADIUS
+	for e in enemies:
+		if e in already_hit:
+			continue
+		if not is_instance_valid(e):
+			continue
+		var d = from_enemy.global_position.distance_to(e.global_position)
+		if d < closest_dist:
+			closest_dist = d
+			closest = e
+	return closest
