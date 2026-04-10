@@ -164,7 +164,7 @@ const UNLOCK_REQUIREMENTS = {
 	"CritDmgButton": 4,
 	"RegenSpdButton": 3,
 	"HealMultButton": 4,
-	"ShieldMultButton": 4,
+	"ShieldMultButton": 3,
 	"EvasionButton": 4,
 	"LegacyDropButton": 4,
 	"DEFLocked": 999,

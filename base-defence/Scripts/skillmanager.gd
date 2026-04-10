@@ -268,7 +268,7 @@ func barrage_chain_falloff() -> float:
 func bulwark_fortify_damage_per_100_shield() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 0): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 0)
-	return 2.0 + (level * 1.0)
+	return 2.0 * (1.0 + level * 0.05)
 
 # Slot 1 — Ironclad
 # Max bonus damage % at full shield. Base 15%, +5% per shard level.

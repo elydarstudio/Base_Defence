@@ -87,7 +87,7 @@ const WORKSHOP_UNLOCK_REQUIREMENTS = {
 	"WFloorCritDmg": 4,
 	"WFloorRegenSpd": 3,
 	"WFloorHealMult": 4,
-	"WFloorShieldMult": 4,
+	"WFloorShieldMult": 3,
 	"WFloorEvasion": 4,
 	"WFloorLpDrop": 4,
 }

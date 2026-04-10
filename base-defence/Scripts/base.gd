@@ -131,6 +131,10 @@ func _try_shoot():
 		final_damage += final_damage * focus_bonus
 	MechanicsManager.register_hit(target)
 
+	var damage_bonuses = MechanicsManager.get_damage_bonuses(self)
+	final_damage += damage_bonuses[0]
+	final_damage *= (1.0 + damage_bonuses[1])
+
 	# Barrage keystone — double speed, pass keystone flag and main node
 	var is_barrage_keystone = SkillManager.get_active_keystone() == SkillManager.TREE_BARRAGE
 	var shoot_speed = bullet_speed * 2.0 if is_barrage_keystone else bullet_speed
@@ -184,7 +188,8 @@ func take_damage(amount: float):
 		var absorbed = min(shield, amount)
 		shield_absorbed = absorbed
 		shield -= absorbed
-		hp_damage = amount * (1.0 - shield_strength)
+		var overflow = amount - absorbed
+		hp_damage = (absorbed * (1.0 - shield_strength)) + overflow
 
 	health -= hp_damage
 	health = max(0.0, health)
