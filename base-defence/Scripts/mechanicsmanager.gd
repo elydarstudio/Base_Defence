@@ -136,6 +136,8 @@ func get_damage_bonuses(base_node: Node) -> Array:
 	var flat: float = 0.0
 	var pct: float = 0.0
 
+
+
 	# Fortify — flat per 100 max shield
 	flat += get_fortify_bonus(base_node.max_shield * base_node.shield_multiplier)
 
@@ -149,3 +151,9 @@ func get_damage_bonuses(base_node: Node) -> Array:
 	pct += get_surge_bonus(base_node.health, base_node.get_effective_max_hp())
 
 	return [flat, pct]
+
+func get_momentum_bonus(distance: float) -> float:
+	var bonus_per_pixel = SkillManager.barrage_momentum_bonus_per_pixel()
+	if bonus_per_pixel == 0.0:
+		return 0.0
+	return distance * bonus_per_pixel

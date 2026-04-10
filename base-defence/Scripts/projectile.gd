@@ -9,6 +9,7 @@ var base: Node2D = null
 var is_crit: bool = false
 var is_rapidfire: bool = false
 var bleed_damage: float = 0.0
+var _distance_traveled: float = 0.0
 
 func _ready():
 	area_entered.connect(_on_area_entered)
@@ -47,6 +48,7 @@ func _process(delta):
 	if is_instance_valid(target):
 		direction = global_position.direction_to(target.global_position)
 	position += direction * speed * delta
+	_distance_traveled += speed * delta
 	lifetime -= delta
 	if lifetime <= 0:
 		_resolve()
@@ -58,8 +60,10 @@ func _on_area_entered(area):
 			_resolve()
 			queue_free()
 			return
+		var momentum_bonus = MechanicsManager.get_momentum_bonus(_distance_traveled)
+		var final_damage = damage * (1.0 + momentum_bonus)
 		var type = "crit" if is_crit else "normal"
-		area.take_damage(damage, type)
+		area.take_damage(final_damage, type)
 		if bleed_damage > 0.0:
 			area.apply_bleed(bleed_damage, is_crit)
 		_resolve()

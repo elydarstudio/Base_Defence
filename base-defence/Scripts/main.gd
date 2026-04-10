@@ -287,7 +287,11 @@ func add_currency(amount: int, enemy_pos: Vector2 = Vector2.ZERO):
 func spawn_damage_number(amount: float, pos: Vector2, type: String = "normal"):
 	var dn = damage_number_scene.instantiate()
 	$DamageLayer.add_child(dn)
-	dn.setup(amount, pos, type)
+	var screen_pos = $Camera2D.get_screen_center_position()
+	var zoom = $Camera2D.zoom.x
+	var center = get_viewport().get_visible_rect().size / 2
+	var adjusted_pos = center + (pos - screen_pos) * zoom
+	dn.setup(amount, adjusted_pos, type)
 
 # ── Game Over ─────────────────────────────────
 func trigger_game_over():

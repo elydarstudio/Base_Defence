@@ -53,7 +53,7 @@ func _draw_base():
 
 func _draw():
 	if _hovered:
-		var r = detection_radius + MechanicsManager.get_range_bonus()
+		var r = (detection_radius + MechanicsManager.get_range_bonus()) * 0.95
 		draw_arc(Vector2.ZERO, r, 0, TAU, 64, Color(1.0, 1.0, 1.0, 0.15), 1.5)
 
 func _input(event):
@@ -94,7 +94,6 @@ func _process(delta):
 			shield = min(shield + regen_amount, effective_max_shield)
 			if main_node != null:
 				_update_combat_ui()
-				queue_redraw()
 
 func get_effective_max_hp() -> float:
 	return max_health * hp_multiplier
@@ -124,7 +123,9 @@ func _try_shoot():
 	var bullets_en_route = bullets_targeting.get(target, 0)
 	var bleed = SkillManager.barrage_bleed_dot()
 	var total_bleed = bleed * _get_bleed_tick_count()
-	var effective_damage = (bullet_damage * damage_multiplier) + total_bleed
+	var estimated_travel = global_position.distance_to(target.global_position)
+	var momentum_bonus = MechanicsManager.get_momentum_bonus(estimated_travel)
+	var effective_damage = ((bullet_damage * damage_multiplier) + total_bleed) * (1.0 + momentum_bonus)
 	var hits_needed = ceil(target.health / effective_damage)
 	if bullets_en_route >= hits_needed:
 		return
@@ -166,17 +167,19 @@ func _get_best_target() -> Node2D:
 			continue
 		var bleed = SkillManager.barrage_bleed_dot()
 		var total_bleed = bleed * _get_bleed_tick_count()
-		var effective_damage = (bullet_damage * damage_multiplier) + total_bleed
+		var estimated_travel = global_position.distance_to(existing_target.global_position)
+		var momentum_bonus = MechanicsManager.get_momentum_bonus(estimated_travel)
+		var effective_damage = ((bullet_damage * damage_multiplier) + total_bleed) * (1.0 + momentum_bonus)
 		var hits_needed = ceil(existing_target.health / effective_damage)
 		var en_route = bullets_targeting.get(existing_target, 0)
 		if en_route < hits_needed:
 			return existing_target
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var closest = null
-	var closest_dist = detection_radius + MechanicsManager.get_range_bonus() 
+	var closest_dist = detection_radius + MechanicsManager.get_range_bonus()
 	for e in enemies:
 		var d = global_position.distance_to(e.global_position)
-		if d < closest_dist:
+		if d <= closest_dist:
 			closest_dist = d
 			closest = e
 	return closest
