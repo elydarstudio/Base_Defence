@@ -271,12 +271,19 @@ func bulwark_fortify_damage_per_100_shield() -> float:
 	return 2.0 * (1.0 + level * 0.05)
 
 # Slot 1 — Ironclad
-# Max bonus damage % at full shield. Base 15%, +5% per shard level.
-func bulwark_ironclad_max_bonus() -> float:
+# Flat bonus on unlock +5, +5 per shard level.
+# Tier % bonus applied after flat, based on shield %.
+func bulwark_ironclad_flat_bonus() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 1): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 1)
-	return 0.15 + (level * 0.05)
+	return 5.0 + (level * 5.0)
 
+func bulwark_ironclad_tier_bonus(shield_pct: float) -> float:
+	if not is_skill_unlocked(TREE_BULWARK, 1): return 0.0
+	if shield_pct <= 0.25: return 0.15
+	elif shield_pct <= 0.50: return 0.30
+	elif shield_pct <= 0.75: return 0.45
+	else: return 0.60
 # Slot 2 — Zap
 # Damage per zap on shield regen tick. Base 8, +3 per shard level.
 func bulwark_zap_damage() -> float:

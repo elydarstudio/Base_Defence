@@ -45,15 +45,15 @@ func get_fortify_bonus(max_shield: float) -> float:
 		return 0.0
 	return floor(max_shield / 100.0) * bonus_per_100
 
-# ── Ironclad — Bulwark Slot 1 ─────────────────
-# Bonus damage % based on current shield uptime.
-func get_ironclad_bonus(shield: float, max_shield: float) -> float:
-	var max_bonus = SkillManager.bulwark_ironclad_max_bonus()
-	if max_bonus == 0.0 or max_shield == 0.0:
-		return 0.0
+func get_ironclad_bonus(shield: float, max_shield: float) -> Array:
+	if not SkillManager.is_skill_unlocked(SkillManager.TREE_BULWARK, 1):
+		return [0.0, 0.0]
+	if max_shield == 0.0:
+		return [0.0, 0.0]
 	var shield_pct = clamp(shield / max_shield, 0.0, 1.0)
-	return shield_pct * max_bonus
-
+	var flat = SkillManager.bulwark_ironclad_flat_bonus()
+	var pct = SkillManager.bulwark_ironclad_tier_bonus(shield_pct)
+	return [flat, pct]
 # ── Zap — Bulwark Slot 2 ──────────────────────
 # Called from base.gd on every shield regen tick.
 # Fires damage at nearest enemy.
@@ -136,11 +136,13 @@ func get_damage_bonuses(base_node: Node) -> Array:
 	var flat: float = 0.0
 	var pct: float = 0.0
 
-	# Fortify — flat per 100 max shield
+	# Fortify — flat per 100 effective max shield
 	flat += get_fortify_bonus(base_node.max_shield * base_node.shield_multiplier)
 
-	# Ironclad — % based on shield uptime
-	pct += get_ironclad_bonus(base_node.shield, base_node.max_shield * base_node.shield_multiplier)
+	# Ironclad — flat on unlock + shard levels, then % tier applied after flat in base.gd
+	var ironclad = get_ironclad_bonus(base_node.shield, base_node.max_shield * base_node.shield_multiplier)
+	flat += ironclad[0]
+	pct += ironclad[1]
 
 	# Vampiric — flat per regen amount
 	flat += get_vampiric_bonus(base_node.hp_regen)
