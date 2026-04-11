@@ -294,15 +294,19 @@ func bulwark_zap_damage() -> float:
 func bulwark_rampart_shield_per_kill() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 3): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 3)
-	return 3.0 + (level * 1.0)
+	return 20.0 + (level * 20.0)
 
 # Slot 4 — Knockback
-# Knockback force in pixels. Base 80px, +20px per shard level.
-func bulwark_knockback_force() -> float:
+# Force scales with shield strength. shield_strength * 400px.
+func bulwark_knockback_force(shield_strength: float) -> float:
+	if not is_skill_unlocked(TREE_BULWARK, 4): return 0.0
+	return shield_strength * 300.0
+
+# Damage scales with shield strength + shard level.
+func bulwark_knockback_damage(shield_strength: float) -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 4): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 4)
-	return 80.0 + (level * 20.0)
-
+	return shield_strength * (50.0 + (level * 25.0))
 # Slot 5 — Keystone: Pulse
 # AOE pulse — radius and damage handled in base.gd when implemented.
 # Query kept here for gating purposes.

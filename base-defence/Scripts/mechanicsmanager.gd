@@ -73,12 +73,34 @@ func trigger_zap(_main_node: Node, base_node: Node, target: Node) -> void:
 # ── Rampart — Bulwark Slot 3 ──────────────────
 # Called from enemy _die(). Restores flat shield to base.
 func trigger_rampart(base_node: Node) -> void:
-	var restore = SkillManager.bulwark_rampart_shield_per_kill()
-	if restore == 0.0:
+	if not SkillManager.is_skill_unlocked(SkillManager.TREE_BULWARK, 3):
 		return
+	var restore = SkillManager.bulwark_rampart_shield_per_kill()
 	var effective_max = base_node.max_shield * base_node.shield_multiplier
 	base_node.shield = min(base_node.shield + restore, effective_max)
 	base_node._update_combat_ui()
+
+# ── Knockback — Bulwark Slot 4 ────────────────
+# Called from EnemyMechanics when enemy hits base.
+# Pushes enemy away and deals chip damage.
+func trigger_knockback(enemy: Node, base_node: Node, apply_force: bool = true) -> void:
+	if not SkillManager.is_skill_unlocked(SkillManager.TREE_BULWARK, 4):
+		return
+	var damage = SkillManager.bulwark_knockback_damage(base_node.shield_strength)
+	if apply_force:
+		var force = SkillManager.bulwark_knockback_force(base_node.shield_strength)
+		if force > 0.0:
+			var dir = base_node.global_position.direction_to(enemy.global_position)
+			var target_pos = enemy.global_position + (dir * force)
+			if enemy.has_meta("knockback_tween"):
+				var old_tween = enemy.get_meta("knockback_tween")
+				if old_tween is Tween:
+					old_tween.kill()
+			var tween = enemy.create_tween()
+			enemy.set_meta("knockback_tween", tween)
+			tween.tween_property(enemy, "global_position", target_pos, 0.2)
+	if damage > 0.0:
+		EnemyMechanics.take_damage(enemy, damage, "normal")
 
 # ── Vampiric — Siphon Slot 0 ──────────────────
 # Bonus flat damage based on HP regen investment.

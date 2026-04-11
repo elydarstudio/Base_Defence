@@ -88,6 +88,9 @@ func _tick_attack(enemy: Node, delta: float) -> void:
 			enemy.base_node.take_damage(enemy.attack_damage)
 			if enemy.main_node != null:
 				enemy.base_node._update_combat_ui()
+			MechanicsManager.trigger_knockback(enemy, enemy.base_node)
+			if SkillManager.is_skill_unlocked(SkillManager.TREE_BULWARK, 4):
+				enemy.attack_timer = enemy.attack_interval
 
 func _tick_boss_attack(enemy: Node, delta: float) -> void:
 	if enemy.base_node == null:
@@ -103,6 +106,7 @@ func _tick_boss_attack(enemy: Node, delta: float) -> void:
 			enemy.base_node.take_damage(final_damage)
 			if enemy.main_node != null:
 				enemy.base_node._update_combat_ui()
+			MechanicsManager.trigger_knockback(enemy, enemy.base_node, false)
 
 # ── Health bar drawing ────────────────────────────────────────────────────────
 func draw_health_bar(enemy: Node, bar_width: float, bar_height: float, offset: Vector2) -> void:
