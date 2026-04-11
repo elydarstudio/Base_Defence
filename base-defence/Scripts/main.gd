@@ -146,33 +146,6 @@ var legacy_drop_cost: int = 35
 var legacy_drop_max: int = 100
 var legacy_drop_upgrades: int = 0
 
-# ── Unlock Requirements ───────────────────────
-const UNLOCK_REQUIREMENTS = {
-	"ATKSpdButton": 0,
-	"DmgButton": 0,
-	"MaxHPButton": 1,
-	"RegenAmtButton": 1,
-	"ShieldButton": 2,
-	"ShieldRegenButton": 2,
-	"GoldPerKillButton": 2,
-	"LPGainButton": 2,
-	"DmgMultButton": 1,
-	"HPMultButton": 3,
-	"ShieldStrengthButton": 3,
-	"GoldMultButton": 3,
-	"LegacyMultButton": 3,
-	"CritChanceButton": 3,
-	"CritDmgButton": 4,
-	"RegenSpdButton": 3,
-	"HealMultButton": 4,
-	"ShieldMultButton": 3,
-	"EvasionButton": 4,
-	"LegacyDropButton": 4,
-	"DEFLocked": 999,
-	"HPLocked": 999,
-	"UTILLocked": 999,
-}
-
 # ── Ready ─────────────────────────────────────
 func _ready():
 	phase = SaveManager.data.get("start_phase", 1)
@@ -184,7 +157,7 @@ func _ready():
 	$UpgradeManager.setup(self, $Base)
 	$UpgradeManager.apply_workshop_floors()
 	$UIManager.setup(self, $Base)
-	$UIManager.apply_unlock_level()
+	$UIManager.apply_tier_visibility()
 	$SpawnManager.setup(self)
 	enemies_to_spawn = $SpawnManager.get_wave_enemy_count()
 	tooltip_buttons = {
@@ -237,7 +210,6 @@ func _advance_wave():
 	wave_complete = false
 	if wave % 10 != 0:
 		$UIManager.wave_complete_flash()
-	_check_unlock_progression()
 	var lp_total = $EconomyManager.calc_wave_lp(lp_gain_level, legacy_mult_level)
 	run_lp += lp_total
 	SaveManager.data["legacy_points"] += lp_total
@@ -260,14 +232,6 @@ func on_boss_killed():
 	if phase > SaveManager.data["max_start_phase"]:
 		SaveManager.data["max_start_phase"] = phase
 	SaveManager.save_game()
-	var unlock = SaveManager.data["unlock_level"]
-	if phase == 2 and unlock < 2:
-		SaveManager.data["unlock_level"] = 2
-		SaveManager.save_game()
-	elif phase == 3 and unlock < 3:
-		SaveManager.data["unlock_level"] = 3
-		SaveManager.save_game()
-	$UIManager.apply_unlock_level()
 	SkillManager.on_boss_killed(phase)
 	_update_ui()
 
@@ -329,16 +293,6 @@ func _input(event):
 	if event is InputEventMagnifyGesture:
 		zoom_level = clamp(zoom_level / event.factor, ZOOM_MIN, ZOOM_MAX)
 		$Camera2D.zoom = Vector2(zoom_level, zoom_level)
-
-func _check_unlock_progression():
-	var unlock = SaveManager.data["unlock_level"]
-	if unlock == 0 and wave % 10 == 0:
-		SaveManager.data["unlock_level"] = 1
-		SaveManager.save_game()
-	if unlock < 4 and phase >= 3:
-		SaveManager.data["unlock_level"] = 4
-		SaveManager.save_game()
-		$UIManager.apply_unlock_level()
 
 # ── Pause ─────────────────────────────────────
 func _on_pause_button_pressed():

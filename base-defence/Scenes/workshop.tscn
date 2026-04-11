@@ -99,13 +99,29 @@ custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "DMG"
 
+[node name="ATKTier1Unlock" type="Button" parent="CoreContent/ColumnsContainer/ATKColumn" unique_id=1659905079]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "DMG"
+
 [node name="WFloorDmgMult" type="Button" parent="CoreContent/ColumnsContainer/ATKColumn" unique_id=626366009]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "DMG MULT
 "
 
+[node name="ATKTier2Unlock" type="Button" parent="CoreContent/ColumnsContainer/ATKColumn" unique_id=660762915]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "DMG MULT
+"
+
 [node name="WFloorCritChance" type="Button" parent="CoreContent/ColumnsContainer/ATKColumn" unique_id=2141359131]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "CRIT %"
+
+[node name="ATKTier3Unlock" type="Button" parent="CoreContent/ColumnsContainer/ATKColumn" unique_id=666811622]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "CRIT %"
@@ -132,14 +148,28 @@ custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "REGEN AMT"
 
-[node name="WFloorHPMult" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=318670114]
+[node name="HPTier1Unlock" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=783649608]
+custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
-text = "HP MULT"
+text = "REGEN AMT"
 
 [node name="WFloorRegenSpd" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=227387477]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "REGEN SPD"
+
+[node name="HPTier2Unlock" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=1895556165]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "REGEN SPD"
+
+[node name="WFloorHPMult" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=318670114]
+layout_mode = 2
+text = "HP MULT"
+
+[node name="HPTier3Unlock" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=2086876763]
+layout_mode = 2
+text = "HP MULT"
 
 [node name="WFloorHealMult" type="Button" parent="CoreContent/ColumnsContainer/HPColumn" unique_id=278061399]
 custom_minimum_size = Vector2(173, 0)
@@ -163,11 +193,24 @@ custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "SHLD REGEN"
 
+[node name="DEFTier1Unlock" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=1413069200]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "SHLD REGEN"
+
 [node name="WFloorShieldStrength" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=1276483042]
 layout_mode = 2
 text = "SHLD STR"
 
+[node name="DEFTier2Unlock" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=809284990]
+layout_mode = 2
+text = "SHLD STR"
+
 [node name="WFloorShieldMult" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=969545979]
+layout_mode = 2
+text = "SHLD MULT"
+
+[node name="DEFTier3Unlock" type="Button" parent="CoreContent/ColumnsContainer/DEFColumn" unique_id=1643467180]
 layout_mode = 2
 text = "SHLD MULT"
 
@@ -187,7 +230,18 @@ custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "GOLD/KILL"
 
+[node name="UTILTier1Unlock" type="Button" parent="CoreContent/ColumnsContainer/UTILColumn" unique_id=1445329417]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "GOLD/KILL"
+
 [node name="WFloorLpGain" type="Button" parent="CoreContent/ColumnsContainer/UTILColumn" unique_id=1012840961]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "LP GAIN
+"
+
+[node name="UTILTier2Unlock" type="Button" parent="CoreContent/ColumnsContainer/UTILColumn" unique_id=445418282]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "LP GAIN
@@ -199,6 +253,11 @@ layout_mode = 2
 text = "GOLD MULT"
 
 [node name="WFloorLpMult" type="Button" parent="CoreContent/ColumnsContainer/UTILColumn" unique_id=219950210]
+custom_minimum_size = Vector2(173, 0)
+layout_mode = 2
+text = "LP MULT"
+
+[node name="UTILTier3Unlock" type="Button" parent="CoreContent/ColumnsContainer/UTILColumn" unique_id=991519269]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
 text = "LP MULT"
@@ -251,22 +310,34 @@ one_shot = true
 [connection signal="pressed" from="CoreTab" to="." method="_on_core_tab_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorAtkSpd" to="." method="_on_w_floor_atk_spd_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorDmg" to="." method="_on_w_floor_dmg_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/ATKTier1Unlock" to="." method="_on_atk_tier1_unlock_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorDmgMult" to="." method="_on_w_floor_dmg_mult_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/ATKTier2Unlock" to="." method="_on_atk_tier2_unlock_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorCritChance" to="." method="_on_w_floor_crit_chance_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/ATKTier3Unlock" to="." method="_on_atk_tier3_unlock_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/ATKColumn/WFloorCritDmg" to="." method="_on_w_floor_crit_dmg_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorMaxHP" to="." method="_on_w_floor_max_hp_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorRegenAmt" to="." method="_on_w_floor_regen_amt_pressed"]
-[connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorHPMult" to="." method="_on_w_floor_hp_mult_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/HPTier1Unlock" to="." method="_on_hp_tier1_unlock_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorRegenSpd" to="." method="_on_w_floor_regen_spd_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/HPTier2Unlock" to="." method="_on_hp_tier2_unlock_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorHPMult" to="." method="_on_w_floor_hp_mult_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/HPTier3Unlock" to="." method="_on_hp_tier3_unlock_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/HPColumn/WFloorHealMult" to="." method="_on_w_floor_heal_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShield" to="." method="_on_w_floor_shield_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShieldRegen" to="." method="_on_w_floor_shield_regen_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/DEFTier1Unlock" to="." method="_on_def_tier1_unlock_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShieldStrength" to="." method="_on_w_floor_shield_strength_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/DEFTier2Unlock" to="." method="_on_def_tier2_unlock_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorShieldMult" to="." method="_on_w_floor_shield_mult_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/DEFTier3Unlock" to="." method="_on_def_tier3_unlock_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/DEFColumn/WFloorEvasion" to="." method="_on_w_floor_evasion_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorGoldPerKill" to="." method="_on_w_floor_gold_per_kill_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/UTILTier1Unlock" to="." method="_on_util_tier1_unlock_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorLpGain" to="." method="_on_w_floor_lp_gain_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/UTILTier2Unlock" to="." method="_on_util_tier2_unlock_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorGoldMult" to="." method="_on_w_floor_gold_mult_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorLpMult" to="." method="_on_w_floor_lp_mult_pressed"]
+[connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/UTILTier3Unlock" to="." method="_on_util_tier3_unlock_pressed"]
 [connection signal="pressed" from="CoreContent/ColumnsContainer/UTILColumn/WFloorLpDrop" to="." method="_on_w_floor_lp_drop_pressed"]
 [connection signal="timeout" from="TooltipTimer" to="." method="_on_tooltip_timer_timeout"]

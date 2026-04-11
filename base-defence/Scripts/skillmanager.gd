@@ -108,8 +108,6 @@ func get_visual_tier(tree: String) -> int:
 
 # ── Token earning ──────────────────────────────
 func on_boss_killed(phase: int):
-	if phase < 3:
-		return
 	if SaveManager.data["phase_tokens_earned"] >= MAX_TOKENS:
 		return
 	SaveManager.data["phase_tokens"] += 1

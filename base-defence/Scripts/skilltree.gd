@@ -31,7 +31,7 @@ const TREE_DATA = {
 	},
 }
 
-const LOCK_REQUIREMENT: int = 1  # phase_tokens_earned >= 1
+const LOCK_REQUIREMENT: int = 0  # phase_tokens_earned >= 1
 
 var _current_tree: String = ""
 var _select_scroll: ScrollContainer

@@ -87,6 +87,35 @@ func _update_btn(btn: Button, label: String, level: int, max_level: int, cost: i
 		btn.text = label + "\nLv" + str(level + 1) + " - " + str(cost) + "g\n" + stat
 		btn.disabled = main.currency < cost
 
+# ── Tier Visibility ───────────────────────────
+func apply_tier_visibility():
+	var d = SaveManager.data
+	var panel = main.get_node("UI/UpgradePanel/ColumnsContainer")
+	# ATK
+	var atk = d["unlock_atk_tier"]
+	panel.get_node("ATKColumn/DmgMultButton").visible = atk >= 1
+	panel.get_node("ATKColumn/CritChanceButton").visible = atk >= 2
+	panel.get_node("ATKColumn/CritDmgButton").visible = atk >= 3
+
+	# DEF
+	var def_ = d["unlock_def_tier"]
+	panel.get_node("DEFColumn/ShieldStrengthButton").visible = def_ >= 1
+	panel.get_node("DEFColumn/ShieldMultButton").visible = def_ >= 2
+	panel.get_node("DEFColumn/EvasionButton").visible = def_ >= 3
+
+	# HP
+	var hp = d["unlock_hp_tier"]
+	panel.get_node("HPColumn/RegenSpdButton").visible = hp >= 1
+	panel.get_node("HPColumn/HPMultButton").visible = hp >= 2
+	panel.get_node("HPColumn/HealMultButton").visible = hp >= 3
+
+	# UTIL
+	var util = d["unlock_util_tier"]
+	panel.get_node("UTILColumn/LPGainButton").visible = util >= 1
+	panel.get_node("UTILColumn/GoldMultButton").visible = util >= 2
+	panel.get_node("UTILColumn/LegacyMultButton").visible = util >= 2
+	panel.get_node("UTILColumn/LegacyDropButton").visible = util >= 3
+
 # ── Screen Flash ──────────────────────────────
 func flash_screen(color: Color, alpha: float = 0.3, duration: float = 0.4):
 	var flash = main.get_node("UI/ScreenFlash")
@@ -130,17 +159,3 @@ func show_tooltip_instant(key: String):
 		x = mouse.x - panel_width - 10
 	main.get_node("UI/TooltipPanel").position = Vector2(x, mouse.y - 60)
 	main.get_node("UI/TooltipPanel").visible = true
-
-# ── Unlock System ─────────────────────────────
-func apply_unlock_level():
-	var unlock = SaveManager.data["unlock_level"]
-	var columns = ["ATKColumn", "DEFColumn", "HPColumn", "UTILColumn"]
-	for col in columns:
-		var col_node = main.get_node("UI/UpgradePanel/ColumnsContainer").get_node(col)
-		for child in col_node.get_children():
-			if child is Button:
-				var required = main.UNLOCK_REQUIREMENTS.get(child.name, 3)
-				child.visible = unlock >= required
-	main.get_node("UI/UpgradePanel/ColumnsContainer/DEFColumn/DEFLocked").visible = unlock < 1
-	main.get_node("UI/UpgradePanel/ColumnsContainer/HPColumn/HPLocked").visible = unlock < 2
-	main.get_node("UI/UpgradePanel/ColumnsContainer/UTILColumn/UTILLocked").visible = unlock < 2

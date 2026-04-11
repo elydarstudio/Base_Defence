@@ -178,23 +178,18 @@ text = "MAX HP"
 layout_mode = 2
 text = "REGEN AMT"
 
-[node name="HPMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1589441328]
-layout_mode = 2
-text = "HP MULT"
-
 [node name="RegenSpdButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1551357618]
 layout_mode = 2
 text = "REGEN SPD
 "
 
+[node name="HPMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1589441328]
+layout_mode = 2
+text = "HP MULT"
+
 [node name="HealMultButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=1091774583]
 layout_mode = 2
 text = "HEAL MULT"
-
-[node name="HPLocked" type="Button" parent="UI/UpgradePanel/ColumnsContainer/HPColumn" unique_id=774946569]
-layout_mode = 2
-disabled = true
-text = "🔒 Reach Wave 10"
 
 [node name="DEFColumn" type="VBoxContainer" parent="UI/UpgradePanel/ColumnsContainer" unique_id=1057792319]
 custom_minimum_size = Vector2(173, 0)
@@ -225,11 +220,6 @@ text = "SHLD MULT"
 layout_mode = 2
 text = "EVASION"
 
-[node name="DEFLocked" type="Button" parent="UI/UpgradePanel/ColumnsContainer/DEFColumn" unique_id=97852440]
-layout_mode = 2
-disabled = true
-text = "🔒 Beat Boss 1"
-
 [node name="UTILColumn" type="VBoxContainer" parent="UI/UpgradePanel/ColumnsContainer" unique_id=1483226718]
 custom_minimum_size = Vector2(173, 0)
 layout_mode = 2
@@ -259,11 +249,6 @@ text = "LP MULT"
 [node name="LegacyDropButton" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=2048114754]
 layout_mode = 2
 text = "LP CHANCE"
-
-[node name="UTILLocked" type="Button" parent="UI/UpgradePanel/ColumnsContainer/UTILColumn" unique_id=367772935]
-layout_mode = 2
-disabled = true
-text = "🔒 Beat Boss 1"
 
 [node name="PauseButton" type="Button" parent="UI" unique_id=1040772999]
 offset_left = 650.0
@@ -385,8 +370,8 @@ script = ExtResource("6_7mycd")
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/ATKColumn/CritDmgButton" to="." method="_on_crit_dmg_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/MaxHPButton" to="." method="_on_max_hp_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/RegenAmtButton" to="." method="_on_regen_amt_button_pressed"]
-[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/HPMultButton" to="." method="_on_hp_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/RegenSpdButton" to="." method="_on_regen_spd_button_pressed"]
+[connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/HPMultButton" to="." method="_on_hp_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/HPColumn/HealMultButton" to="." method="_on_heal_mult_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldButton" to="." method="_on_shield_button_pressed"]
 [connection signal="pressed" from="UI/UpgradePanel/ColumnsContainer/DEFColumn/ShieldRegenButton" to="." method="_on_shield_regen_button_pressed"]

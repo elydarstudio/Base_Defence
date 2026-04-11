@@ -3,7 +3,6 @@ extends Node
 const SAVE_PATH = "user://phasefall_save.cfg"
 
 var data = {
-	"unlock_level": 0,
 	"legacy_points": 0,
 	"best_phase": 0,
 	# Workshop floors
@@ -24,31 +23,33 @@ var data = {
 	"floor_heal_mult": 0,
 	"floor_gold_per_kill": 0,
 	"floor_gold_mult": 0,
-	"floor_lp_gain": 0,  # replaces floor_legacy_per_wave
+	"floor_lp_gain": 0,
 	"floor_legacy_mult": 0,
 	"floor_legacy_drop": 0,
+	# Workshop tier unlocks
+	"unlock_atk_tier": 0,
+	"unlock_def_tier": 0,
+	"unlock_hp_tier": 0,
+	"unlock_util_tier": 0,
 	# Phase start
 	"max_start_phase": 1,
 	"start_phase": 1,
 	# Skill currencies
-"phase_tokens": 0,
-"phase_tokens_earned": 0,
-"phase_shards": 0,
-"phase_shards_earned": 0,
-"lifetime_kills": 0,
-
-# Unlocked skills (which slot indices are unlocked, 0-based)
-"skill_barrage_unlocked": [],
-"skill_bulwark_unlocked": [],
-"skill_siphon_unlocked": [],
-
-# Skill levels (level per slot, index matches unlocked array)
-"skill_barrage_levels": [],
-"skill_bulwark_levels": [],
-"skill_siphon_levels": [],
-
-# Active keystone
-"active_keystone": "",
+	"phase_tokens": 0,
+	"phase_tokens_earned": 0,
+	"phase_shards": 0,
+	"phase_shards_earned": 0,
+	"lifetime_kills": 0,
+	# Unlocked skills (which slot indices are unlocked, 0-based)
+	"skill_barrage_unlocked": [],
+	"skill_bulwark_unlocked": [],
+	"skill_siphon_unlocked": [],
+	# Skill levels (level per slot, index matches unlocked array)
+	"skill_barrage_levels": [],
+	"skill_bulwark_levels": [],
+	"skill_siphon_levels": [],
+	# Active keystone
+	"active_keystone": "",
 }
 
 
@@ -65,16 +66,16 @@ func save_game():
 
 func load_game():
 	var config = ConfigFile.new()
-	
+
 	if config.load(SAVE_PATH) != OK:
 		print("No save found, creating new one")
 		save_game()
 		# DO NOT RETURN — let the game continue with defaults
-	
+
 	for key in data:
 		if config.has_section_key("save", key):
 			data[key] = config.get_value("save", key)
-	
+
 	# Migrate old saves — fix any keys that should be arrays but aren't
 	var array_keys = ["skill_barrage_unlocked", "skill_bulwark_unlocked", "skill_siphon_unlocked",
 					  "skill_barrage_levels", "skill_bulwark_levels", "skill_siphon_levels"]
@@ -83,7 +84,7 @@ func load_game():
 			data[key] = []
 	if typeof(data["active_keystone"]) != TYPE_STRING:
 		data["active_keystone"] = ""
-	
+
 	# Migrate missing keys added in updates
 	if not data.has("phase_tokens"):
 		data["phase_tokens"] = 0
@@ -95,6 +96,14 @@ func load_game():
 		data["phase_shards_earned"] = 0
 	if not data.has("lifetime_kills"):
 		data["lifetime_kills"] = 0
+	if not data.has("unlock_atk_tier"):
+		data["unlock_atk_tier"] = 0
+	if not data.has("unlock_def_tier"):
+		data["unlock_def_tier"] = 0
+	if not data.has("unlock_hp_tier"):
+		data["unlock_hp_tier"] = 0
+	if not data.has("unlock_util_tier"):
+		data["unlock_util_tier"] = 0
 
 func reset_save():
 	for key in data:
