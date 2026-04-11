@@ -29,6 +29,7 @@ var shield_regen_timer: float = 0.0
 var shield_strength: float = 0.5
 var shield_multiplier: float = 1.0
 var evasion: float = 0.0
+var pulse_boss_charge: float = 0.0
 
 # Zap
 var zap_timer: float = 0.0
@@ -66,7 +67,7 @@ func _process(delta):
 	var fire_interval: float
 	if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK:
 		var level = main_node.attack_speed_level if main_node != null else 0
-		fire_interval = max(0.25, 3.0 - (level * 0.015))
+		fire_interval = max(1.0, 5.0 - (pow(level, 0.6) / pow(100.0, 0.6)) * 4.0)
 	else:
 		fire_interval = 1.0 / fire_rate
 	if fire_timer >= fire_interval:
@@ -248,6 +249,14 @@ func take_damage(amount: float):
 	health = max(0.0, health)
 	AudioManager.play(AudioManager.sfx_take_damage)
 
+	# Pulse charge — store incoming damage as bonus for next pulse
+	if SkillManager.bulwark_pulse_unlocked():
+		var is_boss_present = get_tree().get_nodes_in_group("boss").size() > 0
+		if is_boss_present:
+			pulse_boss_charge += amount * SkillManager.bulwark_pulse_charge_pct_boss()
+		else:
+			pulse_boss_charge += amount * SkillManager.bulwark_pulse_charge_pct_normal()
+
 	if main_node != null:
 		_update_combat_ui()
 		if shield_absorbed > 0:
@@ -257,7 +266,7 @@ func take_damage(amount: float):
 	if health <= 0:
 		if main_node != null:
 			main_node.trigger_game_over()
-
+			
 func _fire_pulse():
 	if pulse_scene == null:
 		return
@@ -278,7 +287,12 @@ func _fire_pulse():
 	final_damage += damage_bonuses[0]
 	final_damage *= (1.0 + damage_bonuses[1])
 
+	# Consume stored charge
+	final_damage += pulse_boss_charge
+	pulse_boss_charge = 0.0
+
 	var bleed = SkillManager.barrage_bleed_dot()
+	var level = main_node.attack_speed_level if main_node != null else 0
 	var pulse_speed = 80.0 + (fire_rate * 40.0)
 
 	p.setup(

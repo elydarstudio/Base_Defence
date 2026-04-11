@@ -43,6 +43,8 @@ func _check_hits():
 			if bleed_damage > 0.0:
 				e.apply_bleed(bleed_damage, is_crit)
 			MechanicsManager.register_hit(e)
+			if is_instance_valid(base_node):
+				base_node.bullets_targeting.erase(e)
 
 func _draw():
 	# Pulse ring

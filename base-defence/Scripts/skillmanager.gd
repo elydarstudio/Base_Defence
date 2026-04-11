@@ -44,7 +44,7 @@ const SKILL_DATA = {
 		# slot 4 — right continues
 		{"name": "Knockback",          "desc": "Hitting an enemy pushes them back. Force scales with Shield Strength. Base 80px, +20px per shard level. Synergizes with Momentum."},
 		# slot 5 — keystone
-		{"name": "Keystone: Pulse",    "desc": "Replaces bullets with AOE pulse. Fires on ATK SPD interval, hits all enemies in radius. Requires Rampart + Knockback."},
+		{"name": "Keystone: Pulse", "desc": "Replaces bullets with an expanding AOE pulse. Incoming damage charges the next pulse — 10% from normal enemies, 100% from bosses. Shard levels increase charge conversion. Requires Rampart + Knockback."},
 	],
 	"siphon": [
 		# slot 0
@@ -310,9 +310,21 @@ func bulwark_knockback_damage(shield_strength: float) -> float:
 # Slot 5 — Keystone: Pulse
 # AOE pulse — radius and damage handled in base.gd when implemented.
 # Query kept here for gating purposes.
+# Slot 5 — Keystone: Pulse
 func bulwark_pulse_unlocked() -> bool:
 	return is_skill_unlocked(TREE_BULWARK, 5)
 
+# Regular enemy charge conversion %. Base 10%, +2.5% per shard level.
+func bulwark_pulse_charge_pct_normal() -> float:
+	if not is_skill_unlocked(TREE_BULWARK, 5): return 0.0
+	var level = get_skill_level(TREE_BULWARK, 5)
+	return 0.10 + (level * 0.025)
+
+# Boss charge conversion %. Base 100%, +10% per shard level.
+func bulwark_pulse_charge_pct_boss() -> float:
+	if not is_skill_unlocked(TREE_BULWARK, 5): return 0.0
+	var level = get_skill_level(TREE_BULWARK, 5)
+	return 1.00 + (level * 0.10)
 # ── SIPHON ────────────────────────────────────
 
 # Slot 0 — Vampiric

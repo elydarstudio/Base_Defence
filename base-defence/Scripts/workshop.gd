@@ -167,7 +167,7 @@ func _update_ui():
 	}
 
 	var current_vals = {
-		"WFloorAtkSpd": str(snappedf(max(0.25, 3.0 / calc_atk_spd(levels["WFloorAtkSpd"])), 0.01)) + "s interval" if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK else str(snappedf(calc_atk_spd(levels["WFloorAtkSpd"]), 0.01)) + "/s",
+		"WFloorAtkSpd": str(snappedf(max(1.0, 5.0 - (pow(levels["WFloorAtkSpd"], 0.6) / pow(100.0, 0.6)) * 4.0), 0.01)) + "s interval" if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK else str(snappedf(calc_atk_spd(levels["WFloorAtkSpd"]), 0.01)) + "/s",
 		"WFloorDmg": str(10 + levels["WFloorDmg"]),
 		"WFloorDmgMult": "+" + str(levels["WFloorDmgMult"] * 10) + "%",
 		"WFloorCritChance": str(snappedf(levels["WFloorCritChance"] * 0.8, 0.1)) + "%",
@@ -190,7 +190,7 @@ func _update_ui():
 	}
 
 	var dynamic_gains = {
-		"WFloorAtkSpd": "-" + str(snappedf(max(0.25, 3.0 / calc_atk_spd(levels["WFloorAtkSpd"])) - max(0.25, 3.0 / calc_atk_spd(levels["WFloorAtkSpd"] + 1)), 0.01)) + "s" if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK else "+" + str(snappedf(calc_atk_spd(levels["WFloorAtkSpd"] + 1) - calc_atk_spd(levels["WFloorAtkSpd"]), 0.01)) + "/s",
+		"WFloorAtkSpd": "-" + str(snappedf(max(1.0, 5.0 - (pow(levels["WFloorAtkSpd"], 0.6) / pow(100.0, 0.6)) * 4.0) - max(1.0, 5.0 - (pow(levels["WFloorAtkSpd"] + 1, 0.6) / pow(100.0, 0.6)) * 4.0), 0.001)) + "s" if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK else "+" + str(snappedf(calc_atk_spd(levels["WFloorAtkSpd"] + 1) - calc_atk_spd(levels["WFloorAtkSpd"]), 0.01)) + "/s",
 		"WFloorShieldRegen": "-" + str(snappedf(calc_regen_spd(levels["WFloorShieldRegen"]) - calc_regen_spd(levels["WFloorShieldRegen"] + 1), 0.001)) + "s",
 		"WFloorRegenSpd": "-" + str(snappedf(calc_regen_spd(levels["WFloorRegenSpd"]) - calc_regen_spd(levels["WFloorRegenSpd"] + 1), 0.001)) + "s",
 		"WFloorLpDrop": "+" + str(snappedf((calc_drop_chance(levels["WFloorLpDrop"] + 1) - calc_drop_chance(levels["WFloorLpDrop"])) * 100, 0.001)) + "%",

@@ -13,13 +13,11 @@ func update_ui():
 	main.get_node("UI/WaveLabel").text = "Wave: " + str(main.wave) + " | Phase: " + str(main.phase)
 	var atk_spd_display: String
 	if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK:
-		var interval = max(0.25, 3.0 / base.fire_rate)
+		var level = main.attack_speed_level
+		var interval = max(1.0, 5.0 - (pow(level, 0.6) / pow(100.0, 0.6)) * 4.0)
 		atk_spd_display = str(snappedf(interval, 0.01)) + "s interval"
 	else:
 		atk_spd_display = str(snappedf(base.fire_rate, 0.01)) + "/s"
-	_update_btn(main.get_node("UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton"),
-		"ATK SPD", main.attack_speed_level, main.attack_speed_max, main.attack_speed_cost,
-		atk_spd_display)
 	_update_btn(main.get_node("UI/UpgradePanel/ColumnsContainer/ATKColumn/ATKSpdButton"),
 		"ATK SPD", main.attack_speed_level, main.attack_speed_max, main.attack_speed_cost,
 		atk_spd_display)
