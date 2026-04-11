@@ -15,7 +15,7 @@ var damage_multiplier: float = 1.0
 # Health
 var max_health: float = 100.0
 var health: float = 100.0
-var hp_regen: float = 0.0
+var hp_regen: float = 1.0
 var hp_regen_timer: float = 0.0
 var regen_interval: float = 5.0
 var hp_multiplier: float = 1.0
