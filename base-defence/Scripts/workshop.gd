@@ -47,26 +47,26 @@ const BUTTON_MAP = {
 }
 
 const STAT_LABELS = {
-	"WFloorAtkSpd": ["ATK SPD", "+0.125/s"],
+	"WFloorAtkSpd": ["ATK SPD", ""],
 	"WFloorDmg": ["DMG", "+1 dmg"],
 	"WFloorDmgMult": ["DMG MULT", "+10%"],
 	"WFloorCritChance": ["CRIT %", "+0.8%"],
 	"WFloorCritDmg": ["CRIT DMG", "+10%"],
 	"WFloorShield": ["SHIELD", "+20"],
-	"WFloorShieldRegen": ["SHLD RGN", "-0.045s interval"],
+	"WFloorShieldRegen": ["SHLD RGN", ""],
 	"WFloorShieldStrength": ["SHLD STR", "+0.4%"],
 	"WFloorShieldMult": ["SHLD MULT", "+10%"],
 	"WFloorEvasion": ["EVASION", "+0.2%"],
 	"WFloorMaxHP": ["MAX HP", "+10"],
 	"WFloorRegenAmt": ["REGEN AMT", "+1hp"],
-	"WFloorRegenSpd": ["REGEN SPD", "-0.045s"],
+	"WFloorRegenSpd": ["REGEN SPD", ""],
 	"WFloorHealMult": ["HEAL MULT", "+10%"],
 	"WFloorHPMult": ["HP MULT", "+10%"],
 	"WFloorGoldPerKill": ["GOLD/KILL", "+1g"],
 	"WFloorGoldMult": ["GOLD MULT", "+5%"],
 	"WFloorLpGain": ["LP GAIN", "+1 LP"],
 	"WFloorLpMult": ["LP MULT", "+5%"],
-	"WFloorLpDrop": ["LP CHANCE", "+0.55%"],
+	"WFloorLpDrop": ["LP CHANCE", ""],
 }
 
 const WORKSHOP_UNLOCK_REQUIREMENTS = {
@@ -167,7 +167,7 @@ func _update_ui():
 	}
 
 	var current_vals = {
-		"WFloorAtkSpd": str(snappedf(1.0 + (levels["WFloorAtkSpd"] * 0.125), 0.01)) + "/s",
+		"WFloorAtkSpd": str(snappedf(max(0.25, 3.0 / calc_atk_spd(levels["WFloorAtkSpd"])), 0.01)) + "s interval" if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK else str(snappedf(calc_atk_spd(levels["WFloorAtkSpd"]), 0.01)) + "/s",
 		"WFloorDmg": str(10 + levels["WFloorDmg"]),
 		"WFloorDmgMult": "+" + str(levels["WFloorDmgMult"] * 10) + "%",
 		"WFloorCritChance": str(snappedf(levels["WFloorCritChance"] * 0.8, 0.1)) + "%",
@@ -189,6 +189,13 @@ func _update_ui():
 		"WFloorLpDrop": str(snappedf(calc_drop_chance(levels["WFloorLpDrop"]) * 100, 0.1)) + "%",
 	}
 
+	var dynamic_gains = {
+		"WFloorAtkSpd": "-" + str(snappedf(max(0.25, 3.0 / calc_atk_spd(levels["WFloorAtkSpd"])) - max(0.25, 3.0 / calc_atk_spd(levels["WFloorAtkSpd"] + 1)), 0.01)) + "s" if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK else "+" + str(snappedf(calc_atk_spd(levels["WFloorAtkSpd"] + 1) - calc_atk_spd(levels["WFloorAtkSpd"]), 0.01)) + "/s",
+		"WFloorShieldRegen": "-" + str(snappedf(calc_regen_spd(levels["WFloorShieldRegen"]) - calc_regen_spd(levels["WFloorShieldRegen"] + 1), 0.001)) + "s",
+		"WFloorRegenSpd": "-" + str(snappedf(calc_regen_spd(levels["WFloorRegenSpd"]) - calc_regen_spd(levels["WFloorRegenSpd"] + 1), 0.001)) + "s",
+		"WFloorLpDrop": "+" + str(snappedf((calc_drop_chance(levels["WFloorLpDrop"] + 1) - calc_drop_chance(levels["WFloorLpDrop"])) * 100, 0.001)) + "%",
+	}
+
 	for btn_name in levels:
 		var level = levels[btn_name]
 		var base_cost = COSTS[btn_name]
@@ -199,7 +206,8 @@ func _update_ui():
 		var btn = _find_button(btn_name)
 		if btn == null:
 			continue
-		btn.text = label + " (Lv" + str(level) + ")\n" + current + " | " + per_level + "\n" + str(cost) + " LP"
+		var display_per_level = dynamic_gains.get(btn_name, per_level)
+		btn.text = label + " (Lv" + str(level) + ")\n" + current + " | " + display_per_level + "\n" + str(cost) + " LP"
 		btn.disabled = lp < cost
 
 func _find_button(btn_name: String) -> Button:
@@ -279,6 +287,12 @@ func calc_drop_chance(level: int) -> float:
 	for i in range(level):
 		chance += 0.008 / (1.0 + i * 0.03)
 	return min(0.60, chance)
+
+func calc_atk_spd(level: int) -> float:
+	var rate = 1.0
+	for i in range(level):
+		rate += 0.115 / (1.0 + i * 0.008)
+	return rate
 
 func _on_core_tab_pressed():
 	$CoreContent.visible = true

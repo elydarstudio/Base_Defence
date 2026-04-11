@@ -24,7 +24,7 @@ func calc_cost_mult(base_cost: int, level: int) -> int:
 func calc_atk_spd(level: int) -> float:
 	var rate = 1.0
 	for i in range(level):
-		rate += 0.115 / (1.0 + i * 0.02)
+		rate += 0.115 / (1.0 + i * 0.008)
 	return rate
 	
 func calc_regen_spd(level: int) -> float:

@@ -1,5 +1,7 @@
 extends Area2D
 
+var pulse_scene: PackedScene
+
 @export var fire_rate: float = 1.0
 @export var bullet_speed: float = 400.0
 @export var bullet_damage: float = 10.0
@@ -61,7 +63,13 @@ func _update_combat_ui():
 
 func _process(delta):
 	fire_timer += delta
-	if fire_timer >= 1.0 / fire_rate:
+	var fire_interval: float
+	if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK:
+		var level = main_node.attack_speed_level if main_node != null else 0
+		fire_interval = max(0.25, 3.0 - (level * 0.015))
+	else:
+		fire_interval = 1.0 / fire_rate
+	if fire_timer >= fire_interval:
 		fire_timer = 0.0
 		_try_shoot()
 
@@ -87,11 +95,11 @@ func _process(delta):
 				_update_combat_ui()
 
 	# Zap
-	if not is_instance_valid(current_bullet_target):
-		current_bullet_target = null
 	if SkillManager.is_skill_unlocked(SkillManager.TREE_BULWARK, 2):
 		if not is_instance_valid(zap_target) or zap_target == current_bullet_target:
 			zap_target = _get_closest_enemy(current_bullet_target)
+		if not is_instance_valid(current_bullet_target):
+			current_bullet_target = null
 		zap_timer += delta
 		if zap_timer >= shield_regen_interval:
 			zap_timer = 0.0
@@ -145,9 +153,14 @@ func _get_committed_damage(target: Node) -> float:
 	return total_bleed + zap_committed
 
 func _try_shoot():
+	if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK:
+		_fire_pulse()
+		return
+	# existing bullet logic unchanged below
 	var target = _get_best_target()
 	if target == null or bullet_scene == null:
 		return
+	# ... rest of existing _try_shoot() unchanged
 	current_bullet_target = target
 	var bullets_en_route = bullets_targeting.get(target, 0)
 	var committed = _get_committed_damage(target)
@@ -244,6 +257,41 @@ func take_damage(amount: float):
 	if health <= 0:
 		if main_node != null:
 			main_node.trigger_game_over()
+
+func _fire_pulse():
+	if pulse_scene == null:
+		return
+	var p = pulse_scene.instantiate()
+	get_parent().add_child(p)
+	p.global_position = global_position
+
+	var is_crit = randf() < crit_chance
+	var final_damage = bullet_damage * damage_multiplier
+	if is_crit:
+		final_damage *= crit_damage
+
+	var is_rapidfire = _tick_attack_counter() and SkillManager.barrage_rapidfire_bonus() > 0.0
+	if is_rapidfire:
+		final_damage += final_damage * SkillManager.barrage_rapidfire_bonus()
+
+	var damage_bonuses = MechanicsManager.get_damage_bonuses(self)
+	final_damage += damage_bonuses[0]
+	final_damage *= (1.0 + damage_bonuses[1])
+
+	var bleed = SkillManager.barrage_bleed_dot()
+	var pulse_speed = 80.0 + (fire_rate * 40.0)
+
+	p.setup(
+		pulse_speed,
+		final_damage,
+		detection_radius,
+		self,
+		main_node,
+		is_crit,
+		is_rapidfire,
+		bleed
+	)
+	if main_node: AudioManager.play(AudioManager.sfx_shoot)
 
 func add_shield(amount: float):
 	max_shield += amount

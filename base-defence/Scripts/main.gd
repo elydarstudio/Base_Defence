@@ -3,6 +3,7 @@ extends Node2D
 # ── Scenes ────────────────────────────────────
 var bullet_scene = preload("res://Scenes/projectile.tscn")
 var damage_number_scene = preload("res://Scenes/damage_number.tscn")
+var pulse_scene = preload("res://Scenes/pulse.tscn")
 
 # ── Game Speed ────────────────────────────────
 var speed_index: int = 0
@@ -177,6 +178,7 @@ func _ready():
 	phase = SaveManager.data.get("start_phase", 1)
 	difficulty = (phase - 1) * 10
 	$Base.set_bullet_scene(bullet_scene)
+	$Base.pulse_scene = pulse_scene
 	$Base.set_main(self)
 	$EconomyManager.setup(self)
 	$UpgradeManager.setup(self, $Base)
