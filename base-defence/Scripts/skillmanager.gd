@@ -252,7 +252,7 @@ func barrage_momentum_bonus_per_pixel() -> float:
 func barrage_chain_jump_count() -> int:
 	if not is_skill_unlocked(TREE_BARRAGE, 5): return 0
 	var level = get_skill_level(TREE_BARRAGE, 5)
-	return 2 + int(level / 5)
+	return 2 + int(level / 5.0)
 
 # Slot 5 — Keystone: Chain
 # Damage falloff per jump. Base 60%, +2% per shard level, no cap.
@@ -272,24 +272,22 @@ func bulwark_fortify_damage_per_100_shield() -> float:
 
 # Slot 1 — Ironclad
 # Flat bonus on unlock +5, +5 per shard level.
-# Tier % bonus applied after flat, based on shield %.
 func bulwark_ironclad_flat_bonus() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 1): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 1)
 	return 5.0 + (level * 5.0)
 
-func bulwark_ironclad_tier_bonus(shield_pct: float) -> float:
+# Max % bonus at full shield. Base 60%, no shard scaling — shield % does the scaling.
+func bulwark_ironclad_max_bonus() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 1): return 0.0
-	if shield_pct <= 0.25: return 0.15
-	elif shield_pct <= 0.50: return 0.30
-	elif shield_pct <= 0.75: return 0.45
-	else: return 0.60
+	return 0.60
+	
 # Slot 2 — Zap
 # Damage per zap on shield regen tick. Base 8, +3 per shard level.
 func bulwark_zap_damage() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 2): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 2)
-	return 8.0 + (level * 3.0)
+	return 0.05 + (level * 0.01)
 
 # Slot 3 — Rampart
 # Shield restored per kill. Base 3, +1 per shard level.

@@ -52,26 +52,23 @@ func get_ironclad_bonus(shield: float, max_shield: float) -> Array:
 		return [0.0, 0.0]
 	var shield_pct = clamp(shield / max_shield, 0.0, 1.0)
 	var flat = SkillManager.bulwark_ironclad_flat_bonus()
-	var pct = SkillManager.bulwark_ironclad_tier_bonus(shield_pct)
+	var max_pct_bonus = SkillManager.bulwark_ironclad_max_bonus()
+	var pct = shield_pct * max_pct_bonus
 	return [flat, pct]
+	
 # ── Zap — Bulwark Slot 2 ──────────────────────
 # Called from base.gd on every shield regen tick.
 # Fires damage at nearest enemy.
-func trigger_zap(_main_node: Node, base_node: Node) -> void:
-	var zap_dmg = SkillManager.bulwark_zap_damage()
-	if zap_dmg == 0.0:
+func trigger_zap(_main_node: Node, base_node: Node, target: Node) -> void:
+	var zap_pct = SkillManager.bulwark_zap_damage()
+	if zap_pct == 0.0:
 		return
-	var enemies = base_node.get_tree().get_nodes_in_group("enemies")
-	var closest = null
-	var closest_dist = INF
-	for e in enemies:
-		var d = base_node.global_position.distance_to(e.global_position)
-		if d < closest_dist:
-			closest_dist = d
-			closest = e
-	if closest == null:
+	if not is_instance_valid(target):
 		return
-	EnemyMechanics.take_damage(closest, zap_dmg, "zap")
+	var zap_dmg = base_node.shield * zap_pct
+	if zap_dmg <= 0.0:
+		return
+	EnemyMechanics.take_damage(target, zap_dmg, "zap")
 
 # ── Rampart — Bulwark Slot 3 ──────────────────
 # Called from enemy _die(). Restores flat shield to base.

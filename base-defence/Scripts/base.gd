@@ -28,6 +28,11 @@ var shield_strength: float = 0.5
 var shield_multiplier: float = 1.0
 var evasion: float = 0.0
 
+# Zap
+var zap_timer: float = 0.0
+var zap_target: Node2D = null
+var current_bullet_target: Node2D = null
+
 var fire_timer: float = 0.0
 var bullet_scene: PackedScene
 var main_node: Node = null
@@ -81,9 +86,22 @@ func _process(delta):
 			if main_node != null:
 				_update_combat_ui()
 
+	# Zap
+	if not is_instance_valid(current_bullet_target):
+		current_bullet_target = null
+	if SkillManager.is_skill_unlocked(SkillManager.TREE_BULWARK, 2):
+		if not is_instance_valid(zap_target) or zap_target == current_bullet_target:
+			zap_target = _get_closest_enemy(current_bullet_target)
+		zap_timer += delta
+		if zap_timer >= shield_regen_interval:
+			zap_timer = 0.0
+			if is_instance_valid(zap_target):
+				MechanicsManager.trigger_zap(main_node, self, zap_target)
+			zap_target = _get_closest_enemy(current_bullet_target)
+
 func get_effective_max_hp() -> float:
 	return max_health * hp_multiplier
-	
+
 func _get_bleed_tick_count() -> int:
 	var crit_pct = crit_chance * 100.0
 	if crit_pct <= 20.0:
@@ -102,14 +120,38 @@ func _tick_attack_counter() -> bool:
 		return true
 	return false
 
+func _get_closest_enemy(exclude: Node2D = null) -> Node2D:
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var closest = null
+	var closest_dist = INF
+	for e in enemies:
+		if is_instance_valid(exclude) and e == exclude:
+			continue
+		var d = global_position.distance_to(e.global_position)
+		if d < closest_dist:
+			closest_dist = d
+			closest = e
+	return closest
+
+func _get_committed_damage(target: Node) -> float:
+	var bleed = SkillManager.barrage_bleed_dot()
+	var total_bleed = bleed * _get_bleed_tick_count()
+
+	var zap_committed = 0.0
+	if SkillManager.is_skill_unlocked(SkillManager.TREE_BULWARK, 2):
+		if is_instance_valid(zap_target) and zap_target == target:
+			zap_committed = shield * SkillManager.bulwark_zap_damage()
+
+	return total_bleed + zap_committed
+
 func _try_shoot():
 	var target = _get_best_target()
 	if target == null or bullet_scene == null:
 		return
+	current_bullet_target = target
 	var bullets_en_route = bullets_targeting.get(target, 0)
-	var bleed = SkillManager.barrage_bleed_dot()
-	var total_bleed = bleed * _get_bleed_tick_count()
-	var effective_damage = (bullet_damage * damage_multiplier) + total_bleed
+	var committed = _get_committed_damage(target)
+	var effective_damage = (bullet_damage * damage_multiplier) + committed
 	var hits_needed = ceil(target.health / effective_damage)
 	if bullets_en_route >= hits_needed:
 		return
@@ -138,7 +180,7 @@ func _try_shoot():
 	# Barrage keystone — double speed, pass keystone flag and main node
 	var is_barrage_keystone = SkillManager.get_active_keystone() == SkillManager.TREE_BARRAGE
 	var shoot_speed = bullet_speed * 2.0 if is_barrage_keystone else bullet_speed
-
+	var bleed = SkillManager.barrage_bleed_dot()
 	b.setup(
 		global_position.direction_to(target.global_position),
 		shoot_speed,
@@ -159,9 +201,8 @@ func _get_best_target() -> Node2D:
 		if not is_instance_valid(existing_target):
 			bullets_targeting.erase(existing_target)
 			continue
-		var bleed = SkillManager.barrage_bleed_dot()
-		var total_bleed = bleed * _get_bleed_tick_count()
-		var effective_damage = (bullet_damage * damage_multiplier) + total_bleed
+		var committed = _get_committed_damage(existing_target)
+		var effective_damage = (bullet_damage * damage_multiplier) + committed
 		var hits_needed = ceil(existing_target.health / effective_damage)
 		var en_route = bullets_targeting.get(existing_target, 0)
 		if en_route < hits_needed:
@@ -175,7 +216,6 @@ func _get_best_target() -> Node2D:
 			closest_dist = d
 			closest = e
 	return closest
-
 
 func take_damage(amount: float):
 	if randf() < evasion:
