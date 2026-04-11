@@ -14,8 +14,6 @@ func calc_lp_drop(lp_gain_level: int, legacy_mult_level: int) -> int:
 	return int((1 + lp_gain_level) * (1.0 + (legacy_mult_level * 0.05)))
 
 func calc_drop_chance(legacy_drop_level: int) -> float:
-	if SaveManager.data["unlock_util_tier"] < 3:
-		return 0.0
 	var chance = 0.10
 	for i in range(legacy_drop_level):
 		chance += 0.008 / (1.0 + i * 0.03)

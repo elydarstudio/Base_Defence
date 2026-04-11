@@ -151,7 +151,11 @@ func _get_committed_damage(target: Node) -> float:
 		if is_instance_valid(zap_target) and zap_target == target:
 			zap_committed = shield * SkillManager.bulwark_zap_damage()
 
-	return total_bleed + zap_committed
+	var damage_bonuses = MechanicsManager.get_damage_bonuses(self)
+	var base_with_bonuses = (bullet_damage * damage_multiplier + damage_bonuses[0]) * (1.0 + damage_bonuses[1])
+	var effective_bullet = base_with_bonuses
+
+	return total_bleed + zap_committed + (effective_bullet - bullet_damage * damage_multiplier)
 
 func _try_shoot():
 	if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK:

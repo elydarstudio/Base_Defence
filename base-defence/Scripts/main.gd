@@ -148,6 +148,7 @@ var legacy_drop_upgrades: int = 0
 
 # ── Ready ─────────────────────────────────────
 func _ready():
+	Engine.time_scale = 1.5
 	phase = SaveManager.data.get("start_phase", 1)
 	difficulty = (phase - 1) * 10
 	$Base.set_bullet_scene(bullet_scene)
@@ -320,7 +321,7 @@ func _on_mute_button_pressed():
 
 func _on_speed_button_pressed():
 	speed_index = (speed_index + 1) % speed_steps.size()
-	Engine.time_scale = speed_steps[speed_index]
+	Engine.time_scale = speed_steps[speed_index] * 1.5
 	$UI/SpeedButton.text = str(speed_steps[speed_index]) + "x"
 
 func _on_panel_handle_pressed():
