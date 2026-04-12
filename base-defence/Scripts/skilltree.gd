@@ -1,10 +1,21 @@
 extends Control
 
 # ══════════════════════════════════════════════
-# skilltree.gd — full rewrite
-# Slot structure: 0=root, 1=left, 2=right,
-# 3=left-continues, 4=right-continues, 5=keystone
-# Branching pairs shown side-by-side: [1,2] and [3,4]
+# skilltree.gd
+# Uniform slot structure for all trees:
+#   0 = root
+#   1 = left branch        (requires 0)
+#   2 = right branch       (requires 0)
+#   3 = left continues     (requires 1)
+#   4 = right continues    (requires 2)
+#   5 = keystone           (requires 3 AND 4)
+#
+# BARRAGE:  0=Rapidfire, 1=Bleed, 2=Range, 3=Focus, 4=Momentum, 5=Chain
+# BULWARK:  0=Fortify, 1=Ironclad, 2=Zap, 3=Rampart, 4=Knockback, 5=Pulse
+# SIPHON:   0=Vampiric, 1=Overheal, 2=Chill, 3=Surge, 4=Vitality, 5=Drain Beam
+#
+# Visual layout (top=keystone, bottom=root):
+#   [5] → [3, 4] → [1, 2] → [0]
 # ══════════════════════════════════════════════
 
 const TREE_DATA = {
@@ -31,13 +42,12 @@ const TREE_DATA = {
 	},
 }
 
-const LOCK_REQUIREMENT: int = 0  # phase_tokens_earned >= 1
+const LOCK_REQUIREMENT: int = 0
 
 var _current_tree: String = ""
 var _select_scroll: ScrollContainer
 var _tree_scroll: ScrollContainer
 
-# ─────────────────────────────────────────────
 func _ready():
 	anchor_right  = 1.0
 	anchor_bottom = 1.0
@@ -66,7 +76,6 @@ func _make_scroll() -> ScrollContainer:
 	var sc = ScrollContainer.new()
 	sc.anchor_right  = 1.0
 	sc.anchor_bottom = 1.0
-	# Disable horizontal scroll — forces content to wrap within screen width
 	sc.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	return sc
 
@@ -85,7 +94,6 @@ func _build_select_view():
 	outer.offset_top  = 8
 	_select_scroll.add_child(outer)
 
-	# Top bar
 	var top = HBoxContainer.new()
 	top.custom_minimum_size = Vector2(696, 0)
 	top.add_theme_constant_override("separation", 8)
@@ -96,16 +104,13 @@ func _build_select_view():
 	back.pressed.connect(_on_back_to_menu)
 	top.add_child(back)
 
-	# Title
 	var title = _label("SKILL TREES", 24, Color.WHITE)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title.horizontal_alignment  = HORIZONTAL_ALIGNMENT_CENTER
 	outer.add_child(title)
 
-	# Stat bar
 	outer.add_child(_build_stat_bar())
 
-	# Cards
 	for key in ["barrage", "bulwark", "siphon"]:
 		outer.add_child(_build_select_card(key, locked))
 
@@ -130,7 +135,6 @@ func _build_select_card(tree_key: String, locked: bool) -> PanelContainer:
 	vbox.add_theme_constant_override("separation", 6)
 	card.add_child(vbox)
 
-	# Name row
 	var name_row = HBoxContainer.new()
 	name_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_row.add_theme_constant_override("separation", 6)
@@ -185,7 +189,6 @@ func _build_tree_view():
 	outer.offset_top  = 8
 	_tree_scroll.add_child(outer)
 
-	# Top bar
 	var top = HBoxContainer.new()
 	top.custom_minimum_size = Vector2(696, 0)
 	top.add_theme_constant_override("separation", 8)
@@ -201,10 +204,9 @@ func _build_tree_view():
 	title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	top.add_child(title)
 
-	# Stat bar
 	outer.add_child(_build_stat_bar())
 
-	# Skill layout — keystone at top, root at bottom
+	# Uniform layout for all trees: keystone top, root bottom
 	_add_row(outer, [5], skills, color)
 	_add_connector(outer, true)
 	_add_row(outer, [3, 4], skills, color)
@@ -212,7 +214,6 @@ func _build_tree_view():
 	_add_row(outer, [1, 2], skills, color)
 	_add_connector(outer, false)
 	_add_row(outer, [0], skills, color)
-
 
 func _add_row(parent: VBoxContainer, slots: Array, skills: Array, color: Color):
 	var hbox = HBoxContainer.new()
@@ -231,7 +232,7 @@ func _add_connector(parent: VBoxContainer, split: bool):
 func _build_skill_card(slot: int, skill: Dictionary, color: Color) -> PanelContainer:
 	var tree        = _current_tree
 	var unlocked    = SkillManager.is_skill_unlocked(tree, slot)
-	var can_unlock  = _can_unlock(tree, slot)
+	var can_unlock  = SkillManager._check_prereq(tree, slot)
 	var level       = SkillManager.get_skill_level(tree, slot)
 	var is_keystone = (slot == 5)
 
@@ -259,7 +260,6 @@ func _build_skill_card(slot: int, skill: Dictionary, color: Color) -> PanelConta
 	vbox.add_theme_constant_override("separation", 4)
 	card.add_child(vbox)
 
-	# Name
 	var name_color: Color
 	if unlocked:      name_color = color
 	elif can_unlock:  name_color = Color(0.65, 0.65, 0.65)
@@ -269,11 +269,9 @@ func _build_skill_card(slot: int, skill: Dictionary, color: Color) -> PanelConta
 	var name_text = prefix + skill["name"] + ("  (Lv" + str(level) + ")" if unlocked else "")
 	vbox.add_child(_label(name_text, 13, name_color))
 
-	# Description
 	var desc_color = Color(0.55, 0.55, 0.55) if unlocked else Color(0.32, 0.32, 0.32)
 	vbox.add_child(_wrap_label(skill["desc"], 10, desc_color))
 
-	# Button
 	var btn_row = HBoxContainer.new()
 	btn_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vbox.add_child(btn_row)
@@ -296,26 +294,16 @@ func _build_skill_card(slot: int, skill: Dictionary, color: Color) -> PanelConta
 	return card
 
 # ─────────────────────────────────────────────
-# UNLOCK LOGIC
+# PREREQ HINT
 # ─────────────────────────────────────────────
-func _can_unlock(tree: String, slot: int) -> bool:
-	match slot:
-		0: return true
-		1: return SkillManager.is_skill_unlocked(tree, 0)
-		2: return SkillManager.is_skill_unlocked(tree, 0)
-		3: return SkillManager.is_skill_unlocked(tree, 1)
-		4: return SkillManager.is_skill_unlocked(tree, 2)
-		5:
-			return SkillManager.is_skill_unlocked(tree, 3) and \
-				   SkillManager.is_skill_unlocked(tree, 4) and \
-				   not SkillManager.has_keystone()
-	return false
-
 func _prereq_hint(tree: String, slot: int) -> String:
 	match slot:
-		1, 2: return "Requires: " + SkillManager.SKILL_DATA[tree][0]["name"]
-		3:    return "Requires: " + SkillManager.SKILL_DATA[tree][1]["name"]
-		4:    return "Requires: " + SkillManager.SKILL_DATA[tree][2]["name"]
+		1, 2:
+			return "Requires: " + SkillManager.SKILL_DATA[tree][0]["name"]
+		3:
+			return "Requires: " + SkillManager.SKILL_DATA[tree][1]["name"]
+		4:
+			return "Requires: " + SkillManager.SKILL_DATA[tree][2]["name"]
 		5:
 			if SkillManager.has_keystone():
 				return "Keystone already chosen"
@@ -349,35 +337,7 @@ func _on_back_to_menu():
 
 # ─────────────────────────────────────────────
 # STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─# STAT BAR
-# ─
+# ─────────────────────────────────────────────
 func _build_stat_bar() -> PanelContainer:
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(696, 0)
@@ -394,17 +354,11 @@ func _build_stat_bar() -> PanelContainer:
 	hbox.add_theme_constant_override("separation", 16)
 	panel.add_child(hbox)
 
-	var tokens = SkillManager.get_tokens()
-	hbox.add_child(_label("🔷 Tokens: " + str(tokens) + " / " + str(SkillManager.MAX_TOKENS), 13, Color(0.4, 0.7, 1.0)))
+	hbox.add_child(_label("🔷 Tokens: " + str(SkillManager.get_tokens()) + " / " + str(SkillManager.MAX_TOKENS), 13, Color(0.4, 0.7, 1.0)))
 	hbox.add_child(_spacer())
-
-	var shards = SkillManager.get_shards()
-	hbox.add_child(_label("⚡ Shards: " + str(shards), 13, Color(0.9, 0.8, 0.2)))
+	hbox.add_child(_label("⚡ Shards: " + str(SkillManager.get_shards()), 13, Color(0.9, 0.8, 0.2)))
 	hbox.add_child(_spacer())
-
-	var kills_progress = SkillManager.get_kills_since_last_shard()
-	var kills_needed = SkillManager.get_next_shard_threshold()
-	hbox.add_child(_label("☠ Kills: " + str(kills_progress) + " / " + str(kills_needed), 13, Color(0.75, 0.75, 0.75)))
+	hbox.add_child(_label("☠ Kills: " + str(SkillManager.get_kills_since_last_shard()) + " / " + str(SkillManager.get_next_shard_threshold()), 13, Color(0.75, 0.75, 0.75)))
 
 	return panel
 

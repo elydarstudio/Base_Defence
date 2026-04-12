@@ -78,6 +78,7 @@ func apply_chill():
 func _die():
 	MechanicsManager.cleanup_focus(self)
 	if main_node != null:
+		MechanicsManager.trigger_vitality(main_node.get_node("Base"))
 		main_node.add_currency(100 + ((main_node.phase - 1) * 20))
 		var lp_drop = 10 + ((main_node.phase - 1) * 3)
 		var lp_gain = main_node.lp_gain_level

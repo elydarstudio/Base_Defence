@@ -115,8 +115,6 @@ func get_vampiric_proc_damage(bullet_damage: float) -> float:
 	return (bullet_damage + flat) * (1.0 + pct)
 
 # ── Chill — Siphon Slot 1 ─────────────────────
-# Regen tick targets highest HP unchilled enemy — applies permanent 35% slow.
-# Bonus damage to chilled enemies applied in projectile.gd on hit.
 func trigger_chill(base_node: Node) -> void:
 	if not SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 1):
 		return
@@ -143,6 +141,7 @@ func get_chill_damage_bonus(target: Node) -> float:
 	return SkillManager.siphon_chill_damage_bonus()
 
 # ── Overheal — Siphon Slot 2 ──────────────────
+# Returns the overheal buffer ceiling above max HP.
 func get_overheal_ceiling(max_hp: float) -> float:
 	var buffer_pct = SkillManager.siphon_overheal_buffer()
 	if buffer_pct == 0.0:
@@ -158,8 +157,8 @@ func get_surge_bonus(health: float, max_hp: float) -> float:
 	return SkillManager.siphon_surge_bonus()
 
 # ── Combined outgoing damage bonus ────────────
-# Returns [flat_bonus, percent_bonus] for constant passive bonuses only.
-# Vampiric and Chill are NOT included here — both handled separately.
+# Returns [flat_bonus, percent_bonus] for constant passive bonuses.
+# Vampiric and Chill are NOT included — both handled separately.
 func get_damage_bonuses(base_node: Node) -> Array:
 	var flat: float = 0.0
 	var pct: float = 0.0
@@ -169,10 +168,14 @@ func get_damage_bonuses(base_node: Node) -> Array:
 	flat += fortify[0]
 	pct += fortify[1]
 
-	# Ironclad — flat on unlock + shard levels, % based on current shield %
+	# Ironclad — flat + % based on current shield %
 	var ironclad = get_ironclad_bonus(base_node.shield, base_node.max_shield * base_node.shield_multiplier)
 	flat += ironclad[0]
 	pct += ironclad[1]
+
+	# Overheal — flat bonus while overhealed
+	if base_node.health > base_node.get_effective_max_hp():
+		flat += SkillManager.siphon_overheal_flat_bonus()
 
 	# Surge — % while overhealed
 	pct += get_surge_bonus(base_node.health, base_node.get_effective_max_hp())
@@ -232,3 +235,12 @@ func _find_chain_target(from_enemy: Node, already_hit: Array, main_node: Node) -
 			closest_dist = d
 			closest = e
 	return closest
+
+
+func trigger_vitality(base_node: Node) -> void:
+	if not SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 4):
+		return
+	var heal = SkillManager.siphon_vitality_hp_per_kill() * base_node.heal_multiplier
+	var heal_cap = base_node.get_effective_max_hp() + base_node.get_overheal_ceiling()
+	base_node.health = min(base_node.health + heal, heal_cap)
+	base_node._update_combat_ui()

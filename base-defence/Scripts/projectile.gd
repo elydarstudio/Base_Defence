@@ -9,6 +9,7 @@ var base: Node2D = null
 var is_crit: bool = false
 var is_rapidfire: bool = false
 var is_vampiric: bool = false
+var is_surge: bool = false
 var bleed_damage: float = 0.0
 var is_keystone: bool = false
 var is_chain: bool = false
@@ -18,7 +19,7 @@ var _distance_traveled: float = 0.0
 func _ready():
 	area_entered.connect(_on_area_entered)
 
-func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D, crit: bool = false, rapidfire: bool = false, bleed: float = 0.0, keystone: bool = false, mn: Node = null, vampiric: bool = false):
+func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D, crit: bool = false, rapidfire: bool = false, bleed: float = 0.0, keystone: bool = false, mn: Node = null, vampiric: bool = false, surge: bool = false):
 	direction = dir
 	speed = spd
 	damage = dmg
@@ -27,6 +28,7 @@ func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D, crit: b
 	is_crit = crit
 	is_rapidfire = rapidfire
 	is_vampiric = vampiric
+	is_surge = surge
 	bleed_damage = bleed
 	is_keystone = keystone
 	main_node = mn
@@ -43,6 +45,12 @@ func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D, crit: b
 			Vector2(4, 4), Vector2(-4, 4)
 		])
 		poly.color = Color(0.2, 1.0, 0.4)
+	elif is_surge:
+		poly.polygon = PackedVector2Array([
+			Vector2(-7, -7), Vector2(7, -7),
+			Vector2(7, 7), Vector2(-7, 7)
+		])
+		poly.color = Color(1.0, 1.0, 1.0)
 	elif is_crit:
 		poly.polygon = PackedVector2Array([
 			Vector2(-4, -4), Vector2(4, -4),

@@ -66,6 +66,7 @@ func _die():
 	MechanicsManager.cleanup_focus(self)
 	if main_node != null:
 		MechanicsManager.trigger_rampart(main_node.get_node("Base"))
+		MechanicsManager.trigger_vitality(main_node.get_node("Base"))
 		main_node.add_currency(currency_value, global_position)
 		main_node.on_enemy_killed()
 	queue_free()

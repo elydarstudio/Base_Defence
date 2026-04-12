@@ -66,6 +66,7 @@ func _die():
 	MechanicsManager.cleanup_focus(self)
 	if main_node != null:
 		MechanicsManager.trigger_rampart(main_node.get_node("Base"))
+		MechanicsManager.trigger_vitality(main_node.get_node("Base"))
 		var base_gold = 5 + ((main_node.phase - 1) * 3)
 		main_node.add_currency(base_gold, global_position)
 		main_node.on_enemy_killed()

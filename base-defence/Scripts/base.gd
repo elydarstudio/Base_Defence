@@ -59,8 +59,32 @@ func _draw_base():
 	poly.color = Color(0.2, 0.6, 1.0)
 
 func _update_combat_ui():
-	$HPLabel.text = "HP: " + str(max(0, int(health))) + "/" + str(int(get_effective_max_hp()))
+	var effective_max = get_effective_max_hp()
+	var overheal_ceiling = get_overheal_ceiling()
+	if health > effective_max:
+		$HPLabel.text = "HP: " + str(max(0, int(health))) + "/" + str(int(effective_max))
+		$HPLabel.modulate = Color(0.3, 1.0, 0.4)
+	else:
+		$HPLabel.text = "HP: " + str(max(0, int(health))) + "/" + str(int(effective_max))
+		$HPLabel.modulate = Color.WHITE
 	$ShieldLabel.text = "SH: " + str(int(shield))
+	queue_redraw()
+
+func _draw():
+	var effective_max = get_effective_max_hp()
+	if health <= effective_max:
+		return
+	var is_surge = SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 3)
+	var t = Time.get_ticks_msec() * 0.003
+	var pulse = 0.5 + 0.5 * sin(t)
+	if is_surge:
+		var radius = 38.0 + pulse * 6.0
+		var alpha = 0.5 + pulse * 0.4
+		draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(0.7, 1.0, 0.2, alpha), 3.0)
+	else:
+		var radius = 36.0 + pulse * 4.0
+		var alpha = 0.4 + pulse * 0.3
+		draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(0.3, 1.0, 0.4, alpha), 2.0)
 
 func _process(delta):
 	fire_timer += delta
@@ -80,11 +104,14 @@ func _process(delta):
 		hp_regen_timer = 0.0
 		MechanicsManager.set_vampiric_proc()
 		MechanicsManager.trigger_chill(self)
-		if hp_regen > 0 and health < get_effective_max_hp():
-			var heal_amount = hp_regen * heal_multiplier
-			health = min(health + heal_amount, get_effective_max_hp())
-			if main_node != null:
-				_update_combat_ui()
+		if hp_regen > 0:
+			var overheal_ceiling = get_overheal_ceiling()
+			var heal_cap = get_effective_max_hp() + overheal_ceiling
+			if health < heal_cap:
+				var heal_amount = hp_regen * heal_multiplier
+				health = min(health + heal_amount, heal_cap)
+				if main_node != null:
+					_update_combat_ui()
 
 	# Shield regen
 	var effective_max_shield = max_shield * shield_multiplier
@@ -112,6 +139,12 @@ func _process(delta):
 
 func get_effective_max_hp() -> float:
 	return max_health * hp_multiplier
+
+func get_overheal_ceiling() -> float:
+	return MechanicsManager.get_overheal_ceiling(get_effective_max_hp())
+
+func is_overhealed() -> bool:
+	return health > get_effective_max_hp()
 
 func _get_bleed_tick_count() -> int:
 	var crit_pct = crit_chance * 100.0
@@ -155,9 +188,8 @@ func _get_committed_damage(target: Node) -> float:
 
 	var damage_bonuses = MechanicsManager.get_damage_bonuses(self)
 	var base_with_bonuses = (bullet_damage * damage_multiplier + damage_bonuses[0]) * (1.0 + damage_bonuses[1])
-	var effective_bullet = base_with_bonuses
 
-	return total_bleed + zap_committed + (effective_bullet - bullet_damage * damage_multiplier)
+	return total_bleed + zap_committed + (base_with_bonuses - bullet_damage * damage_multiplier)
 
 func _try_shoot():
 	if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK:
@@ -195,7 +227,7 @@ func _try_shoot():
 	final_damage += damage_bonuses[0]
 	final_damage *= (1.0 + damage_bonuses[1])
 
-	# Vampiric proc — replace final_damage with proc damage, tint bullet green
+	# Vampiric proc
 	var is_vampiric = MechanicsManager.consume_vampiric_proc()
 	if is_vampiric:
 		final_damage = MechanicsManager.get_vampiric_proc_damage(final_damage)
@@ -203,6 +235,7 @@ func _try_shoot():
 	var is_barrage_keystone = SkillManager.get_active_keystone() == SkillManager.TREE_BARRAGE
 	var shoot_speed = bullet_speed * 2.0 if is_barrage_keystone else bullet_speed
 	var bleed = SkillManager.barrage_bleed_dot()
+	var is_surge = is_overhealed() and SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 3)
 	b.setup(
 		global_position.direction_to(target.global_position),
 		shoot_speed,
@@ -214,7 +247,8 @@ func _try_shoot():
 		bleed,
 		is_barrage_keystone,
 		main_node,
-		is_vampiric
+		is_vampiric,
+		is_surge
 	)
 	bullets_targeting[target] = bullets_en_route + 1
 	if main_node: AudioManager.play(AudioManager.sfx_shoot)
@@ -253,6 +287,14 @@ func take_damage(amount: float):
 		shield -= absorbed
 		var overflow = amount - absorbed
 		hp_damage = (absorbed * (1.0 - shield_strength)) + overflow
+
+	# Drain overheal first before regular HP
+	var effective_max = get_effective_max_hp()
+	if health > effective_max:
+		var overheal_amount = health - effective_max
+		var overheal_drain = min(overheal_amount, hp_damage)
+		health -= overheal_drain
+		hp_damage -= overheal_drain
 
 	health -= hp_damage
 	health = max(0.0, health)
