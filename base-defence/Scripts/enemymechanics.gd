@@ -9,6 +9,7 @@ extends Node
 # ══════════════════════════════════════════════
 
 const BLEED_INTERVAL: float = 0.5
+const CHILL_SLOW: float = 0.60
 
 # ── Main tick — call this from every enemy _process() ─────────────────────────
 func tick(enemy: Node, delta: float) -> void:
@@ -174,3 +175,14 @@ func _tick_bleed(enemy: Node, delta: float) -> void:
 			enemy.main_node.spawn_damage_number(enemy.bleed_damage, enemy.global_position + Vector2(-25, 0), "bleed")
 		if enemy.health <= 0:
 			enemy._die()
+
+# ── Chill ─────────────────────────────────────────────────────────────────────
+func apply_chill(enemy: Node) -> void:
+	if not is_instance_valid(enemy):
+		return
+	if enemy.is_chilled:
+		return
+	enemy.is_chilled = true
+	enemy.speed *= (1.0 - CHILL_SLOW)
+	enemy.get_node("Visual").color = Color(0.4, 0.7, 1.0)
+	enemy.queue_redraw()

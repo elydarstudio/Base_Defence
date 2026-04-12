@@ -267,7 +267,6 @@ func bulwark_fortify_pct_bonus() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 0): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 0)
 	return 0.05 + (level * 0.02)
-
 # Slot 1 — Ironclad
 # Flat bonus on unlock +5, +5 per shard level.
 func bulwark_ironclad_flat_bonus() -> float:
@@ -335,11 +334,12 @@ func siphon_vampiric_pct_bonus() -> float:
 	return 0.15 + (level * 0.05)
 
 # Slot 1 — Chill
-# Slow % on regen tick. Base 10%, +3% per shard level, cap 60%.
-func siphon_chill_slow() -> float:
+# 35% permanent slow applied to highest HP unchilled enemy on regen tick.
+# Bonus damage % to chilled enemies. Base +20%, +5% per shard level.
+func siphon_chill_damage_bonus() -> float:
 	if not is_skill_unlocked(TREE_SIPHON, 1): return 0.0
 	var level = get_skill_level(TREE_SIPHON, 1)
-	return min(0.60, 0.10 + (level * 0.03))
+	return 0.20 + (level * 0.05)
 
 # Slot 2 — Overheal
 # Overheal buffer as % of max HP. Base 10%, +3% per shard level.

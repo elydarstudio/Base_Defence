@@ -33,7 +33,7 @@ var buy_amount: int = 1
 var tooltip_buttons: Dictionary = {}
 var tooltip_key: String = ""
 var zoom_level: float = 0.6
-const ZOOM_MIN: float = 0.4
+const ZOOM_MIN: float = 0.5
 const ZOOM_MAX: float = 1.0
 const ZOOM_STEP: float = 0.1
 

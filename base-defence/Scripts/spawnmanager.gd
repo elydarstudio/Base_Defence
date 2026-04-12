@@ -71,10 +71,10 @@ func spawn_boss() -> void:
 func _random_edge_position() -> Vector2:
 	spawn_edge = (spawn_edge + 1) % 6
 	match spawn_edge:
-		0: return Vector2(randf_range(-240, 960), -500)
-		1: return Vector2(randf_range(-240, 960), 1800)
-		2: return Vector2(-240, randf_range(-500, 1800))
-		3: return Vector2(-240, randf_range(-500, 1800))
-		4: return Vector2(960, randf_range(-500, 1800))
-		5: return Vector2(960, randf_range(-500, 1800))
+		0: return Vector2(randf_range(-350, 1070), -700)
+		1: return Vector2(randf_range(-350, 1070), 2000)
+		2: return Vector2(-380, randf_range(-700, 2000))
+		3: return Vector2(-380, randf_range(-700, 2000))
+		4: return Vector2(1100, randf_range(-700, 2000))
+		5: return Vector2(1100, randf_range(-700, 2000))
 	return Vector2.ZERO

@@ -19,6 +19,9 @@ var bleed_ticks: int = 0
 var bleed_ticks_remaining: int = 0
 var bleed_timer: float = 0.0
 
+# ── Chill state ───────────────────────────────
+var is_chilled: bool = false
+
 func _ready():
 	add_to_group("enemies")
 	add_to_group("boss")
@@ -68,6 +71,9 @@ func take_damage(amount: float, type: String = "normal"):
 
 func apply_bleed(damage: float, was_crit: bool):
 	EnemyMechanics.apply_bleed(self, damage, was_crit)
+
+func apply_chill():
+	EnemyMechanics.apply_chill(self)
 
 func _die():
 	MechanicsManager.cleanup_focus(self)

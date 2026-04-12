@@ -96,7 +96,6 @@ func trigger_knockback(enemy: Node, base_node: Node, apply_force: bool = true) -
 		EnemyMechanics.take_damage(enemy, damage, "normal")
 
 # ── Vampiric — Siphon Slot 0 ──────────────────
-# Regen tick sets the proc flag. Next attack consumes it for bonus damage.
 var _vampiric_proc_ready: bool = false
 
 func set_vampiric_proc() -> void:
@@ -110,31 +109,38 @@ func consume_vampiric_proc() -> bool:
 	_vampiric_proc_ready = false
 	return true
 
-# Returns the full proc damage given the bullet's pre-bonus damage.
-# Formula: (bullet_damage + flat) * (1.0 + pct)
-# Called only when consume_vampiric_proc() returns true.
 func get_vampiric_proc_damage(bullet_damage: float) -> float:
 	var flat = SkillManager.siphon_vampiric_flat_bonus()
 	var pct = SkillManager.siphon_vampiric_pct_bonus()
 	return (bullet_damage + flat) * (1.0 + pct)
 
 # ── Chill — Siphon Slot 1 ─────────────────────
+# Regen tick targets highest HP unchilled enemy — applies permanent 35% slow.
+# Bonus damage to chilled enemies applied in projectile.gd on hit.
 func trigger_chill(base_node: Node) -> void:
-	var slow_pct = SkillManager.siphon_chill_slow()
-	if slow_pct == 0.0:
+	if not SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 1):
 		return
 	var enemies = base_node.get_tree().get_nodes_in_group("enemies")
-	var closest = null
-	var closest_dist = INF
+	var unchilled = []
 	for e in enemies:
-		var d = base_node.global_position.distance_to(e.global_position)
-		if d < closest_dist:
-			closest_dist = d
-			closest = e
-	if closest == null:
+		if not is_instance_valid(e):
+			continue
+		if not e.is_chilled:
+			unchilled.append(e)
+	if unchilled.is_empty():
 		return
-	if closest.has_method("apply_chill"):
-		closest.apply_chill(slow_pct)
+	var target = unchilled[randi() % unchilled.size()]
+	if target.has_method("apply_chill"):
+		target.apply_chill()
+
+func get_chill_damage_bonus(target: Node) -> float:
+	if not SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 1):
+		return 0.0
+	if not is_instance_valid(target):
+		return 0.0
+	if not target.is_chilled:
+		return 0.0
+	return SkillManager.siphon_chill_damage_bonus()
 
 # ── Overheal — Siphon Slot 2 ──────────────────
 func get_overheal_ceiling(max_hp: float) -> float:
@@ -153,7 +159,7 @@ func get_surge_bonus(health: float, max_hp: float) -> float:
 
 # ── Combined outgoing damage bonus ────────────
 # Returns [flat_bonus, percent_bonus] for constant passive bonuses only.
-# Vampiric is NOT included here — it's a proc, handled separately in base.gd.
+# Vampiric and Chill are NOT included here — both handled separately.
 func get_damage_bonuses(base_node: Node) -> Array:
 	var flat: float = 0.0
 	var pct: float = 0.0

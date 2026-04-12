@@ -84,7 +84,8 @@ func _on_area_entered(area):
 			queue_free()
 			return
 		var momentum_bonus = MechanicsManager.get_momentum_bonus(_distance_traveled)
-		var final_damage = damage * (1.0 + momentum_bonus)
+		var chill_bonus = MechanicsManager.get_chill_damage_bonus(area)
+		var final_damage = damage * (1.0 + momentum_bonus) * (1.0 + chill_bonus)
 		var type = "crit" if is_crit else "normal"
 		area.take_damage(final_damage, type)
 		if bleed_damage > 0.0:
