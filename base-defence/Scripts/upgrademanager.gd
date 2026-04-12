@@ -24,13 +24,13 @@ func calc_cost_mult(base_cost: int, level: int) -> int:
 func calc_atk_spd(level: int) -> float:
 	var rate = 1.0
 	for i in range(level):
-		rate += 0.115 / (1.0 + i * 0.008)
+		rate += 0.12 / (1.0 + i * 0.015)
 	return rate
 	
 func calc_regen_spd(level: int) -> float:
 	var interval = 5.0
 	for i in range(level):
-		interval -= 0.25 / (1.0 + i * 0.05)
+		interval -= 0.09 / (1.0 + i * 0.03)
 	return max(0.5, interval)
 
 # ── ATK Handlers ──────────────────────────────

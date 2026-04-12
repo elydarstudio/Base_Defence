@@ -9,8 +9,6 @@ extends Node
 # ══════════════════════════════════════════════
 
 # ── Focus — Barrage Slot 2 ────────────────────
-# Tracks consecutive hit stacks per enemy instance.
-# Resets on kill. Works for any attack type.
 var _focus_stacks: Dictionary = {}
 
 func get_focus_bonus(enemy: Node) -> float:
@@ -33,12 +31,10 @@ func cleanup_focus(enemy: Node) -> void:
 	_focus_stacks.erase(enemy)
 
 # ── Range — Barrage Slot 3 ────────────────────
-# Returns bonus detection radius to add to base.
 func get_range_bonus() -> float:
 	return SkillManager.barrage_range_bonus()
 
 # ── Fortify — Bulwark Slot 0 ──────────────────
-# Bonus flat damage based on max shield investment.
 func get_fortify_bonus(max_shield: float) -> float:
 	var bonus_per_100 = SkillManager.bulwark_fortify_damage_per_100_shield()
 	if bonus_per_100 == 0.0:
@@ -55,10 +51,8 @@ func get_ironclad_bonus(shield: float, max_shield: float) -> Array:
 	var max_pct_bonus = SkillManager.bulwark_ironclad_max_bonus()
 	var pct = shield_pct * max_pct_bonus
 	return [flat, pct]
-	
+
 # ── Zap — Bulwark Slot 2 ──────────────────────
-# Called from base.gd on every shield regen tick.
-# Fires damage at nearest enemy.
 func trigger_zap(_main_node: Node, base_node: Node, target: Node) -> void:
 	var zap_pct = SkillManager.bulwark_zap_damage()
 	if zap_pct == 0.0:
@@ -71,7 +65,6 @@ func trigger_zap(_main_node: Node, base_node: Node, target: Node) -> void:
 	EnemyMechanics.take_damage(target, zap_dmg, "zap")
 
 # ── Rampart — Bulwark Slot 3 ──────────────────
-# Called from enemy _die(). Restores flat shield to base.
 func trigger_rampart(base_node: Node) -> void:
 	if not SkillManager.is_skill_unlocked(SkillManager.TREE_BULWARK, 3):
 		return
@@ -81,8 +74,6 @@ func trigger_rampart(base_node: Node) -> void:
 	base_node._update_combat_ui()
 
 # ── Knockback — Bulwark Slot 4 ────────────────
-# Called from EnemyMechanics when enemy hits base.
-# Pushes enemy away and deals chip damage.
 func trigger_knockback(enemy: Node, base_node: Node, apply_force: bool = true) -> void:
 	if not SkillManager.is_skill_unlocked(SkillManager.TREE_BULWARK, 4):
 		return
@@ -103,16 +94,29 @@ func trigger_knockback(enemy: Node, base_node: Node, apply_force: bool = true) -
 		EnemyMechanics.take_damage(enemy, damage, "normal")
 
 # ── Vampiric — Siphon Slot 0 ──────────────────
-# Bonus flat damage based on HP regen investment.
-func get_vampiric_bonus(hp_regen: float) -> float:
-	var bonus_per_regen = SkillManager.siphon_vampiric_damage_per_regen()
-	if bonus_per_regen == 0.0:
-		return 0.0
-	return hp_regen * bonus_per_regen
+# Regen tick sets the proc flag. Next attack consumes it for bonus damage.
+var _vampiric_proc_ready: bool = false
+
+func set_vampiric_proc() -> void:
+	if not SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 0):
+		return
+	_vampiric_proc_ready = true
+
+func consume_vampiric_proc() -> bool:
+	if not _vampiric_proc_ready:
+		return false
+	_vampiric_proc_ready = false
+	return true
+
+# Returns the full proc damage given the bullet's pre-bonus damage.
+# Formula: (bullet_damage + flat) * (1.0 + pct)
+# Called only when consume_vampiric_proc() returns true.
+func get_vampiric_proc_damage(bullet_damage: float) -> float:
+	var flat = SkillManager.siphon_vampiric_flat_bonus()
+	var pct = SkillManager.siphon_vampiric_pct_bonus()
+	return (bullet_damage + flat) * (1.0 + pct)
 
 # ── Chill — Siphon Slot 1 ─────────────────────
-# Called from base.gd on every HP regen tick.
-# Slows nearest enemy.
 func trigger_chill(base_node: Node) -> void:
 	var slow_pct = SkillManager.siphon_chill_slow()
 	if slow_pct == 0.0:
@@ -131,7 +135,6 @@ func trigger_chill(base_node: Node) -> void:
 		closest.apply_chill(slow_pct)
 
 # ── Overheal — Siphon Slot 2 ──────────────────
-# Returns the overheal buffer ceiling above max HP.
 func get_overheal_ceiling(max_hp: float) -> float:
 	var buffer_pct = SkillManager.siphon_overheal_buffer()
 	if buffer_pct == 0.0:
@@ -139,7 +142,6 @@ func get_overheal_ceiling(max_hp: float) -> float:
 	return max_hp * buffer_pct
 
 # ── Surge — Siphon Slot 3 ─────────────────────
-# Returns bonus damage % if currently in overheal state.
 func get_surge_bonus(health: float, max_hp: float) -> float:
 	if not SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 3):
 		return 0.0
@@ -148,9 +150,8 @@ func get_surge_bonus(health: float, max_hp: float) -> float:
 	return SkillManager.siphon_surge_bonus()
 
 # ── Combined outgoing damage bonus ────────────
-# Call this from base.gd _try_shoot() to get total
-# flat and % bonus from all passive damage skills.
-# Returns [flat_bonus, percent_bonus]
+# Returns [flat_bonus, percent_bonus] for constant passive bonuses only.
+# Vampiric is NOT included here — it's a proc, handled separately in base.gd.
 func get_damage_bonuses(base_node: Node) -> Array:
 	var flat: float = 0.0
 	var pct: float = 0.0
@@ -158,13 +159,10 @@ func get_damage_bonuses(base_node: Node) -> Array:
 	# Fortify — flat per 100 effective max shield
 	flat += get_fortify_bonus(base_node.max_shield * base_node.shield_multiplier)
 
-	# Ironclad — flat on unlock + shard levels, then % tier applied after flat in base.gd
+	# Ironclad — flat on unlock + shard levels, % based on current shield %
 	var ironclad = get_ironclad_bonus(base_node.shield, base_node.max_shield * base_node.shield_multiplier)
 	flat += ironclad[0]
 	pct += ironclad[1]
-
-	# Vampiric — flat per regen amount
-	flat += get_vampiric_bonus(base_node.hp_regen)
 
 	# Surge — % while overhealed
 	pct += get_surge_bonus(base_node.health, base_node.get_effective_max_hp())
@@ -172,7 +170,6 @@ func get_damage_bonuses(base_node: Node) -> Array:
 	return [flat, pct]
 
 # ── Momentum — Barrage Slot 4 ─────────────────
-# Returns bonus damage multiplier based on distance traveled.
 func get_momentum_bonus(distance: float) -> float:
 	var bonus_per_pixel = SkillManager.barrage_momentum_bonus_per_pixel()
 	if bonus_per_pixel == 0.0:
@@ -180,9 +177,6 @@ func get_momentum_bonus(distance: float) -> float:
 	return distance * bonus_per_pixel
 
 # ── Chain — Barrage Keystone ──────────────────
-# Called from projectile.gd on hit when barrage keystone active.
-# Sequentially hops to nearby enemies, spawning a visual projectile
-# and dealing falloff damage with a damage number on each hop.
 const CHAIN_HOP_RADIUS: float = 250.0
 const CHAIN_HOP_SPEED: float = 800.0
 
@@ -201,7 +195,6 @@ func trigger_chain(hit_enemy: Node, damage: float, main_node: Node, chain_scene:
 		if next == null:
 			break
 		hit_enemies.append(next)
-		# Spawn visual chain projectile
 		var proj = chain_scene.instantiate()
 		main_node.add_child(proj)
 		proj.global_position = current_enemy.global_position

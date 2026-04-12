@@ -75,10 +75,12 @@ func _process(delta):
 		_try_shoot()
 
 	# HP regen
-	if hp_regen > 0 and health < get_effective_max_hp():
-		hp_regen_timer += delta
-		if hp_regen_timer >= regen_interval:
-			hp_regen_timer = 0.0
+	hp_regen_timer += delta
+	if hp_regen_timer >= regen_interval:
+		hp_regen_timer = 0.0
+		MechanicsManager.set_vampiric_proc()
+		MechanicsManager.trigger_chill(self)
+		if hp_regen > 0 and health < get_effective_max_hp():
 			var heal_amount = hp_regen * heal_multiplier
 			health = min(health + heal_amount, get_effective_max_hp())
 			if main_node != null:
@@ -161,11 +163,9 @@ func _try_shoot():
 	if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK:
 		_fire_pulse()
 		return
-	# existing bullet logic unchanged below
 	var target = _get_best_target()
 	if target == null or bullet_scene == null:
 		return
-	# ... rest of existing _try_shoot() unchanged
 	current_bullet_target = target
 	var bullets_en_route = bullets_targeting.get(target, 0)
 	var committed = _get_committed_damage(target)
@@ -195,7 +195,11 @@ func _try_shoot():
 	final_damage += damage_bonuses[0]
 	final_damage *= (1.0 + damage_bonuses[1])
 
-	# Barrage keystone — double speed, pass keystone flag and main node
+	# Vampiric proc — replace final_damage with proc damage, tint bullet green
+	var is_vampiric = MechanicsManager.consume_vampiric_proc()
+	if is_vampiric:
+		final_damage = MechanicsManager.get_vampiric_proc_damage(final_damage)
+
 	var is_barrage_keystone = SkillManager.get_active_keystone() == SkillManager.TREE_BARRAGE
 	var shoot_speed = bullet_speed * 2.0 if is_barrage_keystone else bullet_speed
 	var bleed = SkillManager.barrage_bleed_dot()
@@ -209,7 +213,8 @@ func _try_shoot():
 		is_rapidfire,
 		bleed,
 		is_barrage_keystone,
-		main_node
+		main_node,
+		is_vampiric
 	)
 	bullets_targeting[target] = bullets_en_route + 1
 	if main_node: AudioManager.play(AudioManager.sfx_shoot)
@@ -253,7 +258,6 @@ func take_damage(amount: float):
 	health = max(0.0, health)
 	AudioManager.play(AudioManager.sfx_take_damage)
 
-	# Pulse charge — store incoming damage as bonus for next pulse
 	if SkillManager.bulwark_pulse_unlocked():
 		var is_boss_present = get_tree().get_nodes_in_group("boss").size() > 0
 		if is_boss_present:
@@ -270,7 +274,7 @@ func take_damage(amount: float):
 	if health <= 0:
 		if main_node != null:
 			main_node.trigger_game_over()
-			
+
 func _fire_pulse():
 	if pulse_scene == null:
 		return
@@ -291,12 +295,15 @@ func _fire_pulse():
 	final_damage += damage_bonuses[0]
 	final_damage *= (1.0 + damage_bonuses[1])
 
-	# Consume stored charge
+	# Vampiric proc
+	var is_vampiric = MechanicsManager.consume_vampiric_proc()
+	if is_vampiric:
+		final_damage = MechanicsManager.get_vampiric_proc_damage(final_damage)
+
 	final_damage += pulse_boss_charge
 	pulse_boss_charge = 0.0
 
 	var bleed = SkillManager.barrage_bleed_dot()
-	var level = main_node.attack_speed_level if main_node != null else 0
 	var pulse_speed = 80.0 + (fire_rate * 40.0)
 
 	p.setup(

@@ -30,7 +30,7 @@ const SKILL_DATA = {
 		# slot 4 — right continues
 		{"name": "Momentum",           "desc": "Bullets deal more damage the further they travel. Base 0.05% per pixel, +0.02% per shard level. Synergizes with Range."},
 		# slot 5 — keystone
-		{"name": "Keystone: Chain","desc": "Bullets chain to nearby enemies on hit. 2 jumps base, +1 per 5 shard levels. Damage falls off per jump, scaling with shard level. Requires Range + Momentum."},
+		{"name": "Keystone: Chain",    "desc": "Bullets chain to nearby enemies on hit. 2 jumps base, +1 per 5 shard levels. Damage falls off per jump, scaling with shard level. Requires Range + Momentum."},
 	],
 	"bulwark": [
 		# slot 0
@@ -44,11 +44,11 @@ const SKILL_DATA = {
 		# slot 4 — right continues
 		{"name": "Knockback",          "desc": "Hitting an enemy pushes them back. Force scales with Shield Strength. Base 80px, +20px per shard level. Synergizes with Momentum."},
 		# slot 5 — keystone
-		{"name": "Keystone: Pulse", "desc": "Replaces bullets with an expanding AOE pulse. Incoming damage charges the next pulse — 10% from normal enemies, 100% from bosses. Shard levels increase charge conversion. Requires Rampart + Knockback."},
+		{"name": "Keystone: Pulse",    "desc": "Replaces bullets with an expanding AOE pulse. Incoming damage charges the next pulse — 10% from normal enemies, 100% from bosses. Shard levels increase charge conversion. Requires Rampart + Knockback."},
 	],
 	"siphon": [
 		# slot 0
-		{"name": "Vampiric",           "desc": "HP Regen Amount adds flat bonus damage. Base +1 per regen point, +0.5 per shard level."},
+		{"name": "Vampiric",           "desc": "HP regen ticks charge the next attack. That attack deals bonus flat + % damage. Base +10 flat and +15%, scaling with shards."},
 		# slot 1 — left branch
 		{"name": "Chill",              "desc": "Every HP regen tick slows the nearest enemy. Base 10% slow, +3% per shard level, cap 60%."},
 		# slot 2 — right branch
@@ -133,11 +133,9 @@ func _get_shard_threshold() -> int:
 	var shards_earned = SaveManager.data["phase_shards_earned"]
 	return KILLS_PER_SHARD_BASE + (shards_earned * 100)
 
-# Returns kills made toward the next shard
 func get_kills_since_last_shard() -> int:
 	return _kills_since_last_shard
 
-# Returns the kill count needed for the next shard
 func get_next_shard_threshold() -> int:
 	return _get_shard_threshold()
 
@@ -149,10 +147,9 @@ func unlock_skill(tree: String, slot: int) -> bool:
 		return false
 	if is_skill_unlocked(tree, slot):
 		return false
-	# Prerequisite check
 	match slot:
 		0:
-			pass  # root — always available
+			pass
 		1:
 			if not is_skill_unlocked(tree, 0): return false
 		2:
@@ -162,7 +159,6 @@ func unlock_skill(tree: String, slot: int) -> bool:
 		4:
 			if not is_skill_unlocked(tree, 2): return false
 		5:
-			# Keystone — requires both branch ends AND no other keystone
 			if not is_skill_unlocked(tree, 3): return false
 			if not is_skill_unlocked(tree, 4): return false
 			if has_keystone(): return false
@@ -246,14 +242,13 @@ func barrage_momentum_bonus_per_pixel() -> float:
 	return 0.0005 + (level * 0.0002)
 
 # Slot 5 — Keystone: Chain
-# Number of chain jumps after initial hit. Base 2, +1 per 5 shard levels.
+# Number of chain jumps. Base 2, +1 per 5 shard levels.
 func barrage_chain_jump_count() -> int:
 	if not is_skill_unlocked(TREE_BARRAGE, 5): return 0
 	var level = get_skill_level(TREE_BARRAGE, 5)
 	return 2 + int(level / 5.0)
 
-# Slot 5 — Keystone: Chain
-# Damage falloff per jump. Base 60%, +2% per shard level, no cap.
+# Damage falloff per jump. Base 60%, +2% per shard level.
 func barrage_chain_falloff() -> float:
 	if not is_skill_unlocked(TREE_BARRAGE, 5): return 0.0
 	var level = get_skill_level(TREE_BARRAGE, 5)
@@ -262,7 +257,7 @@ func barrage_chain_falloff() -> float:
 # ── BULWARK ───────────────────────────────────
 
 # Slot 0 — Fortify
-# Bonus flat damage per 100 max shield. Base +2, +1 per shard level.
+# Bonus flat damage per 100 max shield. Base +2, scales with shards.
 func bulwark_fortify_damage_per_100_shield() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 0): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 0)
@@ -275,62 +270,64 @@ func bulwark_ironclad_flat_bonus() -> float:
 	var level = get_skill_level(TREE_BULWARK, 1)
 	return 5.0 + (level * 5.0)
 
-# Max % bonus at full shield. Base 60%, no shard scaling — shield % does the scaling.
+# Max % bonus at full shield. Base 60%, no shard scaling.
 func bulwark_ironclad_max_bonus() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 1): return 0.0
 	return 0.60
-	
+
 # Slot 2 — Zap
-# Damage per zap on shield regen tick. Base 8, +3 per shard level.
+# Damage % of shield per zap on shield regen tick.
 func bulwark_zap_damage() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 2): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 2)
 	return 0.05 + (level * 0.01)
 
 # Slot 3 — Rampart
-# Shield restored per kill. Base 3, +1 per shard level.
+# Shield restored per kill.
 func bulwark_rampart_shield_per_kill() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 3): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 3)
 	return 20.0 + (level * 20.0)
 
 # Slot 4 — Knockback
-# Force scales with shield strength. shield_strength * 400px.
 func bulwark_knockback_force(shield_strength: float) -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 4): return 0.0
 	return shield_strength * 300.0
 
-# Damage scales with shield strength + shard level.
 func bulwark_knockback_damage(shield_strength: float) -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 4): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 4)
 	return shield_strength * (50.0 + (level * 25.0))
-# Slot 5 — Keystone: Pulse
-# AOE pulse — radius and damage handled in base.gd when implemented.
-# Query kept here for gating purposes.
+
 # Slot 5 — Keystone: Pulse
 func bulwark_pulse_unlocked() -> bool:
 	return is_skill_unlocked(TREE_BULWARK, 5)
 
-# Regular enemy charge conversion %. Base 10%, +2.5% per shard level.
 func bulwark_pulse_charge_pct_normal() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 5): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 5)
 	return 0.10 + (level * 0.025)
 
-# Boss charge conversion %. Base 100%, +10% per shard level.
 func bulwark_pulse_charge_pct_boss() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 5): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 5)
 	return 1.00 + (level * 0.10)
+
 # ── SIPHON ────────────────────────────────────
 
 # Slot 0 — Vampiric
-# Bonus flat damage per 1 HP regen amount. Base 1.0, +0.5 per shard level.
-func siphon_vampiric_damage_per_regen() -> float:
+# On regen tick, charges next attack with bonus flat + % damage.
+# Flat bonus: base +10, +4 per shard level.
+func siphon_vampiric_flat_bonus() -> float:
 	if not is_skill_unlocked(TREE_SIPHON, 0): return 0.0
 	var level = get_skill_level(TREE_SIPHON, 0)
-	return 1.0 + (level * 0.5)
+	return 10.0 + (level * 4.0)
+
+# % bonus applied to total proc damage: base 15%, +5% per shard level.
+func siphon_vampiric_pct_bonus() -> float:
+	if not is_skill_unlocked(TREE_SIPHON, 0): return 0.0
+	var level = get_skill_level(TREE_SIPHON, 0)
+	return 0.15 + (level * 0.05)
 
 # Slot 1 — Chill
 # Slow % on regen tick. Base 10%, +3% per shard level, cap 60%.
@@ -361,7 +358,5 @@ func siphon_vitality_hp_per_kill() -> float:
 	return 2.0 + (level * 1.0)
 
 # Slot 5 — Keystone: Drain Beam
-# Drain beam — implemented in base.gd when built.
-# Query kept here for gating purposes.
 func siphon_drain_beam_unlocked() -> bool:
 	return is_skill_unlocked(TREE_SIPHON, 5)
