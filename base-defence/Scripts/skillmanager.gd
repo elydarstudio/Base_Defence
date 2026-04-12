@@ -258,10 +258,15 @@ func barrage_chain_falloff() -> float:
 
 # Slot 0 — Fortify
 # Bonus flat damage per 100 max shield. Base +2, scales with shards.
-func bulwark_fortify_damage_per_100_shield() -> float:
+func bulwark_fortify_flat_per_100_shield() -> float:
 	if not is_skill_unlocked(TREE_BULWARK, 0): return 0.0
 	var level = get_skill_level(TREE_BULWARK, 0)
-	return 2.0 * (1.0 + level * 0.05)
+	return 2.0 + (level * 0.5)
+
+func bulwark_fortify_pct_bonus() -> float:
+	if not is_skill_unlocked(TREE_BULWARK, 0): return 0.0
+	var level = get_skill_level(TREE_BULWARK, 0)
+	return 0.05 + (level * 0.02)
 
 # Slot 1 — Ironclad
 # Flat bonus on unlock +5, +5 per shard level.

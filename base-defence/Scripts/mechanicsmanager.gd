@@ -35,11 +35,13 @@ func get_range_bonus() -> float:
 	return SkillManager.barrage_range_bonus()
 
 # ── Fortify — Bulwark Slot 0 ──────────────────
-func get_fortify_bonus(max_shield: float) -> float:
-	var bonus_per_100 = SkillManager.bulwark_fortify_damage_per_100_shield()
-	if bonus_per_100 == 0.0:
-		return 0.0
-	return floor(max_shield / 100.0) * bonus_per_100
+func get_fortify_bonus(max_shield: float) -> Array:
+	var flat_per_100 = SkillManager.bulwark_fortify_flat_per_100_shield()
+	var pct = SkillManager.bulwark_fortify_pct_bonus()
+	if flat_per_100 == 0.0 and pct == 0.0:
+		return [0.0, 0.0]
+	var flat = floor(max_shield / 100.0) * flat_per_100
+	return [flat, pct]
 
 func get_ironclad_bonus(shield: float, max_shield: float) -> Array:
 	if not SkillManager.is_skill_unlocked(SkillManager.TREE_BULWARK, 1):
@@ -156,8 +158,10 @@ func get_damage_bonuses(base_node: Node) -> Array:
 	var flat: float = 0.0
 	var pct: float = 0.0
 
-	# Fortify — flat per 100 effective max shield
-	flat += get_fortify_bonus(base_node.max_shield * base_node.shield_multiplier)
+	# Fortify — flat per 100 shield + % bonus
+	var fortify = get_fortify_bonus(base_node.max_shield * base_node.shield_multiplier)
+	flat += fortify[0]
+	pct += fortify[1]
 
 	# Ironclad — flat on unlock + shard levels, % based on current shield %
 	var ironclad = get_ironclad_bonus(base_node.shield, base_node.max_shield * base_node.shield_multiplier)
