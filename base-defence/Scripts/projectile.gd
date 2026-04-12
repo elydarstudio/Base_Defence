@@ -15,11 +15,12 @@ var is_keystone: bool = false
 var is_chain: bool = false
 var main_node: Node = null
 var _distance_traveled: float = 0.0
+var target_distance: float = 0.0
 
 func _ready():
 	area_entered.connect(_on_area_entered)
 
-func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D, crit: bool = false, rapidfire: bool = false, bleed: float = 0.0, keystone: bool = false, mn: Node = null, vampiric: bool = false, surge: bool = false):
+func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D, crit: bool = false, rapidfire: bool = false, bleed: float = 0.0, keystone: bool = false, mn: Node = null, vampiric: bool = false, surge: bool = false, dist: float = 0.0):
 	direction = dir
 	speed = spd
 	damage = dmg
@@ -32,6 +33,7 @@ func setup(dir: Vector2, spd: float, dmg: float, tgt: Node2D, b: Node2D, crit: b
 	bleed_damage = bleed
 	is_keystone = keystone
 	main_node = mn
+	target_distance = dist
 	var poly = $Visual
 	if is_keystone:
 		poly.polygon = PackedVector2Array([
@@ -91,7 +93,8 @@ func _on_area_entered(area):
 			_resolve()
 			queue_free()
 			return
-		var momentum_bonus = MechanicsManager.get_momentum_bonus(_distance_traveled)
+		# Use target_distance for Momentum — distance from base to target at fire time
+		var momentum_bonus = MechanicsManager.get_momentum_bonus(target_distance)
 		var chill_bonus = MechanicsManager.get_chill_damage_bonus(area)
 		var final_damage = damage * (1.0 + momentum_bonus) * (1.0 + chill_bonus)
 		var type = "crit" if is_crit else "normal"

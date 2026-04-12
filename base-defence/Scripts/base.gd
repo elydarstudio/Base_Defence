@@ -31,6 +31,10 @@ var shield_multiplier: float = 1.0
 var evasion: float = 0.0
 var pulse_boss_charge: float = 0.0
 
+# Drain Beam
+var _beam_target: Node2D = null
+
+
 # Zap
 var zap_timer: float = 0.0
 var zap_target: Node2D = null
@@ -60,7 +64,6 @@ func _draw_base():
 
 func _update_combat_ui():
 	var effective_max = get_effective_max_hp()
-	var overheal_ceiling = get_overheal_ceiling()
 	if health > effective_max:
 		$HPLabel.text = "HP: " + str(max(0, int(health))) + "/" + str(int(effective_max))
 		$HPLabel.modulate = Color(0.3, 1.0, 0.4)
@@ -71,20 +74,26 @@ func _update_combat_ui():
 	queue_redraw()
 
 func _draw():
+	# Overheal aura
 	var effective_max = get_effective_max_hp()
-	if health <= effective_max:
-		return
-	var is_surge = SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 3)
-	var t = Time.get_ticks_msec() * 0.003
-	var pulse = 0.5 + 0.5 * sin(t)
-	if is_surge:
-		var radius = 38.0 + pulse * 6.0
-		var alpha = 0.5 + pulse * 0.4
-		draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(0.7, 1.0, 0.2, alpha), 3.0)
-	else:
-		var radius = 36.0 + pulse * 4.0
-		var alpha = 0.4 + pulse * 0.3
-		draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(0.3, 1.0, 0.4, alpha), 2.0)
+	if health > effective_max:
+		var is_surge = SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 3)
+		var t = Time.get_ticks_msec() * 0.003
+		var pulse = 0.5 + 0.5 * sin(t)
+		if is_surge:
+			var radius = 38.0 + pulse * 6.0
+			var alpha = 0.5 + pulse * 0.4
+			draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(0.7, 1.0, 0.2, alpha), 3.0)
+		else:
+			var radius = 36.0 + pulse * 4.0
+			var alpha = 0.4 + pulse * 0.3
+			draw_arc(Vector2.ZERO, radius, 0, TAU, 32, Color(0.3, 1.0, 0.4, alpha), 2.0)
+
+	# Drain Beam visual
+	if SkillManager.get_active_keystone() == SkillManager.TREE_SIPHON:
+		if is_instance_valid(_beam_target):
+			var target_local = to_local(_beam_target.global_position)
+			draw_line(Vector2.ZERO, target_local, Color(0.7, 0.2, 1.0, 0.85), 2.0)
 
 func _process(delta):
 	fire_timer += delta
@@ -105,8 +114,7 @@ func _process(delta):
 		MechanicsManager.set_vampiric_proc()
 		MechanicsManager.trigger_chill(self)
 		if hp_regen > 0:
-			var overheal_ceiling = get_overheal_ceiling()
-			var heal_cap = get_effective_max_hp() + overheal_ceiling
+			var heal_cap = get_effective_max_hp() + get_overheal_ceiling()
 			if health < heal_cap:
 				var heal_amount = hp_regen * heal_multiplier
 				health = min(health + heal_amount, heal_cap)
@@ -177,6 +185,17 @@ func _get_closest_enemy(exclude: Node2D = null) -> Node2D:
 			closest = e
 	return closest
 
+func _get_best_target_in_range() -> Node2D:
+	var enemies = get_tree().get_nodes_in_group("enemies")
+	var closest = null
+	var closest_dist = detection_radius
+	for e in enemies:
+		var d = global_position.distance_to(e.global_position)
+		if d < closest_dist:
+			closest_dist = d
+			closest = e
+	return closest
+
 func _get_committed_damage(target: Node) -> float:
 	var bleed = SkillManager.barrage_bleed_dot()
 	var total_bleed = bleed * _get_bleed_tick_count()
@@ -194,6 +213,9 @@ func _get_committed_damage(target: Node) -> float:
 func _try_shoot():
 	if SkillManager.get_active_keystone() == SkillManager.TREE_BULWARK:
 		_fire_pulse()
+		return
+	if SkillManager.get_active_keystone() == SkillManager.TREE_SIPHON:
+		_fire_drain_beam()
 		return
 	var target = _get_best_target()
 	if target == null or bullet_scene == null:
@@ -227,7 +249,6 @@ func _try_shoot():
 	final_damage += damage_bonuses[0]
 	final_damage *= (1.0 + damage_bonuses[1])
 
-	# Vampiric proc
 	var is_vampiric = MechanicsManager.consume_vampiric_proc()
 	if is_vampiric:
 		final_damage = MechanicsManager.get_vampiric_proc_damage(final_damage)
@@ -236,6 +257,7 @@ func _try_shoot():
 	var shoot_speed = bullet_speed * 2.0 if is_barrage_keystone else bullet_speed
 	var bleed = SkillManager.barrage_bleed_dot()
 	var is_surge = is_overhealed() and SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 3)
+	var dist = global_position.distance_to(target.global_position)
 	b.setup(
 		global_position.direction_to(target.global_position),
 		shoot_speed,
@@ -248,7 +270,8 @@ func _try_shoot():
 		is_barrage_keystone,
 		main_node,
 		is_vampiric,
-		is_surge
+		is_surge,
+		dist
 	)
 	bullets_targeting[target] = bullets_en_route + 1
 	if main_node: AudioManager.play(AudioManager.sfx_shoot)
@@ -337,7 +360,6 @@ func _fire_pulse():
 	final_damage += damage_bonuses[0]
 	final_damage *= (1.0 + damage_bonuses[1])
 
-	# Vampiric proc
 	var is_vampiric = MechanicsManager.consume_vampiric_proc()
 	if is_vampiric:
 		final_damage = MechanicsManager.get_vampiric_proc_damage(final_damage)
@@ -358,6 +380,58 @@ func _fire_pulse():
 		is_rapidfire,
 		bleed
 	)
+	if main_node: AudioManager.play(AudioManager.sfx_shoot)
+
+func _fire_drain_beam():
+	# Maintain beam target — stay on current if valid and in range, else find new
+	if not is_instance_valid(_beam_target) or global_position.distance_to(_beam_target.global_position) > detection_radius:
+		_beam_target = _get_best_target_in_range()
+	if _beam_target == null:
+		queue_redraw()
+		return
+
+	var target = _beam_target
+	var dist = global_position.distance_to(target.global_position)
+
+	var is_crit = randf() < crit_chance
+	var final_damage = bullet_damage * damage_multiplier
+	if is_crit:
+		final_damage *= crit_damage
+
+	var is_rapidfire = _tick_attack_counter() and SkillManager.barrage_rapidfire_bonus() > 0.0
+	if is_rapidfire:
+		final_damage += final_damage * SkillManager.barrage_rapidfire_bonus()
+
+	var focus_bonus = MechanicsManager.get_focus_bonus(target)
+	if focus_bonus > 0.0:
+		final_damage += final_damage * focus_bonus
+	MechanicsManager.register_hit(target)
+
+	var damage_bonuses = MechanicsManager.get_damage_bonuses(self)
+	final_damage += damage_bonuses[0]
+	final_damage *= (1.0 + damage_bonuses[1])
+
+	var is_vampiric = MechanicsManager.consume_vampiric_proc()
+	if is_vampiric:
+		final_damage = MechanicsManager.get_vampiric_proc_damage(final_damage)
+
+	# Momentum — distance from base to target
+	var momentum_bonus = MechanicsManager.get_momentum_bonus(dist)
+	final_damage *= (1.0 + momentum_bonus)
+
+	# Chill bonus
+	var chill_bonus = MechanicsManager.get_chill_damage_bonus(target)
+	final_damage *= (1.0 + chill_bonus)
+
+	# Bleed applies per tick
+	var bleed = SkillManager.barrage_bleed_dot()
+
+	var type = "crit" if is_crit else "normal"
+	EnemyMechanics.take_damage(target, final_damage, type)
+	if bleed > 0.0:
+		target.apply_bleed(bleed, is_crit)
+
+	queue_redraw()
 	if main_node: AudioManager.play(AudioManager.sfx_shoot)
 
 func add_shield(amount: float):

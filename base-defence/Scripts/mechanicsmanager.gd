@@ -8,17 +8,17 @@ extends Node
 # Game systems read from here, never reimplement.
 # ══════════════════════════════════════════════
 
-# ── Focus — Barrage Slot 2 ────────────────────
+# ── Focus — Barrage Slot 3 ────────────────────
 var _focus_stacks: Dictionary = {}
 
 func get_focus_bonus(enemy: Node) -> float:
-	if not SkillManager.is_skill_unlocked(SkillManager.TREE_BARRAGE, 2):
+	if not SkillManager.is_skill_unlocked(SkillManager.TREE_BARRAGE, 3):
 		return 0.0
 	var stacks = _focus_stacks.get(enemy, 0)
 	return stacks * SkillManager.barrage_focus_bonus_per_hit()
 
 func register_hit(enemy: Node) -> void:
-	if not SkillManager.is_skill_unlocked(SkillManager.TREE_BARRAGE, 2):
+	if not SkillManager.is_skill_unlocked(SkillManager.TREE_BARRAGE, 3):
 		return
 	if not is_instance_valid(enemy):
 		return
@@ -30,7 +30,7 @@ func reset_focus(enemy: Node) -> void:
 func cleanup_focus(enemy: Node) -> void:
 	_focus_stacks.erase(enemy)
 
-# ── Range — Barrage Slot 3 ────────────────────
+# ── Range — Barrage Slot 2 ────────────────────
 func get_range_bonus() -> float:
 	return SkillManager.barrage_range_bonus()
 
@@ -114,9 +114,16 @@ func get_vampiric_proc_damage(bullet_damage: float) -> float:
 	var pct = SkillManager.siphon_vampiric_pct_bonus()
 	return (bullet_damage + flat) * (1.0 + pct)
 
-# ── Chill — Siphon Slot 1 ─────────────────────
+# ── Overheal — Siphon Slot 1 ──────────────────
+func get_overheal_ceiling(max_hp: float) -> float:
+	var buffer_pct = SkillManager.siphon_overheal_buffer()
+	if buffer_pct == 0.0:
+		return 0.0
+	return max_hp * buffer_pct
+
+# ── Chill — Siphon Slot 2 ─────────────────────
 func trigger_chill(base_node: Node) -> void:
-	if not SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 1):
+	if not SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 2):
 		return
 	var enemies = base_node.get_tree().get_nodes_in_group("enemies")
 	var unchilled = []
@@ -132,21 +139,13 @@ func trigger_chill(base_node: Node) -> void:
 		target.apply_chill()
 
 func get_chill_damage_bonus(target: Node) -> float:
-	if not SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 1):
+	if not SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 2):
 		return 0.0
 	if not is_instance_valid(target):
 		return 0.0
 	if not target.is_chilled:
 		return 0.0
 	return SkillManager.siphon_chill_damage_bonus()
-
-# ── Overheal — Siphon Slot 2 ──────────────────
-# Returns the overheal buffer ceiling above max HP.
-func get_overheal_ceiling(max_hp: float) -> float:
-	var buffer_pct = SkillManager.siphon_overheal_buffer()
-	if buffer_pct == 0.0:
-		return 0.0
-	return max_hp * buffer_pct
 
 # ── Surge — Siphon Slot 3 ─────────────────────
 func get_surge_bonus(health: float, max_hp: float) -> float:
@@ -155,6 +154,15 @@ func get_surge_bonus(health: float, max_hp: float) -> float:
 	if health <= max_hp:
 		return 0.0
 	return SkillManager.siphon_surge_bonus()
+
+# ── Vitality — Siphon Slot 4 ──────────────────
+func trigger_vitality(base_node: Node) -> void:
+	if not SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 4):
+		return
+	var heal = SkillManager.siphon_vitality_hp_per_kill() * base_node.heal_multiplier
+	var heal_cap = base_node.get_effective_max_hp() + base_node.get_overheal_ceiling()
+	base_node.health = min(base_node.health + heal, heal_cap)
+	base_node._update_combat_ui()
 
 # ── Combined outgoing damage bonus ────────────
 # Returns [flat_bonus, percent_bonus] for constant passive bonuses.
@@ -173,11 +181,11 @@ func get_damage_bonuses(base_node: Node) -> Array:
 	flat += ironclad[0]
 	pct += ironclad[1]
 
-	# Overheal — flat bonus while overhealed
+	# Overheal — flat bonus while overhealed (slot 1)
 	if base_node.health > base_node.get_effective_max_hp():
 		flat += SkillManager.siphon_overheal_flat_bonus()
 
-	# Surge — % while overhealed
+	# Surge — % while overhealed (slot 3)
 	pct += get_surge_bonus(base_node.health, base_node.get_effective_max_hp())
 
 	return [flat, pct]
@@ -189,7 +197,7 @@ func get_momentum_bonus(distance: float) -> float:
 		return 0.0
 	return distance * bonus_per_pixel
 
-# ── Chain — Barrage Keystone ──────────────────
+# ── Chain — Barrage Keystone (Slot 5) ─────────
 const CHAIN_HOP_RADIUS: float = 250.0
 const CHAIN_HOP_SPEED: float = 800.0
 
@@ -235,12 +243,3 @@ func _find_chain_target(from_enemy: Node, already_hit: Array, main_node: Node) -
 			closest_dist = d
 			closest = e
 	return closest
-
-
-func trigger_vitality(base_node: Node) -> void:
-	if not SkillManager.is_skill_unlocked(SkillManager.TREE_SIPHON, 4):
-		return
-	var heal = SkillManager.siphon_vitality_hp_per_kill() * base_node.heal_multiplier
-	var heal_cap = base_node.get_effective_max_hp() + base_node.get_overheal_ceiling()
-	base_node.health = min(base_node.health + heal, heal_cap)
-	base_node._update_combat_ui()
